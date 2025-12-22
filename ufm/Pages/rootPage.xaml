@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="ufm.rootPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:ufm.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="RootPage_OnLoaded"
+    SizeChanged="RootPage_SizeChanged"
+    mc:Ignorable="d">
+
+    <Grid x:Name="GridRootPage" Background="Transparent">
+        <Grid
+            x:Name="GridWorkAreaLeftToolBar"
+            Background="Transparent"
+            PointerReleased="GridWorkAreaLeftToolBar_PointerReleased"
+            Visibility="Visible">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50" />
+                <ColumnDefinition Width="2" />
+                <ColumnDefinition
+                    x:Name="ColumnTreeView"
+                    Width="360"
+                    MinWidth="150"
+                    MaxWidth="800" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition
+                    x:Name="ColumViewDataPanel"
+                    Width="*"
+                    MinWidth="400"
+                    MaxWidth="7680" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel
+                x:Name="StackPanelToolBarsLeft"
+                Background="Transparent"
+                CornerRadius="6"
+                Orientation="Vertical">
+
+                <Button
+                    Width="45"
+                    Height="45"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    HorizontalContentAlignment="Center"
+                    BorderThickness="1"
+                    Click="ButtonBase_OnClick"
+                    PointerEntered="Button_PointerEntered"
+                    PointerExited="Button_PointerExited">
+                    <AnimatedIcon x:Name="SearchAnimatedIcon">
+                        <AnimatedIcon.Source>
+                            <animatedVisuals:AnimatedGlobalNavigationButtonVisualSource />
+                        </AnimatedIcon.Source>
+                        <AnimatedIcon.FallbackIconSource>
+                            <SymbolIconSource Symbol="Find" />
+                        </AnimatedIcon.FallbackIconSource>
+                    </AnimatedIcon>
+                </Button>
+            </StackPanel>
+            <Rectangle
+                x:Name="RectSplitTreeVerticalLeftToolBar"
+                Grid.Column="1"
+                Width="3"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Fill="Transparent" />
+            <Frame
+                x:Name="FrameTreePanel"
+                Grid.Column="2"
+                Margin="2,0,2,0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                Background="Transparent" />
+
+            <!--  Перетаскиваемый разделитель (вертикальный)  разделяет treeview и главную рабочую область  -->
+            <controls:GridSplitter
+                x:Name="PanelGrodSplitter"
+                Grid.Column="3"
+                Width="16"
+                HorizontalAlignment="Left"
+                Background="Transparent"
+                PointerEntered="Button_PointerEntered"
+                PointerPressed="PanelGrodSplitter_PointerPressed"
+                PointerReleased="PanelGrodSplitter_PointerReleased1"
+                ResizeBehavior="PreviousAndNext"
+                ResizeDirection="Columns">
+                <controls:GridSplitter.RenderTransform>
+                    <TranslateTransform X="-7" />
+                </controls:GridSplitter.RenderTransform>
+            </controls:GridSplitter>
+            <Frame
+                x:Name="FrameViewDataPanel"
+                Grid.Column="4"
+                Margin="2,0,2,0"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch" x:FieldModifier="internal" />
+        </Grid>
+        <Grid
+            x:Name="GridWorkAreaRigthToolBar"
+            Background="Transparent"
+            Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition
+                    Width="*"
+                    MinWidth="400"
+                    MaxWidth="4320" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition
+                    Width="Auto"
+                    MinWidth="150"
+                    MaxWidth="600" />
+                <ColumnDefinition Width="2" />
+                <ColumnDefinition Width="50" />
+            </Grid.ColumnDefinitions>
+
+            <Rectangle Grid.Column="2" Fill="Transparent" />
+
+            <StackPanel
+                x:Name="StackPanelToolBarsRight"
+                Grid.Column="4"
+                Background="Transparent"
+                CornerRadius="6"
+                Orientation="Vertical">
+                <Button
+                    Width="45"
+                    Height="45"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    HorizontalContentAlignment="Center"
+                    BorderThickness="1"
+                    Click="ButtonBase_OnClick"
+                    PointerEntered="Button_PointerEntered"
+                    PointerExited="Button_PointerExited">
+                    <AnimatedIcon x:Name="SearchAnimatedIcon2">
+                        <AnimatedIcon.Source>
+                            <animatedVisuals:AnimatedGlobalNavigationButtonVisualSource />
+                        </AnimatedIcon.Source>
+                        <AnimatedIcon.FallbackIconSource>
+                            <SymbolIconSource Symbol="Find" />
+                        </AnimatedIcon.FallbackIconSource>
+                    </AnimatedIcon>
+                </Button>
+            </StackPanel>
+            <Rectangle
+                x:Name="RectSplitTreeVerticalRightToolBar"
+                Grid.Column="3"
+                Width="3"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Fill="Transparent" />
+            <Frame
+                x:Name="FrameTreePanelRight"
+                Grid.Column="2"
+                Margin="2,0,2,0" />
+            <!--  Перетаскиваемый разделитель (вертикальный)  -->
+            <controls:GridSplitter
+                Grid.Column="1"
+                Width="16"
+                HorizontalAlignment="Right"
+                ResizeBehavior="PreviousAndNext"
+                ResizeDirection="Columns">
+                <controls:GridSplitter.RenderTransform>
+                    <TranslateTransform X="-7" />
+                </controls:GridSplitter.RenderTransform>
+            </controls:GridSplitter>
+            <Frame
+                x:Name="FrameViewDataPanelRight"
+                Grid.Column="0"
+                Margin="2,0,2,0" />
+        </Grid>
+    </Grid>
+</Page>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ufm"
+    xmlns:ui="using:Windows.UI">
+    <!-- Темно-золотая тема -->
+<ui:Color x:Key="SystemAccentColor">#FFD700</ui:Color>
+<ui:Color x:Key="AppBackgroundColor">#1A1400</ui:Color>
+<ui:Color x:Key="CardBackgroundColor">#2B2408</ui:Color>
+<ui:Color x:Key="PanelHoverColor">#30FFD700</ui:Color>
+<!-- Текст -->
+<ui:Color x:Key="TextPrimaryColor">#FFFAF0</ui:Color>
+<ui:Color x:Key="TextSecondaryColor">#B3A980</ui:Color>
+<ui:Color x:Key="TextOnAccentColor">#000000</ui:Color>
+
+<!-- Кнопки -->
+<ui:Color x:Key="ButtonBackgroundColor">#3D3513</ui:Color>
+<ui:Color x:Key="ButtonBorderColor">#FFD700</ui:Color>
+<ui:Color x:Key="ButtonHoverColor">#4A4118</ui:Color>
+<ui:Color x:Key="ButtonPressedColor">#E6C200</ui:Color>
+<ui:Color x:Key="ButtonDisabledColor">#2A250D</ui:Color>
+
+<!-- Границы -->
+<ui:Color x:Key="BorderPrimaryColor">#3D3513</ui:Color>
+<ui:Color x:Key="BorderSecondaryColor">#5D5220</ui:Color>
+
+<!-- Прогресс-бар -->
+<ui:Color x:Key="ProgressBarTrackColor">#3D3513</ui:Color>
+<ui:Color x:Key="ProgressBarThumbColor">#FFD700</ui:Color>
+<ui:Color x:Key="CriticalProgressColor">#FF6B6B</ui:Color>
+
+<!-- Плитки -->
+<ui:Color x:Key="TileBackgroundColor">#2B2408</ui:Color>
+<ui:Color x:Key="TileBorderColor">#FFD700</ui:Color>
+<ui:Color x:Key="SizeInfoBorderColor">#3D3513</ui:Color>
+
+<!-- Дополнительные цвета -->
+<ui:Color x:Key="HeaderBackgroundColor">#3D3513</ui:Color>
+<ui:Color x:Key="HeaderBorderColor">#FFD700</ui:Color>
+<ui:Color x:Key="NavigationButtonColor">#3D3513</ui:Color>
+<ui:Color x:Key="NavigationIconColor">#FFD700</ui:Color>
+</ResourceDictionary>

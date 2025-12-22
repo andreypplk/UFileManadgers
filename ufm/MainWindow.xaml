@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="ufm.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:langmng="using:Core_Language"
+    xmlns:local="using:ufm"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:statusBarControl="using:ufm"
+    xmlns:viewModel="using:Core_FileManagement"
+    mc:Ignorable="d">
+
+    <Grid x:Name="GridGlobal" DataContext="x:Bind _locVM">
+        <Grid.RowDefinitions>
+            <!--  Панель заголовка  -->
+            <RowDefinition Height="40" />
+            <!--  Содержимое элемента  -->
+            <RowDefinition Height="*" />
+            <!--  Статусная строка  -->
+            <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
+
+        <Grid
+            x:Name="TitleBarGrid"
+            Grid.Row="0"
+            Height="48"
+            MinWidth="400">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
+                <ColumnDefinition x:Name="IconColumn" Width="Auto" />
+                <ColumnDefinition x:Name="TitleColumn" Width="Auto" />
+                <ColumnDefinition x:Name="LeftDragColumn" Width="*" />
+                <ColumnDefinition
+                    x:Name="SearchColumn"
+                    Width="4*"
+                    MinWidth="220" />
+                <ColumnDefinition
+                    x:Name="RightDragColumn"
+                    Width="*"
+                    MinWidth="48" />
+                <ColumnDefinition x:Name="AccountColumn" Width="Auto" />
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel
+                x:Name="StackPanelSettings"
+                Grid.Column="6"
+                Margin="2,0,2,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Orientation="Horizontal">
+
+                <Button
+                    x:Name="ButAccounts"
+                    Width="40"
+                    Height="30"
+                    Margin="5,2,2,0"
+                    HorizontalAlignment="Right"
+                    Background="{ThemeResource ButtonBackgroundBrush}"
+                    BorderBrush="{ThemeResource ButtonBorderBrush}"
+                    CornerRadius="2"
+                    Foreground="{ThemeResource ButtonTextBrush}">
+                    <Viewbox Stretch="Uniform">
+                        <FontIcon
+                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                            FontSize="24"
+                            Glyph="&#xE734;" />
+                    </Viewbox>
+                </Button>
+                <Button
+                    x:Name="ButMenuView"
+                    Width="40"
+                    Height="30"
+                    Margin="5,2,2,0"
+                    HorizontalAlignment="Right"
+                    Background="{ThemeResource ButtonBackgroundBrush}"
+                    BorderBrush="{ThemeResource ButtonBorderBrush}"
+                    CornerRadius="2"
+                    Foreground="{ThemeResource ButtonTextBrush}">
+                    <Viewbox Stretch="Uniform">
+                        <FontIcon
+                            VerticalAlignment="Bottom"
+                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                            FontSize="24"
+                            Glyph="&#xE776;" />
+                    </Viewbox>
+                </Button>
+
+                <Button
+                    x:Name="ButSetting"
+                    Width="40"
+                    Height="30"
+                    Margin="5,2,2,0"
+                    HorizontalAlignment="Right"
+                    Background="{ThemeResource ButtonBackgroundBrush}"
+                    BorderBrush="{ThemeResource ButtonBorderBrush}"
+                    CornerRadius="2"
+                    Foreground="{ThemeResource ButtonTextBrush}">
+                    <Button.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuFlyoutSubItem HorizontalContentAlignment="Stretch" langmng:Uids.Uid="ToolbarVisibilityItem">
+                                <ToggleMenuFlyoutItem
+                                    x:Name="MenuFlyoutItemFirstToolbar"
+                                    langmng:Uids.Uid="ToolBarFirstItem"
+                                    Click="ButVisibleFirstToolBar_OnClick"
+                                    IsChecked="True" />
+                                <ToggleMenuFlyoutItem
+                                    x:Name="MenuFlyoutItemSecondToolbar"
+                                    langmng:Uids.Uid="ToolBarSecondItem"
+                                    Click="ButVisibleSecondToolBar_OnClick"
+                                    IsChecked="True" />
+
+                            </MenuFlyoutSubItem>
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem langmng:Uids.Uid="SettingsItem" Click="MenuFlyoutSettings_OnClick" />
+                            <ToggleMenuFlyoutItem Text="Shuffle" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+
+                    <!--  Делает крутящуюся шестирёнку видно плохо но иконка вписывается в общий стиль  -->
+                    <Viewbox Stretch="Uniform">
+                        <FontIcon
+                            VerticalAlignment="Bottom"
+                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                            FontSize="24"
+                            Glyph="&#xE713;" />
+                    </Viewbox>
+
+                </Button>
+            </StackPanel>
+
+            <TabView
+                x:Name="TabsView"
+                Grid.Column="4"
+                VerticalAlignment="Stretch"
+                AllowDropTabs="True"
+                CanDragTabs="True"
+                CanReorderTabs="True"
+                TabWidthMode="SizeToContent">
+                <TabView.TabStripHeader>
+                    <Grid x:Name="ShellTitleBarInset" Background="Transparent" />
+                </TabView.TabStripHeader>
+                <TabView.TabStripFooter>
+                    <Grid x:Name="CustomDragRegion" Background="Transparent" />
+                </TabView.TabStripFooter>
+            </TabView>
+            <TextBlock
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                langmng:Uids.Uid="AppTitle"
+                Foreground="{ThemeResource CaptionTextBlock}" />
+            <Button />
+
+            <Image
+                x:Name="TitleBarIcon"
+                Grid.Column="1"
+                Width="40"
+                Height="40"
+                Margin="8,0,4,0"
+                Source="ms-appx:///Assets/folder2.png" />
+        </Grid>
+
+        <Grid
+            x:Name="StatusBarGrid"
+            Grid.Row="2"
+            Height="30"
+            Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!--  Статус приложения  -->
+            <TextBox
+                x:Name="tbChangeStatus"
+                Grid.Column="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                Background="Transparent"
+                BorderThickness="0"
+                FontSize="10"
+                IsReadOnly="True"
+                Text="Готов" />
+
+            <!--  Текущий фон  -->
+            <TextBox
+                x:Name="tbCurrentBackdrop"
+                Grid.Column="2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                Background="Transparent"
+                BorderThickness="0"
+                FontSize="10"
+                IsReadOnly="True" />
+
+            <!--  Метрики производительности  -->
+
+            <ContentControl x:Name="StatusBarContentRight" Grid.Column="4">
+                <local:StatusBarPerformanceMetricsUC ViewModel="{Binding CurrentExplorerItem, Mode=OneWay}" />
+            </ContentControl>
+        </Grid>
+        <ContentPresenter Grid.Row="1" Background="Transparent">
+            <Frame x:Name="ContentFrame" Background="Transparent" />
+        </ContentPresenter>
+        <!--<ContentPresenter Grid.Row="1" Background="Transparent">
+            <pages:rootPage Name="RootPage" />
+        </ContentPresenter>-->
+        <!--<Frame
+            x:Name="ContentFrame"
+            Grid.Row="1"
+            Background="Transparent"
+            NavigationFailed="ContentFrame_NavigationFailed" />-->
+    </Grid>
+
+</Window>

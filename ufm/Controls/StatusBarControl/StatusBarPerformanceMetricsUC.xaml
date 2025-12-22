@@ -1,0 +1,82 @@
+<UserControl
+    x:Class="ufm.StatusBarPerformanceMetricsUC"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ufm="using:ufm"
+    xmlns:viewModel="using:Core_FileManagement"
+    x:Name="root"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ufm:MemoryUsageToColorConverter x:Key="MemoryUsageToColorConverter" />
+        <ufm:UsageToColorConverter x:Key="UsageToColorConverter" />
+
+        <Style x:Key="MetricTextBlockStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="MinWidth" Value="40" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <StackPanel Orientation="Horizontal" Spacing="15">
+            <!--  CPU  -->
+            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                <TextBlock
+                    Margin="0,0,0,0"
+                    VerticalAlignment="Center"
+                    FontFamily="Segoe MDL2 Assets"
+                    FontSize="14"
+                    Text="&#xE950;" />
+                <TextBlock
+                    Margin="0,0,5,0"
+                    Foreground="{Binding CpuUsagePercent, Converter={StaticResource UsageToColorConverter}}"
+                    HorizontalTextAlignment="Right"
+                    Style="{StaticResource MetricTextBlockStyle}"
+                    Text="{Binding CpuUsageText}"
+                    ToolTipService.ToolTip="Загрузка процессора" />
+
+            </StackPanel>
+
+
+            <!--  Диск  -->
+            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                <TextBlock
+                    Margin="0,0,10,0"
+                    VerticalAlignment="Center"
+                    FontFamily="Segoe MDL2 Assets"
+                    FontSize="14"
+                    Text="&#xEDA2;"
+                    ToolTipService.ToolTip="Дисковая активность" />
+                <TextBlock
+                    Margin="2,0,0,0"
+                    Style="{StaticResource MetricTextBlockStyle}"
+                    Text="{Binding IoUsageText, TargetNullValue='0 MB/s'}" />
+            </StackPanel>
+
+            <!--  Память  -->
+            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                <TextBlock
+                    Margin="0,0,0,0"
+                    VerticalAlignment="Center"
+                    FontFamily="Segoe MDL2 Assets"
+                    FontSize="14"
+                    Text="&#xE8C9;"
+                    ToolTipService.ToolTip="Использование памяти" />
+                <TextBlock Style="{StaticResource MetricTextBlockStyle}" Text="{Binding MemoryUsageText, TargetNullValue='0 MB'}" />
+                <ufm:CustomProgressBar
+                    Width="80"
+                    Height="12"
+                    Margin="8,0,8,0"
+                    Foreground="{Binding MemoryUsagePercent, Converter={StaticResource MemoryUsageToColorConverter}}"
+                    Maximum="100"
+                    Style="{StaticResource ThickProgressBarStyle}"
+                    ToolTipService.ToolTip="Процент использования памяти"
+                    Value="{Binding MemoryUsagePercent}" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

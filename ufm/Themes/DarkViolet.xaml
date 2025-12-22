@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ufm"
+    xmlns:ui="using:Windows.UI">
+
+    <x:String x:Key="ThemeDisplayName">Dark Violet</x:String>
+
+    <!--  ТЕМНО-ФИОЛЕТОВАЯ ЦВЕТОВАЯ СХЕМА  -->
+    <ui:Color x:Key="SystemAccentColor">#9D4EDD</ui:Color>
+    <!--  Яркий фиолетовый для акцентов  -->
+
+    <!--  Основные фоны  -->
+    <ui:Color x:Key="AppBackgroundColor">#1A0B2E</ui:Color>
+    <!--  Темно-фиолетовый фон приложения  -->
+    <ui:Color x:Key="CardBackgroundColor">#2D1B4E</ui:Color>
+    <!--  Фиолетовый фон карточек  -->
+    <ui:Color x:Key="PanelHoverColor">#3D2A5F</ui:Color>
+    <!--  Более светлый фиолетовый при наведении  -->
+
+    <!--  Текст  -->
+    <ui:Color x:Key="TextPrimaryColor">#F0E6FF</ui:Color>
+    <!--  Светло-фиолетовый текст */  -->
+    <ui:Color x:Key="TextSecondaryColor">#C4B5FD</ui:Color>
+    <!--  Вторичный фиолетовый текст  -->
+    <ui:Color x:Key="TextOnAccentColor">#FFFFFF</ui:Color>
+
+    <!--  Кнопки  -->
+    <ui:Color x:Key="ButtonBackgroundColor">#4C1D95</ui:Color>
+    <!--  Фиолетовый фон кнопок  -->
+    <ui:Color x:Key="ButtonBorderColor">#7C3AED</ui:Color>
+    <!--  Яркая фиолетовая граница  -->
+    <ui:Color x:Key="ButtonHoverColor">#5B21B6</ui:Color>
+    <!--  Более светлый фиолетовый при наведении  -->
+    <ui:Color x:Key="ButtonPressedColor">#6D28D9</ui:Color>
+    <!--  Еще более яркий фиолетовый при нажатии  -->
+    <ui:Color x:Key="ButtonDisabledColor">#3F3B6C</ui:Color>
+    <!--  Приглушенный фиолетовый для неактивных кнопок  -->
+
+    <!--  Границы  -->
+    <ui:Color x:Key="BorderPrimaryColor">#5B4B8A</ui:Color>
+    <!--  Основная фиолетовая граница  -->
+    <ui:Color x:Key="BorderSecondaryColor">#7C3AED</ui:Color>
+    <!--  Вторичная яркая фиолетовая граница  -->
+
+    <!--  Прогресс-бар  -->
+    <ui:Color x:Key="ProgressBarTrackColor">#3F3B6C</ui:Color>
+    <!--  Фон трека  -->
+    <ui:Color x:Key="ProgressBarThumbColor">#9D4EDD</ui:Color>
+    <!--  Яркий фиолетовый индикатор прогресса  -->
+    <ui:Color x:Key="CriticalProgressColor">#FF6B6B</ui:Color>
+
+    <!--  Плитки  -->
+    <ui:Color x:Key="TileBackgroundColor">#2D1B4E</ui:Color>
+    <!--  Фиолетовый фон плиток  -->
+    <ui:Color x:Key="TileBorderColor">#5B4B8A</ui:Color>
+    <!--  Фиолетовая граница плиток  -->
+    <ui:Color x:Key="SizeInfoBorderColor">#7C3AED</ui:Color>
+    <!--  Яркая фиолетовая граница для информации о размере  -->
+
+    <!--  Дополнительные цвета  -->
+    <ui:Color x:Key="HeaderBackgroundColor">#2D1B4E</ui:Color>
+    <!--  Фиолетовый фон заголовка  -->
+    <ui:Color x:Key="HeaderBorderColor">#7C3AED</ui:Color>
+    <!--  Яркая фиолетовая граница заголовка  -->
+    <ui:Color x:Key="NavigationButtonColor">#4C1D95</ui:Color>
+    <!--  Фиолетовый для навигационных кнопок  -->
+    <ui:Color x:Key="NavigationIconColor">#F0E6FF</ui:Color>
+    <!--  Светло-фиолетовый для иконок  -->
+</ResourceDictionary>

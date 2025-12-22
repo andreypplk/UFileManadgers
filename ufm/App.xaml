@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Application
+    x:Class="ufm.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ufm"
+    xmlns:ui="using:Windows.UI">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!--  Общие ресурсы  -->
+                <ResourceDictionary Source="/Themes/CommonResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!--  ===== ТЕМЫ =====  -->
+            <ResourceDictionary.ThemeDictionaries>
+                <!--  Светлая тема  -->
+                <ResourceDictionary x:Key="Light" Source="/Themes/LightTheme.xaml" />
+
+                <ResourceDictionary x:Key="Dark" Source="/Themes/DarkTheme.xaml" />
+
+                <!--  Light Red (Светло-красная)  -->
+                <ResourceDictionary x:Key="Red" Source="Themes/RedTheme.xaml" />
+                <!--  Dark Red (Темно-красная)  -->
+                <ResourceDictionary x:Key="DarkRed" Source="Themes/DarkRedTheme.xaml" />
+
+                <!--  Light Lemon (Светло-лимонная)  -->
+                <ResourceDictionary x:Key="Lemon" Source="Themes/LemonTheme.xaml" />
+
+                <ResourceDictionary x:Key="DarkLemon" Source="Themes/DarkLemonTheme.xaml" />
+                <ResourceDictionary x:Key="Gold" Source="Themes/LightGoldTheme.xaml" />
+                <ResourceDictionary x:Key="DarkGold" Source="Themes/DarkGoldTheme.xaml" />
+                <ResourceDictionary x:Key="Green" Source="Themes/LightGreenTheme.xaml" />
+                <!--  Dark Green (Темно-зеленая)  -->
+                <ResourceDictionary x:Key="DarkGreen" Source="Themes/DarkGreenTheme.xaml" />
+
+                <!--  Light Blue (Светло-голубая)  -->
+                <ResourceDictionary x:Key="Blue" Source="Themes/BlueTheme.xaml" />
+                <ResourceDictionary x:Key="DarkBlue" Source="Themes/DarkBlueTheme.xaml" />
+            </ResourceDictionary.ThemeDictionaries>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -1,0 +1,449 @@
+<Page
+	x:Class="ufm.AdvancedSettingsPage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:Lngmng="using:Core_Language"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+	mc:Ignorable="d">
+
+	<ScrollViewer>
+		<!--  Основной контейнер с отступами  -->
+		<StackPanel Margin="16" Spacing="16">
+
+			<!--  Секция настроек проводника  -->
+			<Border
+				Padding="12"
+				Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+				CornerRadius="8">
+
+				<StackPanel Spacing="12">
+					<!--  Заголовок секции  -->
+					<TextBlock
+						HorizontalAlignment="Center"
+						Lngmng:Uids.Uid="Settings_ExplorerSettings"
+						Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+					<!--  Показ элемента навигации (Назад|..)  -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xE8A7;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Lngmng:Uids.Uid="Settings_ShowNavigationBackItem" />
+
+						<CheckBox
+							x:Name="ShowNavigationBackItemCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							Checked="ShowNavigationBackItemCheckBox_Changed"
+							Unchecked="ShowNavigationBackItemCheckBox_Changed" />
+					</Grid>
+					<!--  Разворачивать узел при выделении -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xED43;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Lngmng:Uids.Uid="Settings_ExpandedTreeSelected" />
+
+						<CheckBox
+							x:Name="ShowExpandedTreeSelectedCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							Checked="ShowExpandedTreeSelectedCheckBox_Checked"
+							Unchecked="ShowExpandedTreeSelectedCheckBox_Checked" />
+
+					</Grid>
+					<!--  Разворачивать узел спецпапок при старте  -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xE80F;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Lngmng:Uids.Uid="Settings_ExpanderNodesSFStarts" />
+						<CheckBox
+							x:Name="ExpanderNodesSFStartsCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							Checked="ExpanderNodesSFStartsCheckBox_Changed"
+							Unchecked="ExpanderNodesSFStartsCheckBox_Changed" />
+
+					</Grid>
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xE977;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							MaxHeight="24"
+							Lngmng:Uids.Uid="Settings_ExpanderNodesMyPcStarts" />
+
+						<CheckBox
+							x:Name="ExpanderNodesMyPcStartsCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							Checked="ExpanderNodesMyPcStartsCheckBox_Checked"
+							Unchecked="ExpanderNodesMyPcStartsCheckBox_Checked" />
+					</Grid>
+					
+					<!-- Открывать папки одним кликом -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+        Grid.Column="0"
+        Width="24"
+        Height="24"
+        VerticalAlignment="Center">
+							<FontIcon Glyph="&#xED25;" />
+							<!-- Иконка папки с курсором -->
+						</Viewbox>
+
+						<TextBlock
+        Grid.Column="1"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Center"
+        Lngmng:Uids.Uid="Settings_SingleClickOpen"
+        Text="Открывать папки одним кликом" />
+
+						<CheckBox
+        x:Name="SingleClickOpenCheckBox"
+        Grid.Column="2"
+        HorizontalAlignment="Stretch"
+        Checked="SingleClickOpenCheckBox_Changed"
+        Unchecked="SingleClickOpenCheckBox_Changed" />
+					</Grid>
+					
+					<!--  Показ расширений файлов  -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xE8A5;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Lngmng:Uids.Uid="Settings_ShowFileExtensions"
+							Text="Показывать расширения файлов" />
+
+						<CheckBox
+							x:Name="ShowFileExtensionsCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							/>
+					</Grid>
+
+					<!--  Показ скрытых файлов и папок  -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xEED7;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Lngmng:Uids.Uid="Settings_ShowHiddenFiles"
+							Text="Показывать скрытые файлы и папки" />
+
+						<CheckBox
+							x:Name="ShowHiddenFilesCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							Checked="ShowHiddenFilesCheckBox_Changed"
+							Unchecked="ShowHiddenFilesCheckBox_Changed" />
+					</Grid>
+
+					<!--  Скрытие защищенных системных файлов  -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xEA18;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Lngmng:Uids.Uid="Settings_HideSystemFiles"
+							Text="Скрывать защищенные системные файлы" />
+
+						<CheckBox
+							x:Name="HideSystemFilesCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							Checked="HideSystemFilesCheckBox_Changed"
+							IsChecked="True"
+							Unchecked="HideSystemFilesCheckBox_Changed" />
+					</Grid>
+
+					<!--  Показ элементов управления в ленте  -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xE8EF;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Lngmng:Uids.Uid="Settings_ShowRibbon"
+							Text="Показывать ленту проводника" />
+
+						<CheckBox
+							x:Name="ShowRibbonCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							Checked="ShowRibbonCheckBox_Changed"
+							IsChecked="True"
+							Unchecked="ShowRibbonCheckBox_Changed" />
+					</Grid>
+
+					<!--  Открытие в одном экземпляре проводника  -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xE8A7;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Lngmng:Uids.Uid="Settings_SingleInstance"
+							Text="Открывать в одном окне проводника" />
+
+						<CheckBox
+							x:Name="SingleInstanceCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							Checked="SingleInstanceCheckBox_Changed"
+							Unchecked="SingleInstanceCheckBox_Changed" />
+					</Grid>
+
+					<!--  Показ панели предпросмотра  -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xE8A1;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Lngmng:Uids.Uid="Settings_ShowPreviewPane"
+							Text="Показывать панель предпросмотра" />
+
+						<CheckBox
+							x:Name="ShowPreviewPaneCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							Checked="ShowPreviewPaneCheckBox_Changed"
+							Unchecked="ShowPreviewPaneCheckBox_Changed" />
+					</Grid>
+				</StackPanel>
+			</Border>
+
+			<!--  Секция дополнительных настроек системы  -->
+			<Border
+				Padding="12"
+				Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+				CornerRadius="8">
+
+				<StackPanel Spacing="12">
+					<!--  Заголовок секции  -->
+					<TextBlock
+						HorizontalAlignment="Center"
+						Lngmng:Uids.Uid="Settings_SystemSettings"
+						Style="{ThemeResource SubtitleTextBlockStyle}"
+						Text="Системные настройки" />
+
+					<!--  Быстрый доступ в проводнике  -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xE8A3;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Lngmng:Uids.Uid="Settings_ShowQuickAccess"
+							Text="Показывать недавние файлы в быстром доступе" />
+
+						<CheckBox
+							x:Name="ShowQuickAccessCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							Checked="ShowQuickAccessCheckBox_Changed"
+							IsChecked="True"
+							Unchecked="ShowQuickAccessCheckBox_Changed" />
+					</Grid>
+
+					<!--  Показ уведомлений  -->
+					<Grid ColumnSpacing="12">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="40" />
+						</Grid.ColumnDefinitions>
+
+						<Viewbox
+							Grid.Column="0"
+							Width="24"
+							Height="24"
+							VerticalAlignment="Center">
+							<FontIcon Glyph="&#xE91C;" />
+						</Viewbox>
+
+						<TextBlock
+							Grid.Column="1"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Lngmng:Uids.Uid="Settings_ShowNotifications"
+							Text="Показывать системные уведомления" />
+
+						<CheckBox
+							x:Name="ShowNotificationsCheckBox"
+							Grid.Column="2"
+							HorizontalAlignment="Stretch"
+							Checked="ShowNotificationsCheckBox_Changed"
+							IsChecked="True"
+							Unchecked="ShowNotificationsCheckBox_Changed" />
+					</Grid>
+				</StackPanel>
+			</Border>
+
+		</StackPanel>
+	</ScrollViewer>
+</Page>

@@ -1,0 +1,384 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Appearance_Theme_Background" xml:space="preserve">
+    <value>Фон и тема</value>
+  </data>
+  <data name="Appearance_Theme_Background_Description" xml:space="preserve">
+    <value>Настройка внешнего вида и эффектов окон</value>
+  </data>
+  <data name="Appearance_Theme_Background_Header" xml:space="preserve">
+    <value>Настройки темы и фона</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Универсальный файловый менеджер</value>
+  </data>
+  <data name="Settings_BackdropHeader" xml:space="preserve">
+    <value>Фон</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>Английский</value>
+  </data>
+  <data name="Settings_LanguageHeader" xml:space="preserve">
+    <value>Язык</value>
+  </data>
+  <data name="Russian" xml:space="preserve">
+    <value>Русский</value>
+  </data>
+  <data name="SettingsItem" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="Settings_Advanced" xml:space="preserve">
+    <value>Дополнительные настройки</value>
+  </data>
+  <data name="Settings_FileSettings" xml:space="preserve">
+    <value>Файловые настройки</value>
+  </data>
+  <data name="TestResource" xml:space="preserve">
+    <value>Test Resource Ru</value>
+  </data>
+  <data name="Settings_ThemeHeader" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="Theme_Light" xml:space="preserve">
+    <value>Светлая</value>
+  </data>
+  <data name="Theme_Dark" xml:space="preserve">
+    <value>Тёмная</value>
+  </data>
+  <data name="Theme_System" xml:space="preserve">
+    <value>Системная</value>
+  </data>
+  <data name="Backdrop_Default" xml:space="preserve">
+    <value>Фон по-умолчанию </value>
+  </data>
+  <data name="Backdrop_Mica" xml:space="preserve">
+    <value>Слюда</value>
+  </data>
+  <data name="Backdrop_MicaAlt" xml:space="preserve">
+    <value>Каменная Слюда</value>
+  </data>
+  <data name="Backdrop_Acrylic" xml:space="preserve">
+    <value>Акрил</value>
+  </data>
+  <data name="Backdrop_AcrylicThin" xml:space="preserve">
+    <value>Тонкий Акрил</value>
+  </data>
+  <data name="MyComputerUid" xml:space="preserve">
+    <value>Мой Компьютер</value>
+  </data>
+  <data name="Settings_AnimationSettings" xml:space="preserve">
+    <value>Настройки Анимации</value>
+  </data>
+  <data name="Settings_AnimationHeader" xml:space="preserve">
+    <value>Включение анимации</value>
+  </data>
+  <data name="Settings_ShowHiddenToggle" xml:space="preserve">
+    <value>Показывать скрытые файлы</value>
+  </data>
+  <data name="ToolbarVisibilityItem" xml:space="preserve">
+    <value>Панели инструментов</value>
+  </data>
+  <data name="ToolBarFirstItem" xml:space="preserve">
+    <value>Первая панель инструментов</value>
+  </data>
+  <data name="ToolBarSecondItem" xml:space="preserve">
+    <value>Вторая панель инструментов</value>
+  </data>
+  <data name="Theme_Red" xml:space="preserve">
+    <value>Светло Красный</value>
+  </data>
+  <data name="Theme_DarkRed" xml:space="preserve">
+    <value>Тёмно Красный</value>
+  </data>
+  <data name="Theme_LightLemon" xml:space="preserve">
+    <value>Светлый Лимонный</value>
+  </data>
+  <data name="Theme_DarkLemon" xml:space="preserve">
+    <value>Тёмный Лимон</value>
+  </data>
+  <data name="Theme_LightGold" xml:space="preserve">
+    <value>Светлое Золото</value>
+  </data>
+  <data name="Theme_DarkGold" xml:space="preserve">
+    <value>Тёмное Золото</value>
+  </data>
+  <data name="Theme_LightGreen" xml:space="preserve">
+    <value>Светло Зелёный</value>
+  </data>
+  <data name="Theme_DarkGreen" xml:space="preserve">
+    <value>Тёмно Зелёный</value>
+  </data>
+  <data name="Theme_LightBlue" xml:space="preserve">
+    <value>Светло Синий</value>
+  </data>
+  <data name="Theme_DarkBlue" xml:space="preserve">
+    <value>Тёмно Синий</value>
+  </data>
+  <data name="VPfirstrmFI_SinglePanel" xml:space="preserve">
+    <value>Одна панель</value>
+  </data>
+  <data name="VPfirstrmFI_TwoPanels" xml:space="preserve">
+    <value>Две панели</value>
+  </data>
+  <data name="VPfirstrmFI_VerticalTwoPanels" xml:space="preserve">
+    <value>Вертикально</value>
+  </data>
+  <data name="VPfirstrmFI_HorizontalTwoPanels" xml:space="preserve">
+    <value>Горизонтально</value>
+  </data>
+  <data name="VPfirstrmFI_ThreePanels" xml:space="preserve">
+    <value>Трии панели</value>
+  </data>
+  <data name="VPfirstrmFI_VerticalThreePanels" xml:space="preserve">
+    <value>Три панели вертикально</value>
+  </data>
+  <data name="VPfirstrmFI_HorizontalThreePanels" xml:space="preserve">
+    <value>Три панели горизонтально</value>
+  </data>
+  <data name="VPfirstrmFI_TripleTopBottomThreePanels" xml:space="preserve">
+    <value>2 сверху, 1 снизу</value>
+  </data>
+  <data name="VPfirstrmFI_TripleBottomTopThreePanels" xml:space="preserve">
+    <value>1 сверху, 2 снизу</value>
+  </data>
+  <data name="VPfirstrmFI_TripleLeftRightThreePanels" xml:space="preserve">
+    <value>1 слева, 2 справа</value>
+  </data>
+  <data name="VPfirstrmFI_TripleRightLeftThreePanels" xml:space="preserve">
+    <value>2 слева, 1 справа</value>
+  </data>
+  <data name="VPfirstrmFI_QuadPanels" xml:space="preserve">
+    <value>Четыре панели</value>
+  </data>
+  <data name="VPfirstrmFI_QuadQuadPanels" xml:space="preserve">
+    <value>Два на два</value>
+  </data>
+  <data name="VPfirstrmFI_PreviewPanels" xml:space="preserve">
+    <value>Панель предпросмотра</value>
+  </data>
+  <data name="VPfirstrmFI_PreviewLeftPanels" xml:space="preserve">
+    <value>Показать слева</value>
+  </data>
+  <data name="VPfirstrmFI_PreviewRightPanels" xml:space="preserve">
+    <value>Показать справа</value>
+  </data>
+  <data name="VPfirstrmFI_PreviewHidePanels" xml:space="preserve">
+    <value>Скрыть</value>
+  </data>
+  <data name="VPsecondrmFI_ttsttViewMode" xml:space="preserve">
+    <value>Режим просмотра </value>
+  </data>
+  <data name="VPfirstrmFI_ttsttViewchangesMode" xml:space="preserve">
+    <value>Изменения вида</value>
+  </data>
+  <data name="VPfirstmemustBut_ttsttBtBackButton" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="VPfirstmemustBut_ttsttBtForwardButton" xml:space="preserve">
+    <value>Вперёд</value>
+  </data>
+  <data name="VPfirstmemustBut_ttsttBtUpButton" xml:space="preserve">
+    <value>Вверх</value>
+  </data>
+  <data name="VPfirstmemustBut_ttsttBtRefreshButton" xml:space="preserve">
+    <value>Обновить</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtCopyButton" xml:space="preserve">
+    <value>Копировать</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtMoveButton" xml:space="preserve">
+    <value>Переместить</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtRenameButton" xml:space="preserve">
+    <value>Переименовать</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtCutButton" xml:space="preserve">
+    <value>Вырезать</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtPasteButton" xml:space="preserve">
+    <value>Вставить</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtDeleteButton" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="VPsecondrmFI_txtddtSizeIcon" xml:space="preserve">
+    <value>Размер значков</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbTinySizeIcon" xml:space="preserve">
+    <value>Крошечный</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbExtraSmallSizeIcon" xml:space="preserve">
+    <value>Очень маленькое</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbSmallSizeIcon" xml:space="preserve">
+    <value>Маленькое</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbBelowMediumSizeIcon" xml:space="preserve">
+    <value>Ниже среднего</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMediumSizeIcon" xml:space="preserve">
+    <value>Средние</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbAboveMediumSizeIcon" xml:space="preserve">
+    <value>Выше среднего</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbLargeSizeIcon" xml:space="preserve">
+    <value>Большие</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbExtraLargeSizeIcon" xml:space="preserve">
+    <value>Очень большие</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbHugeSizeIcon" xml:space="preserve">
+    <value>Огромные</value>
+  </data>
+  <data name="VPsecondrmFI_txtddtModeViewing" xml:space="preserve">
+    <value>Режим просмотра</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMVIcons" xml:space="preserve">
+    <value>Иконки</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMVList" xml:space="preserve">
+    <value>Список</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMVCompList" xml:space="preserve">
+    <value>Компактный список</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMVTiles" xml:space="preserve">
+    <value>Плитка</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMVTable" xml:space="preserve">
+    <value>Таблицы</value>
+  </data>
+  <data name="Settings_ExpandedTreeSelected" xml:space="preserve">
+    <value>Разворачивать узел при выделении</value>
+  </data>
+  <data name="Settings_ShowNavigationBackItem" xml:space="preserve">
+    <value>Показывать элемент навигации (Назад|..)</value>
+  </data>
+  <data name="Settings_ExplorerSettings" xml:space="preserve">
+    <value>Настройки проводника</value>
+  </data>
+  <data name="Settings_ExpanderNodesSFStarts" xml:space="preserve">
+    <value>Раскрывать узел спец папок при старте</value>
+  </data>
+  <data name="Settings_ExpanderNodesMyPcStarts" xml:space="preserve">
+    <value>Раскрывать узел Мой ПК при старте</value>
+  </data>
+</root>

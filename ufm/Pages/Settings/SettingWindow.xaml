@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="ufm.SettingWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:LngMng="using:Core_Language"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:ufm"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <!--  Устанавливаем размеры окна через Grid  -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <NavigationView
+            x:Name="nvSample"
+            HorizontalAlignment="Stretch"
+            AlwaysShowHeader="True"
+            CompactPaneLength="50"
+            ExpandedModeThresholdWidth="500"
+            IsBackButtonVisible="Collapsed"
+            IsBackEnabled="False"
+            IsPaneToggleButtonVisible="False"
+            IsSettingsVisible="False"
+            IsTabStop="False"
+            OpenPaneLength="200"
+            PaneDisplayMode="Left"
+            PaneTitle="Settings"
+            SelectionChanged="NvSample_OnSelectionChanged"
+            SelectionFollowsFocus="Disabled">
+
+
+            <!--  Меню навигации  -->
+            <NavigationView.MenuItems>
+                <!--  Основные настройки  -->
+                <NavigationViewItem
+                    x:Name="GeneralSettingsItem"
+                    Content="General"
+                    Tag="GeneralSettingsPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE713;" />
+                        <!--  Иконка настроек  -->
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <!--  Расширенные настройки  -->
+                <NavigationViewItem
+                    x:Name="AdvancedSettingsItem"
+                    Content="Advanced"
+                    Tag="AdvancedSettingsPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE713;" />
+                        <!--  Иконка настроек  -->
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <!--  Безопасность  -->
+                <NavigationViewItem
+                    x:Name="SecuritySettingsItem"
+                    Content="Security"
+                    Tag="SecuritySettingsPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE72E;" />
+                        <!--  Иконка защиты  -->
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <!--  Плагины  -->
+                <NavigationViewItem
+                    x:Name="PluginsSettingsItem"
+                    Content="Plugins"
+                    Tag="PluginsSettingsPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8F1;" />
+                        <!--  Иконка плагинов  -->
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <!--  Контент (страницы настроек)  -->
+            <Frame x:Name="contentFrame" Margin="16" />
+        </NavigationView>
+        <Button
+            Grid.Row="0"
+            Margin="20,10"
+            Padding="12,6"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Bottom"
+            Click="ResetSettingsButton_Click"
+            Content="Reset Settings" />
+    </Grid>
+</Window>

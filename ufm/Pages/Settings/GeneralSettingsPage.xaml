@@ -1,0 +1,249 @@
+<Page
+    x:Class="ufm.GeneralSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Lngmng="using:Core_Language"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <!--  Основной контейнер с отступами  -->
+        <StackPanel Margin="16" Spacing="16">
+
+            <!--  Секция темы и оформления  -->
+            <Border
+                Padding="12"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8">
+
+                <Grid ColumnSpacing="12" RowSpacing="12">
+                    <!--  Определяем строки для двух рядов элементов  -->
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--  Первая строка: Настройка темы  -->
+                    <!--  Иконка темы  -->
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.ColumnSpan="3"
+                        HorizontalAlignment="Center"
+                        Lngmng:Uids.Uid="Appearance_Theme_Background "
+                        Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+                    <Viewbox
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Width="24"
+                        Height="24"
+                        VerticalAlignment="Center">
+                        <FontIcon Glyph="&#xE771;" />
+                    </Viewbox>
+
+                    <!--  Заголовок темы  -->
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Lngmng:Uids.Uid="Settings_ThemeHeader"
+                        Style="{ThemeResource BodyStrongTextBlockStyle}" />
+
+                    <!--  Обновленный XAML для ComboBox с темами  -->
+                    <ComboBox
+                        x:Name="ThemeComboBox"
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        HorizontalAlignment="Stretch"
+                        SelectedIndex="0"
+                        SelectionChanged="ThemeComboBox_SelectionChanged">
+                        <!--  Первые три оставляем как есть  -->
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_Light" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_Dark" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_System" />
+
+                        <!--  Добавляем только нужные темы  -->
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_Red" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_DarkRed" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_LightLemon" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_DarkLemon" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_LightGold" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_DarkGold" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_LightGreen" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_DarkGreen" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_LightBlue" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Theme_DarkBlue" />
+                    </ComboBox>
+                    <!--  Вторая строка: Настройка оформления  -->
+                    <!--  Иконка оформления  -->
+                    <Viewbox
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Width="24"
+                        Height="24"
+                        VerticalAlignment="Center">
+                        <FontIcon Glyph="&#xEC8A;" />
+                    </Viewbox>
+
+                    <!--  Заголовок оформления  -->
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Lngmng:Uids.Uid="Settings_BackdropHeader"
+                        Style="{ThemeResource BodyStrongTextBlockStyle}" />
+
+                    <!--  Выбор оформления  -->
+                    <ComboBox
+                        x:Name="BackdropTypeComboBox"
+                        Grid.Row="2"
+                        Grid.Column="2"
+                        HorizontalAlignment="Stretch"
+                        SelectedIndex="0"
+                        SelectionChanged="BackdropTypeComboBox_SelectionChanged">
+                        <ComboBoxItem Lngmng:Uids.Uid="Backdrop_Default" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Backdrop_Mica" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Backdrop_MicaAlt" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Backdrop_Acrylic" />
+                        <ComboBoxItem Lngmng:Uids.Uid="Backdrop_AcrylicThin" />
+                    </ComboBox>
+                </Grid>
+            </Border>
+            <!--  Секция языка  -->
+            <Border
+                Padding="12"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8">
+
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="200" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--  Иконка языка  -->
+                    <Viewbox
+                        Grid.Column="0"
+                        Width="24"
+                        Height="24"
+                        VerticalAlignment="Center">
+                        <FontIcon Glyph="&#xE12B;" />
+                    </Viewbox>
+
+                    <!--  Заголовок языка  -->
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Lngmng:Uids.Uid="Settings_LanguageHeader"
+                        Style="{ThemeResource BodyStrongTextBlockStyle}"
+                        Text="Language" />
+
+                    <!--  Выбор языка  -->
+                    <ComboBox
+                        x:Name="LanguageComboBox"
+                        Grid.Column="2"
+                        HorizontalAlignment="Stretch"
+                        DisplayMemberPath="DisplayName"
+                        ItemsSource="{x:Bind ViewModel.Languages}"
+                        SelectedValuePath="LanguageCode" />
+                </Grid>
+            </Border>
+
+            <!--  Секция дополнительных настроек  -->
+            <Border
+                Padding="12"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8">
+
+                <StackPanel Spacing="12">
+                    <!--  Заголовок секции  -->
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Lngmng:Uids.Uid="Settings_AnimationSettings"
+                        Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+                    <!--  Включение/отключение анимации  -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="100" />
+                        </Grid.ColumnDefinitions>
+
+                        <Viewbox
+                            Grid.Column="0"
+                            Width="24"
+                            Height="24"
+                            VerticalAlignment="Center">
+                            <FontIcon Glyph="&#xE945;" />
+                        </Viewbox>
+
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Lngmng:Uids.Uid="Settings_AnimationHeader"
+                            Text="Enable animations" />
+
+                        <ToggleSwitch
+                            x:Name="AnimationToggleSwitch"
+                            Grid.Column="2"
+                            Toggled="AnimationToggleSwitch_Toggled" />
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+
+            <!--  Секция дополнительных настроек  -->
+            <Border
+                Padding="12"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8">
+
+                <StackPanel Spacing="12">
+                    <!--  Заголовок секции  -->
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Lngmng:Uids.Uid="Settings_FileSettings"
+                        Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+                    <!--  Показ скрытых файлов  -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="100" />
+                        </Grid.ColumnDefinitions>
+
+                        <Viewbox
+                            Grid.Column="0"
+                            Width="24"
+                            Height="24"
+                            VerticalAlignment="Center">
+                            <FontIcon Glyph="&#xEED7;" />
+                        </Viewbox>
+
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Lngmng:Uids.Uid="Settings_ShowHiddenToggle" />
+
+                        <ToggleSwitch
+                            x:Name="ShowHiddenFilesAndFolderToggleSwitch"
+                            Grid.Column="2"
+                            Toggled="ShowHiddenFilesAndFolderToggleSwitch_OnToggled" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

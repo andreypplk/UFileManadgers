@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ufm"
+    xmlns:ui="using:Windows.UI">
+    <!--  Светло-зеленая тема  -->
+    <!--
+<ui:Color x:Key="SystemAccentColor">#2E8B57</ui:Color>
+<ui:Color x:Key="AppBackgroundColor">#F5FFFA</ui:Color>
+<ui:Color x:Key="CardBackgroundColor">#E8F5E8</ui:Color>
+<ui:Color x:Key="PanelHoverColor">#202E8B57</ui:Color>-->
+    <!--  Текст  -->
+    <!--
+<ui:Color x:Key="TextPrimaryColor">#003300</ui:Color>
+<ui:Color x:Key="TextSecondaryColor">#336633</ui:Color>
+<ui:Color x:Key="TextOnAccentColor">#FFFFFF</ui:Color>
+    -->
+    <!--  Кнопки  -->
+    <!--
+<ui:Color x:Key="ButtonBackgroundColor">#F0F8F0</ui:Color>
+<ui:Color x:Key="ButtonBorderColor">#2E8B57</ui:Color>
+<ui:Color x:Key="ButtonHoverColor">#D4EDDA</ui:Color>
+<ui:Color x:Key="ButtonPressedColor">#228B22</ui:Color>
+<ui:Color x:Key="ButtonDisabledColor">#E0E8E0</ui:Color>
+    -->
+    <!--  Границы  -->
+    <!--
+<ui:Color x:Key="BorderPrimaryColor">#C8E6C9</ui:Color>
+<ui:Color x:Key="BorderSecondaryColor">#D4EDDA</ui:Color>
+    -->
+    <!--  Прогресс-бар  -->
+    <!--
+<ui:Color x:Key="ProgressBarTrackColor">#C8E6C9</ui:Color>
+<ui:Color x:Key="ProgressBarThumbColor">#2E8B57</ui:Color>
+<ui:Color x:Key="CriticalProgressColor">#E81123</ui:Color>
+    -->
+    <!--  Плитки  -->
+    <!--
+<ui:Color x:Key="TileBackgroundColor">#F5FFFA</ui:Color>
+<ui:Color x:Key="TileBorderColor">#2E8B57</ui:Color>
+<ui:Color x:Key="SizeInfoBorderColor">#C8E6C9</ui:Color>
+    -->
+    <!--  Дополнительные цвета  -->
+    <!--
+<ui:Color x:Key="HeaderBackgroundColor">#F0F8F0</ui:Color>
+<ui:Color x:Key="HeaderBorderColor">#D4EDDA</ui:Color>
+<ui:Color x:Key="NavigationButtonColor">#F0F8F0</ui:Color>
+<ui:Color x:Key="NavigationIconColor">#2E8B57</ui:Color>-->
+
+    <!--  Светло-изумрудная тема  -->
+    <!--
+    <ui:Color x:Key="SystemAccentColor">#008080</ui:Color>
+    <ui:Color x:Key="AppBackgroundColor">#F0F8F5</ui:Color>
+    <ui:Color x:Key="CardBackgroundColor">#E0F0E8</ui:Color>
+    <ui:Color x:Key="PanelHoverColor">#20008080</ui:Color>
+    -->
+    <!--  Текст  -->
+    <!--
+    <ui:Color x:Key="TextPrimaryColor">#004D40</ui:Color>
+    <ui:Color x:Key="TextSecondaryColor">#33695C</ui:Color>
+    <ui:Color x:Key="TextOnAccentColor">#FFFFFF</ui:Color>
+
+    -->
+    <!--  Кнопки  -->
+    <!--
+    <ui:Color x:Key="ButtonBackgroundColor">#E8F2E8</ui:Color>
+    <ui:Color x:Key="ButtonBorderColor">#008080</ui:Color>
+    <ui:Color x:Key="ButtonHoverColor">#C8E6C9</ui:Color>
+    <ui:Color x:Key="ButtonPressedColor">#00695C</ui:Color>
+    <ui:Color x:Key="ButtonDisabledColor">#D0E0D8</ui:Color>
+
+    -->
+    <!--  Границы  -->
+    <!--
+    <ui:Color x:Key="BorderPrimaryColor">#B2DFDB</ui:Color>
+    <ui:Color x:Key="BorderSecondaryColor">#80CBC4</ui:Color>
+
+    -->
+    <!--  Прогресс-бар  -->
+    <!--
+    <ui:Color x:Key="ProgressBarTrackColor">#B2DFDB</ui:Color>
+    <ui:Color x:Key="ProgressBarThumbColor">#008080</ui:Color>
+    <ui:Color x:Key="CriticalProgressColor">#E81123</ui:Color>
+
+    -->
+    <!--  Плитки  -->
+    <!--
+    <ui:Color x:Key="TileBackgroundColor">#F0F8F5</ui:Color>
+    <ui:Color x:Key="TileBorderColor">#008080</ui:Color>
+    <ui:Color x:Key="SizeInfoBorderColor">#B2DFDB</ui:Color>
+
+    -->
+    <!--  Дополнительные цвета  -->
+    <!--
+    <ui:Color x:Key="HeaderBackgroundColor">#E8F2E8</ui:Color>
+    <ui:Color x:Key="HeaderBorderColor">#80CBC4</ui:Color>
+    <ui:Color x:Key="NavigationButtonColor">#E8F2E8</ui:Color>
+    <ui:Color x:Key="NavigationIconColor">#008080</ui:Color>-->
+    <!--  Светло-салатовая тема  -->
+    <ui:Color x:Key="SystemAccentColor">#32CD32</ui:Color>
+    <ui:Color x:Key="AppBackgroundColor">#F5FFF5</ui:Color>
+    <ui:Color x:Key="CardBackgroundColor">#E8FFE8</ui:Color>
+    <ui:Color x:Key="PanelHoverColor">#2032CD32</ui:Color>
+    <!--  Текст  -->
+    <ui:Color x:Key="TextPrimaryColor">#006400</ui:Color>
+    <ui:Color x:Key="TextSecondaryColor">#228B22</ui:Color>
+    <ui:Color x:Key="TextOnAccentColor">#FFFFFF</ui:Color>
+
+    <!--  Кнопки  -->
+    <ui:Color x:Key="ButtonBackgroundColor">#F0FFF0</ui:Color>
+    <ui:Color x:Key="ButtonBorderColor">#32CD32</ui:Color>
+    <ui:Color x:Key="ButtonHoverColor">#C8FFC8</ui:Color>
+    <ui:Color x:Key="ButtonPressedColor">#228B22</ui:Color>
+    <ui:Color x:Key="ButtonDisabledColor">#E0FFE0</ui:Color>
+
+    <!--  Границы  -->
+    <ui:Color x:Key="BorderPrimaryColor">#C8FFC8</ui:Color>
+    <ui:Color x:Key="BorderSecondaryColor">#90EE90</ui:Color>
+
+    <!--  Прогресс-бар  -->
+    <ui:Color x:Key="ProgressBarTrackColor">#C8FFC8</ui:Color>
+    <ui:Color x:Key="ProgressBarThumbColor">#32CD32</ui:Color>
+    <ui:Color x:Key="CriticalProgressColor">#E81123</ui:Color>
+
+    <!--  Плитки  -->
+    <ui:Color x:Key="TileBackgroundColor">#F5FFF5</ui:Color>
+    <ui:Color x:Key="TileBorderColor">#32CD32</ui:Color>
+    <ui:Color x:Key="SizeInfoBorderColor">#C8FFC8</ui:Color>
+
+    <!--  Дополнительные цвета  -->
+    <ui:Color x:Key="HeaderBackgroundColor">#F0FFF0</ui:Color>
+    <ui:Color x:Key="HeaderBorderColor">#90EE90</ui:Color>
+    <ui:Color x:Key="NavigationButtonColor">#F0FFF0</ui:Color>
+    <ui:Color x:Key="NavigationIconColor">#32CD32</ui:Color>
+</ResourceDictionary>

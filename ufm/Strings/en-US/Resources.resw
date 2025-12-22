@@ -1,0 +1,385 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Appearance_Theme_Background" xml:space="preserve">
+    <value>Theme and Background</value>
+  </data>
+  <data name="Appearance_Theme_Background_Description" xml:space="preserve">
+    <value>Customize visual appearance and window effects</value>
+  </data>
+  <data name="Appearance_Theme_Background_Header" xml:space="preserve">
+    <value>Theme and Background Settings</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Universal File Manager</value>
+  </data>
+  <data name="Settings_BackdropHeader" xml:space="preserve">
+    <value>Backdrop</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Settings_LanguageHeader" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Russian" xml:space="preserve">
+    <value>Russian</value>
+  </data>
+  <data name="SettingsItem" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_Advanced" xml:space="preserve">
+    <value>Advanced Settings</value>
+  </data>
+  <data name="Settings_FileSettings" xml:space="preserve">
+    <value>File settings</value>
+  </data>
+  <data name="TestResource" xml:space="preserve">
+    <value>Test Resource EN</value>
+  </data>
+  <data name="Settings_ThemeHeader" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Theme_Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Theme_Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Theme_System" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Backdrop_Default" xml:space="preserve">
+    <value>Default Backdrop</value>
+  </data>
+  <data name="Backdrop_Mica" xml:space="preserve">
+    <value>Mica</value>
+  </data>
+  <data name="Backdrop_MicaAlt" xml:space="preserve">
+    <value>Mica Alt</value>
+  </data>
+  <data name="Backdrop_Acrylic" xml:space="preserve">
+    <value>Acrylic</value>
+  </data>
+  <data name="Backdrop_AcrylicThin" xml:space="preserve">
+    <value>Acrylic Thin</value>
+  </data>
+  <data name="MyComputerUid" xml:space="preserve">
+    <value>My Computer</value>
+  </data>
+  <data name="Settings_AnimationSettings" xml:space="preserve">
+    <value>Animation Settings</value>
+  </data>
+  <data name="Settings_AnimationHeader" xml:space="preserve">
+    <value>Enable animations</value>
+  </data>
+  <data name="Settings_ShowHiddenToggle" xml:space="preserve">
+    <value>Show hidden files</value>
+  </data>
+  <data name="ToolbarVisibilityItem" xml:space="preserve">
+    <value>Toolbar visibility</value>
+  </data>
+  <data name="ToolBarFirstItem" xml:space="preserve">
+    <value>First Toolbar</value>
+  </data>
+  <data name="ToolBarSecondItem" xml:space="preserve">
+    <value>Second Toolbar</value>
+  </data>
+  <data name="Theme_Red" xml:space="preserve">
+    <value>Light Red</value>
+  </data>
+  <data name="Theme_DarkRed" xml:space="preserve">
+    <value>Dark Red</value>
+  </data>
+  <data name="Theme_LightLemon" xml:space="preserve">
+    <value>Light Lemon</value>
+  </data>
+  <data name="Theme_DarkLemon" xml:space="preserve">
+    <value>Dark Lemon</value>
+  </data>
+  <data name="Theme_LightGold" xml:space="preserve">
+    <value>Light Gold</value>
+  </data>
+  <data name="Theme_DarkGold" xml:space="preserve">
+    <value>Dark Gold</value>
+  </data>
+  <data name="Theme_LightGreen" xml:space="preserve">
+    <value>Light Green</value>
+  </data>
+  <data name="Theme_DarkGreen" xml:space="preserve">
+    <value>Dark Green</value>
+  </data>
+  <data name="Theme_LightBlue" xml:space="preserve">
+    <value>Light Blue</value>
+  </data>
+  <data name="Theme_DarkBlue" xml:space="preserve">
+    <value>Dark Blue</value>
+  </data>
+  <data name="VPfirstrmFI_SinglePanel" xml:space="preserve">
+    <value>Single Panel</value>
+  </data>
+  <data name="VPfirstrmFI_TwoPanels" xml:space="preserve">
+    <value>Two Panels </value>
+  </data>
+  <data name="VPfirstrmFI_VerticalTwoPanels" xml:space="preserve">
+    <value>Vertically</value>
+  </data>
+  <data name="VPfirstrmFI_HorizontalTwoPanels" xml:space="preserve">
+    <value>Horizontal</value>
+  </data>
+  <data name="VPfirstrmFI_ThreePanels" xml:space="preserve">
+    <value>Three Panels</value>
+  </data>
+  <data name="VPfirstrmFI_VerticalThreePanels" xml:space="preserve">
+    <value>Three panels vertically</value>
+  </data>
+  <data name="VPfirstrmFI_HorizontalThreePanels" xml:space="preserve">
+    <value>Three panels horizontally</value>
+  </data>
+  <data name="VPfirstrmFI_TripleTopBottomThreePanels" xml:space="preserve">
+    <value>2 on top, 1 on the bottom</value>
+  </data>
+  <data name="VPfirstrmFI_TripleBottomTopThreePanels" xml:space="preserve">
+    <value>1 above, 2 below</value>
+  </data>
+  <data name="VPfirstrmFI_TripleLeftRightThreePanels" xml:space="preserve">
+    <value>1 on the left, 2 on the right</value>
+  </data>
+  <data name="VPfirstrmFI_TripleRightLeftThreePanels" xml:space="preserve">
+    <value>2 on the left, 1 on the right</value>
+  </data>
+  <data name="VPfirstrmFI_QuadPanels" xml:space="preserve">
+    <value>Four panels</value>
+  </data>
+  <data name="VPfirstrmFI_QuadQuadPanels" xml:space="preserve">
+    <value>Two by two</value>
+  </data>
+  <data name="VPfirstrmFI_PreviewPanels" xml:space="preserve">
+    <value>Preview Panel</value>
+  </data>
+  <data name="VPfirstrmFI_PreviewLeftPanels" xml:space="preserve">
+    <value>Show on the left</value>
+  </data>
+  <data name="VPfirstrmFI_PreviewRightPanels" xml:space="preserve">
+    <value>Show on the right</value>
+  </data>
+  <data name="VPfirstrmFI_PreviewHidePanels" xml:space="preserve">
+    <value>Hide</value>
+  </data>
+  <data name="VPsecondrmFI_ttsttViewMode" xml:space="preserve">
+    <value>Viewing mode</value>
+  </data>
+  <data name="VPfirstrmFI_ttsttViewchangesMode" xml:space="preserve">
+    <value>View changes</value>
+  </data>
+  <data name="VPfirstmemustBut_ttsttBtBackButton" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="VPfirstmemustBut_ttsttBtForwardButton" xml:space="preserve">
+    <value>Forward</value>
+  </data>
+  <data name="VPfirstmemustBut_ttsttBtUpButton" xml:space="preserve">
+    <value>Up</value>
+  </data>
+  <data name="VPfirstmemustBut_ttsttBtRefreshButton" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtCopyButton" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtMoveButton" xml:space="preserve">
+    <value>Move</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtRenameButton" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtCutButton" xml:space="preserve">
+    <value>Cut</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtPasteButton" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="VPsecondmemustBut_ttsttBtDeleteButton" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="VPsecondrmFI_txtddtSizeIcon" xml:space="preserve">
+    <value>Icon sizes</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbTinySizeIcon" xml:space="preserve">
+    <value>Tiny</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbExtraSmallSizeIcon" xml:space="preserve">
+    <value>Extra Small</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbSmallSizeIcon" xml:space="preserve">
+    <value>Small</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbBelowMediumSizeIcon" xml:space="preserve">
+    <value>Below Medium</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMediumSizeIcon" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbAboveMediumSizeIcon" xml:space="preserve">
+    <value>Above Medium</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbLargeSizeIcon" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbExtraLargeSizeIcon" xml:space="preserve">
+    <value>Extra Large</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbHugeSizeIcon" xml:space="preserve">
+    <value>Huge</value>
+  </data>
+  <data name="VPsecondrmFI_txtddtModeViewing" xml:space="preserve">
+    <value>Viewing Mode</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMVIcons" xml:space="preserve">
+    <value>Icons</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMVList" xml:space="preserve">
+    <value>List</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMVCompList" xml:space="preserve">
+    <value>Compact List</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMVTiles" xml:space="preserve">
+    <value>Tiles</value>
+  </data>
+  <data name="VPsecondrmFI_ddbrbMVTable" xml:space="preserve">
+    <value>Tables</value>
+  </data>
+  <data name="Settings_ExpandedTreeSelected" xml:space="preserve">
+    <value>Expand the node when selecting</value>
+  </data>
+  <data name="Settings_ShowNavigationBackItem" xml:space="preserve">
+    <value>Show the navigation element (Back|..)</value>
+  </data>
+  <data name="Settings_ExplorerSettings" xml:space="preserve">
+    <value>Explorer Settings</value>
+  </data>
+  <data name="Settings_ExpanderNodesSFStarts" xml:space="preserve">
+    <value>Open the node of special folders at startup</value>
+  </data>
+  <data name="Settings_ExpanderNodesMyPcStarts" xml:space="preserve">
+    <value>Expand the My PC node on startup
+</value>
+  </data>
+</root>
