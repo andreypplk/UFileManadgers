@@ -18,6 +18,7 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="Controls\TileControl\TileListView.xaml" />
 	  <None Remove="Themes\BlueTheme.xaml" />
 	  <None Remove="Themes\CommonResources.xaml" />
 	  <None Remove="Themes\DarkGreenTheme.xaml" />
@@ -93,6 +94,12 @@
 	  <Content Update="Assets\home.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Update="Controls\TileControl\TileListView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 	<ItemGroup>

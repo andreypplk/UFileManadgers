@@ -1,18 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <UserControl
-    x:Class="ufm.TileViewIcons"
+    x:Class="ufm.TileListView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ufm="using:ufm"
-    xmlns:viewModel="using:Core_FileManagement"
-    x:Name="RootControl"
-    Loaded="OnLoaded"
-    mc:Ignorable="d">
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:ufm="using:ufm"
+	xmlns:viewModel="using:Core_FileManagement"
+	x:Name="RootControl"
+	Loaded="OnLoaded"
+	mc:Ignorable="d">
 
 	<UserControl.Resources>
-		<!-- Ñòèëü äëÿ Extended âûäåëåíèÿ -->
-		<Style x:Key="ExtendedTileGridViewItemStyle" TargetType="GridViewItem">
+		<!-- Ð¡Ñ‚Ð¸Ð»ÑŒ Ð´Ð»Ñ Extended Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð¸Ñ -->
+		<Style x:Key="ExtendedTileListViewItemStyle" TargetType="ListViewItem">
 			<Setter Property="Margin" Value="1" />
 			<Setter Property="Padding" Value="1" />
 			<Setter Property="Background" Value="Transparent" />
@@ -26,7 +27,7 @@
 
 			<Setter Property="Template">
 				<Setter.Value>
-					<ControlTemplate TargetType="GridViewItem">
+					<ControlTemplate TargetType="ListViewItem">
 						<Grid x:Name="RootGrid" 
                               Background="Transparent"
                               HorizontalAlignment="Stretch"
@@ -39,7 +40,7 @@
 
 									<VisualState x:Name="PointerOver">
 										<Storyboard>
-											<!-- Íàâåäåíèå íà ëþáîé ýëåìåíò -->
+											<!-- ÐÐ°Ð²ÐµÐ´ÐµÐ½Ð¸Ðµ Ð½Ð° Ð»ÑŽÐ±Ð¾Ð¹ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚ -->
 											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="PointerOverVisual" 
                                                                            Storyboard.TargetProperty="Opacity">
 												<DiscreteObjectKeyFrame KeyTime="0" Value="0.15" />
@@ -49,7 +50,7 @@
 
 									<VisualState x:Name="Selected">
 										<Storyboard>
-											<!-- Âûäåëåíèå îäèíî÷íîãî ýëåìåíòà -->
+											<!-- Ð’Ñ‹Ð´ÐµÐ»ÐµÐ½Ð¸Ðµ Ð¾Ð´Ð¸Ð½Ð¾Ñ‡Ð½Ð¾Ð³Ð¾ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð° -->
 											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="SelectionVisual" 
                                                                            Storyboard.TargetProperty="Opacity">
 												<DiscreteObjectKeyFrame KeyTime="0" Value="1" />
@@ -63,7 +64,7 @@
 
 									<VisualState x:Name="PointerOverSelected">
 										<Storyboard>
-											<!-- Íàâåäåíèå íà âûäåëåííûé ýëåìåíò -->
+											<!-- ÐÐ°Ð²ÐµÐ´ÐµÐ½Ð¸Ðµ Ð½Ð° Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð½Ñ‹Ð¹ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚ -->
 											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="SelectionVisual" 
                                                                            Storyboard.TargetProperty="Opacity">
 												<DiscreteObjectKeyFrame KeyTime="0" Value="1" />
@@ -84,7 +85,7 @@
 								<VisualStateGroup x:Name="FocusStates">
 									<VisualState x:Name="Focused">
 										<Storyboard>
-											<!-- Êëàâèàòóðíûé ôîêóñ (ìîæåò áûòü íà âûäåëåííîì èëè íå âûäåëåííîì) -->
+											<!-- ÐšÐ»Ð°Ð²Ð¸Ð°Ñ‚ÑƒÑ€Ð½Ñ‹Ð¹ Ñ„Ð¾ÐºÑƒÑ (Ð¼Ð¾Ð¶ÐµÑ‚ Ð±Ñ‹Ñ‚ÑŒ Ð½Ð° Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð½Ð¾Ð¼ Ð¸Ð»Ð¸ Ð½Ðµ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð½Ð¾Ð¼) -->
 											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="FocusVisual" 
                                                                            Storyboard.TargetProperty="Visibility">
 												<DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
@@ -101,11 +102,11 @@
 									</VisualState>
 								</VisualStateGroup>
 
-								<!-- MultiSelect States äëÿ Extended ðåæèìà -->
+								<!-- MultiSelect States Ð´Ð»Ñ Extended Ñ€ÐµÐ¶Ð¸Ð¼Ð° -->
 								<VisualStateGroup x:Name="MultiSelectStates">
 									<VisualState x:Name="MultiSelectEnabled" />
 									<VisualState x:Name="MultiSelectDisabled" />
-									<!-- Ýòî ñîñòîÿíèå êîãäà ýëåìåíò âûäåëåí â ðåæèìå ìíîæåñòâåííîãî âûáîðà -->
+									<!-- Ð­Ñ‚Ð¾ ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ ÐºÐ¾Ð³Ð´Ð° ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½ Ð² Ñ€ÐµÐ¶Ð¸Ð¼Ðµ Ð¼Ð½Ð¾Ð¶ÐµÑÑ‚Ð²ÐµÐ½Ð½Ð¾Ð³Ð¾ Ð²Ñ‹Ð±Ð¾Ñ€Ð° -->
 									<VisualState x:Name="MultiSelectEnabledSelected">
 										<Storyboard>
 											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="SelectionVisual" 
@@ -121,28 +122,28 @@
 								</VisualStateGroup>
 							</VisualStateManager.VisualStateGroups>
 
-							<!-- Îñíîâíîé áîðäåð -->
+							<!-- ÐžÑÐ½Ð¾Ð²Ð½Ð¾Ð¹ Ð±Ð¾Ñ€Ð´ÐµÑ€ -->
 							<Border x:Name="BaseBorder"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     CornerRadius="{TemplateBinding CornerRadius}" />
 
-							<!-- Âèçóàëèçàöèÿ íàâåäåíèÿ -->
+							<!-- Ð’Ð¸Ð·ÑƒÐ°Ð»Ð¸Ð·Ð°Ñ†Ð¸Ñ Ð½Ð°Ð²ÐµÐ´ÐµÐ½Ð¸Ñ -->
 							<Border x:Name="PointerOverVisual"
                                     Background="{ThemeResource SystemControlHighlightBaseMediumLowBrush}"
                                     CornerRadius="4"
                                     Opacity="0"
                                     Margin="1" />
 
-							<!-- Ôîí âûäåëåíèÿ (äëÿ ÂÑÅÕ âûäåëåííûõ ýëåìåíòîâ) -->
+							<!-- Ð¤Ð¾Ð½ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð¸Ñ (Ð´Ð»Ñ Ð’Ð¡Ð•Ð¥ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð½Ñ‹Ñ… ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð²) -->
 							<Border x:Name="SelectionVisual"
                                     Background="{ThemeResource SystemControlHighlightListAccentLowBrush}"
                                     CornerRadius="4"
                                     Opacity="0"
                                     Margin="1" />
 
-							<!-- Ãðàíèöà âûäåëåíèÿ (äëÿ ÂÑÅÕ âûäåëåííûõ ýëåìåíòîâ) -->
+							<!-- Ð“Ñ€Ð°Ð½Ð¸Ñ†Ð° Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð¸Ñ (Ð´Ð»Ñ Ð’Ð¡Ð•Ð¥ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð½Ñ‹Ñ… ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð²) -->
 							<Border x:Name="SelectionBorder"
                                     BorderBrush="{ThemeResource SystemControlHighlightAccentBrush}"
                                     BorderThickness="2"
@@ -150,7 +151,7 @@
                                     Opacity="0"
                                     Margin="2" />
 
-							<!-- Êîíòåíò -->
+							<!-- ÐšÐ¾Ð½Ñ‚ÐµÐ½Ñ‚ -->
 							<ContentPresenter x:Name="ContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -158,7 +159,7 @@
                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                               Margin="{TemplateBinding Padding}" />
 
-							<!-- Ôîêóñíàÿ ðàìêà (òîëüêî äëÿ ýëåìåíòà ñ êëàâèàòóðíûì ôîêóñîì) -->
+							<!-- Ð¤Ð¾ÐºÑƒÑÐ½Ð°Ñ Ñ€Ð°Ð¼ÐºÐ° (Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð´Ð»Ñ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð° Ñ ÐºÐ»Ð°Ð²Ð¸Ð°Ñ‚ÑƒÑ€Ð½Ñ‹Ð¼ Ñ„Ð¾ÐºÑƒÑÐ¾Ð¼) -->
 							<Rectangle x:Name="FocusVisual"
                                        Stroke="{ThemeResource SystemControlFocusVisualPrimaryBrush}"
                                        StrokeThickness="2"
@@ -175,22 +176,22 @@
 	</UserControl.Resources>
 
 	<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-		<GridView
-            x:Name="ItemsGridView"
+		<ListView
+            x:Name="ItemsListView"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch"
             IsItemClickEnabled="True"
-            ItemClick="ItemsGridView_OnItemClick"
-            ItemContainerStyle="{StaticResource ExtendedTileGridViewItemStyle}"
+            ItemClick="ItemsListView_OnItemClick"
+            ItemContainerStyle="{StaticResource ExtendedTileListViewItemStyle}"
             ItemsSource="{Binding ExplorerItems}"
             SelectionMode="Extended"
-            DoubleTapped="ItemsGridView_DoubleTapped"
-            SelectionChanged="ItemsGridView_SelectionChanged"
-            KeyDown="ItemsGridView_KeyDown"
-            KeyUp="ItemsGridView_KeyUp"
-            PreviewKeyDown="ItemsGridView_PreviewKeyDown"
+            DoubleTapped="ItemsListView_DoubleTapped"
+            SelectionChanged="ItemsListView_SelectionChanged"
+            KeyDown="ItemsListView_KeyDown"
+            KeyUp="ItemsListView_KeyUp"
+            PreviewKeyDown="ItemsListView_PreviewKeyDown"
             AllowDrop="True"
             CanDragItems="True"
             CanReorderItems="False"
@@ -204,24 +205,24 @@
             XYFocusLeftNavigationStrategy="Auto"
             XYFocusRightNavigationStrategy="Auto">
 			<!-- 
-			KeyDown - îáðàáîòêà íàæàòèÿ êëàâèø
-			KeyUp - îáðàáîòêà îòïóñêàíèÿ êëàâèø  
-			PreviewKeyDown - ïðåäâàðèòåëüíàÿ îáðàáîòêà êëàâèø
-			AllowDrop - ðàçðåøèòü ïåðåòàñêèâàíèå
-			CanDragItems - ðàçðåøèòü drag & drop ýëåìåíòîâ
-			IsSwipeEnabled - ðàçðåøèòü æåñòû ñâàéïà
-			TabNavigation="Cycle" - öèêëè÷åñêàÿ íàâèãàöèÿ Tab
-			XYFocusKeyboardNavigation - íàâèãàöèÿ ñòðåëêàìè â 2D ïðîñòðàíñòâå
+			KeyDown - Ð¾Ð±Ñ€Ð°Ð±Ð¾Ñ‚ÐºÐ° Ð½Ð°Ð¶Ð°Ñ‚Ð¸Ñ ÐºÐ»Ð°Ð²Ð¸Ñˆ
+			KeyUp - Ð¾Ð±Ñ€Ð°Ð±Ð¾Ñ‚ÐºÐ° Ð¾Ñ‚Ð¿ÑƒÑÐºÐ°Ð½Ð¸Ñ ÐºÐ»Ð°Ð²Ð¸Ñˆ  
+			PreviewKeyDown - Ð¿Ñ€ÐµÐ´Ð²Ð°Ñ€Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð°Ñ Ð¾Ð±Ñ€Ð°Ð±Ð¾Ñ‚ÐºÐ° ÐºÐ»Ð°Ð²Ð¸Ñˆ
+			AllowDrop - Ñ€Ð°Ð·Ñ€ÐµÑˆÐ¸Ñ‚ÑŒ Ð¿ÐµÑ€ÐµÑ‚Ð°ÑÐºÐ¸Ð²Ð°Ð½Ð¸Ðµ
+			CanDragItems - Ñ€Ð°Ð·Ñ€ÐµÑˆÐ¸Ñ‚ÑŒ drag & drop ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð²
+			IsSwipeEnabled - Ñ€Ð°Ð·Ñ€ÐµÑˆÐ¸Ñ‚ÑŒ Ð¶ÐµÑÑ‚Ñ‹ ÑÐ²Ð°Ð¹Ð¿Ð°
+			TabNavigation="Cycle" - Ñ†Ð¸ÐºÐ»Ð¸Ñ‡ÐµÑÐºÐ°Ñ Ð½Ð°Ð²Ð¸Ð³Ð°Ñ†Ð¸Ñ Tab
+			XYFocusKeyboardNavigation - Ð½Ð°Ð²Ð¸Ð³Ð°Ñ†Ð¸Ñ ÑÑ‚Ñ€ÐµÐ»ÐºÐ°Ð¼Ð¸ Ð² 2D Ð¿Ñ€Ð¾ÑÑ‚Ñ€Ð°Ð½ÑÑ‚Ð²Ðµ
 			-->
 
-			<GridView.ItemTemplateSelector>
+			<ListView.ItemTemplateSelector>
 				<ufm:ListViewItemTemplateSelector>
 					<ufm:ListViewItemTemplateSelector.MyComputerTemplate>
 						<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
 							<ufm:TileMyPcUC
                                 Width="{Binding ItemWidth, ElementName=RootControl}"
                                 Height="{Binding ItemHeight, ElementName=RootControl}"
-                                DisplayMode="Vertical" />
+                                DisplayMode="Horizontal" />
 						</DataTemplate>
 					</ufm:ListViewItemTemplateSelector.MyComputerTemplate>
 
@@ -230,7 +231,7 @@
 							<ufm:TileMyDriveUc
                                 Width="{Binding ItemWidth, ElementName=RootControl}"
                                 Height="{Binding ItemHeight, ElementName=RootControl}"
-                                DisplayMode="Vertical" />
+                                DisplayMode="Horizontal" />
 						</DataTemplate>
 					</ufm:ListViewItemTemplateSelector.DriveTemplate>
 
@@ -239,7 +240,7 @@
 							<ufm:TileMyFoldersUc
                                 Width="{Binding ItemWidth, ElementName=RootControl}"
                                 Height="{Binding ItemHeight, ElementName=RootControl}"
-                                DisplayMode="Vertical" />
+                                DisplayMode="Horizontal" />
 						</DataTemplate>
 					</ufm:ListViewItemTemplateSelector.FolderTemplate>
 
@@ -248,13 +249,13 @@
 							<ufm:TileMyFiles
                                 Width="{Binding ItemWidth, ElementName=RootControl}"
                                 Height="{Binding ItemHeight, ElementName=RootControl}"
-                                DisplayMode="Vertical" />
+                                DisplayMode="Horizontal" />
 						</DataTemplate>
 					</ufm:ListViewItemTemplateSelector.FileTemplate>
 				</ufm:ListViewItemTemplateSelector>
-			</GridView.ItemTemplateSelector>
+			</ListView.ItemTemplateSelector>
 
-			<GridView.ItemsPanel>
+			<ListView.ItemsPanel>
 				<ItemsPanelTemplate>
 					<ItemsWrapGrid
                         ItemHeight="{Binding ItemHeight, ElementName=RootControl}"
@@ -265,10 +266,10 @@
                         HorizontalAlignment="Left"
                         Margin="2,2,2,2" />
 				</ItemsPanelTemplate>
-			</GridView.ItemsPanel>
+			</ListView.ItemsPanel>
 
 			<!-- 
-			Íåîáÿçàòåëüíûå äîïîëíèòåëüíûå âîçìîæíîñòè GridView:
+			ÐÐµÐ¾Ð±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ðµ Ð´Ð¾Ð¿Ð¾Ð»Ð½Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ðµ Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ÑÑ‚Ð¸ ListView:
 			<GridView.GroupStyle>
 				<GroupStyle>
 					<GroupStyle.HeaderTemplate>
@@ -281,31 +282,31 @@
 			
 			<GridView.Header>
 				<Grid Height="40">
-					<TextBlock Text="Ôàéëû è ïàïêè" FontSize="16" VerticalAlignment="Center"/>
+					<TextBlock Text="Ð¤Ð°Ð¹Ð»Ñ‹ Ð¸ Ð¿Ð°Ð¿ÐºÐ¸" FontSize="16" VerticalAlignment="Center"/>
 				</Grid>
 			</GridView.Header>
 			
 			<GridView.Footer>
 				<Grid Height="40">
-					<TextBlock Text="{Binding Items.Count, StringFormat='Âñåãî ýëåìåíòîâ: {0}'}" 
+					<TextBlock Text="{Binding Items.Count, StringFormat='Ð’ÑÐµÐ³Ð¾ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð²: {0}'}" 
                               VerticalAlignment="Center" HorizontalAlignment="Right"/>
 				</Grid>
 			</GridView.Footer>
 			-->
-		</GridView>
+		</ListView>
 
 		<!-- 
-		Íåîáÿçàòåëüíî: Êîíòåêñòíîå ìåíþ äëÿ GridView
+		ÐÐµÐ¾Ð±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ð¾: ÐšÐ¾Ð½Ñ‚ÐµÐºÑÑ‚Ð½Ð¾Ðµ Ð¼ÐµÐ½ÑŽ Ð´Ð»Ñ ListView
 		<FlyoutBase.AttachedFlyout>
 			<MenuFlyout>
-				<MenuFlyoutItem Text="Êîïèðîâàòü" Click="CopyMenuItem_Click"/>
-				<MenuFlyoutItem Text="Âûðåçàòü" Click="CutMenuItem_Click"/>
-				<MenuFlyoutItem Text="Âñòàâèòü" Click="PasteMenuItem_Click"/>
+				<MenuFlyoutItem Text="ÐšÐ¾Ð¿Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ" Click="CopyMenuItem_Click"/>
+				<MenuFlyoutItem Text="Ð’Ñ‹Ñ€ÐµÐ·Ð°Ñ‚ÑŒ" Click="CutMenuItem_Click"/>
+				<MenuFlyoutItem Text="Ð’ÑÑ‚Ð°Ð²Ð¸Ñ‚ÑŒ" Click="PasteMenuItem_Click"/>
 				<MenuFlyoutSeparator/>
-				<MenuFlyoutItem Text="Óäàëèòü" Click="DeleteMenuItem_Click"/>
-				<MenuFlyoutItem Text="Ïåðåèìåíîâàòü" Click="RenameMenuItem_Click"/>
+				<MenuFlyoutItem Text="Ð£Ð´Ð°Ð»Ð¸Ñ‚ÑŒ" Click="DeleteMenuItem_Click"/>
+				<MenuFlyoutItem Text="ÐŸÐµÑ€ÐµÐ¸Ð¼ÐµÐ½Ð¾Ð²Ð°Ñ‚ÑŒ" Click="RenameMenuItem_Click"/>
 				<MenuFlyoutSeparator/>
-				<MenuFlyoutItem Text="Ñâîéñòâà" Click="PropertiesMenuItem_Click"/>
+				<MenuFlyoutItem Text="Ð¡Ð²Ð¾Ð¹ÑÑ‚Ð²Ð°" Click="PropertiesMenuItem_Click"/>
 			</MenuFlyout>
 		</FlyoutBase.AttachedFlyout>
 		-->

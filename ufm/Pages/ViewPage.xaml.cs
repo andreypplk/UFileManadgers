@@ -942,21 +942,6 @@ namespace ufm
             return parts[parts.Length - 1];
         }
 
-        //private void SizeRadioButton_Checked(object sender, RoutedEventArgs e)
-        //{
-        //    if (_isUpdatingViewMode) return;
-
-        //    if (sender is RadioButton radioButton && radioButton.Tag is string sizeTag && _activePanelManager != null)
-        //    {
-        //        if (radioButton.IsChecked == true)
-        //        {
-        //            string fullSizeKey = $"{_prefsize} {sizeTag}";
-        //            _activePanelManager.UpdateState(state => state.IconSize = fullSizeKey);
-        //            ApplyIconSizeToActivePanelOnly();
-        //            SaveAllPanelStates();
-        //        }
-        //    }
-        //}
         private void SizeRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (_isUpdatingViewMode) return;
@@ -1128,62 +1113,6 @@ namespace ufm
         #endregion
 
         #region Обработчики событий
-        //private async void ViewPage_Loaded(object sender, RoutedEventArgs e)
-        //{
-        //    LoadAllPanelStates();
-
-        //    // Восстанавливаем режим отображения
-        //    switch (_currentDisplayMode)
-        //    {
-        //        case DisplayMode.Single:
-        //            SingleView_Click(null, null);
-        //            break;
-        //        case DisplayMode.Vertical:
-        //            VerticalView_Click(null, null);
-        //            break;
-        //        case DisplayMode.Horizontal:
-        //            HorizontalView_Click(null, null);
-        //            break;
-        //        case DisplayMode.TripleVertical:
-        //            TripleVerticalView_Click(null, null);
-        //            break;
-        //        case DisplayMode.TripleHorizontal:
-        //            TripleHorizontalView_Click(null, null);
-        //            break;
-        //        case DisplayMode.TripleTopBottom:
-        //            TripleTopBottomView_Click(null, null);
-        //            break;
-        //        case DisplayMode.TripleBottomTop:
-        //            TripleBottomTopView_Click(null, null);
-        //            break;
-        //        case DisplayMode.TripleLeftRight:
-        //            TripleLeftRightView_Click(null, null);
-        //            break;
-        //        case DisplayMode.TripleRightLeft:
-        //            TripleRightLeftView_Click(null, null);
-        //            break;
-        //        case DisplayMode.Quad:
-        //            QuadView_Click(null, null);
-        //            break;
-        //    }
-
-        //    await Task.Delay(50);
-
-        //    var splitterSizes = _splitterManager.LoadAllSplitterSizes();
-        //    _splitterManager.ApplySplitterSizes(this, splitterSizes);
-
-        //    LoadPreviewPanelSizes();
-        //    UpdatePreviewPanelVisibility();
-        //    UpdatePreviewRadioButtons();
-
-        //    ApplyIconSizeToVisiblePanels();
-        //    UpdateRadioButtonsForActivePanel();
-        //    UpdateActivePanelVisualState();
-        //    SetFocusToActivePanel();
-        //    UpdateNavigationButtons();
-
-        //    _panelRegistry.ActivePanelChanged += OnActivePanelChanged;
-        //}
         private async void ViewPage_Loaded(object sender, RoutedEventArgs e)
         {
             // Сначала загружаем состояния панелей
@@ -1427,16 +1356,16 @@ namespace ufm
                     newView = new TileViewIcons();
                     break;
                 case ViewMode.List:
-                    //newView = new TileListView();
+                    newView = new TileListView();
                     break;
                 case ViewMode.Table:
-                    //newView = new TileTableView();
+                    //newView = new TileViewIcons();
                     break;
                 case ViewMode.Tiles:
-                    //newView = new TileTilesView();
+                    //newView = new TileViewIcons();
                     break;
                 case ViewMode.CompactList:
-                    //newView = new TileCompactListView();
+                    //newView = new TileViewIcons();
                     break;
             }
 
@@ -1450,13 +1379,13 @@ namespace ufm
                     tileViewIcons.SetPanelManager(managerToUse);
                     tileViewIcons.NavigationChanged += TileView_NavigationChanged; // ПРАВИЛЬНОЕ ИМЯ
                 }
-                //else if (newView is TileListView tileListView)
-                //{
-                //    string panelId = managerToUse.PanelId;
-                //    tileListView.PanelId = panelId;
-                //    tileListView.SetPanelManager(managerToUse);
-                //    tileListView.NavigationChanged += TileView_NavigationChanged; // ПРАВИЛЬНОЕ ИМЯ
-                //}
+                else if (newView is TileListView tileListView)
+                {
+                    string panelId = managerToUse.PanelId;
+                    tileListView.PanelId = panelId;
+                    tileListView.SetPanelManager(managerToUse);
+                    tileListView.NavigationChanged += TileView_NavigationChanged; // ПРАВИЛЬНОЕ ИМЯ
+                }
                 //else if (newView is TileTableView tileTableView)
                 //{
                 //    string panelId = managerToUse.PanelId;
