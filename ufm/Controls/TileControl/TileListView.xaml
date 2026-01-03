@@ -257,14 +257,21 @@
 
 			<ListView.ItemsPanel>
 				<ItemsPanelTemplate>
-					<ItemsWrapGrid
+					<VirtualizingStackPanel Orientation="Vertical" 
+											
+											Height="{Binding ItemHeight, ElementName=RootControl}"
+											Width="{Binding ItemWidth, ElementName=RootControl}"
+											VerticalAlignment="Top"
+											HorizontalAlignment="Left"
+											Margin="2,2,2,2" />
+					<!--<ItemsWrapGrid
                         ItemHeight="{Binding ItemHeight, ElementName=RootControl}"
                         ItemWidth="{Binding ItemWidth, ElementName=RootControl}"
                         MaximumRowsOrColumns="24"
                         Orientation="Horizontal"
                         VerticalAlignment="Top"
                         HorizontalAlignment="Left"
-                        Margin="2,2,2,2" />
+                        Margin="2,2,2,2" />-->
 				</ItemsPanelTemplate>
 			</ListView.ItemsPanel>
 

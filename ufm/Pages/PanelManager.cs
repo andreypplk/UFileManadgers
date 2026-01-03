@@ -88,6 +88,9 @@ namespace ufm
         {
             updateAction?.Invoke(State);
             OnStateChanged();
+
+            // ДОБАВЛЯЕМ: Автосохранение при любом обновлении состояния
+            AutoSavePanelState();
         }
 
         public void LoadState(PanelState state = null)
@@ -102,7 +105,7 @@ namespace ufm
                 else if (App.SettingsManager != null)
                 {
                     // Загружаем из SettingsManager
-                    State.ViewMode = Enum.TryParse(App.SettingsManager.GetSetting<string>($"{_panelId}_ViewMode", "Icons"), out ViewMode viewMode)
+                    State.ViewMode = Enum.TryParse(App.SettingsManager.GetSetting<string>($"{_panelId}_ViewMode"), out ViewMode viewMode)
                         ? viewMode : ViewMode.Icons;
 
                     State.IconSize = App.SettingsManager.GetSetting<string>($"{_panelId}_IconSize", "Icons Medium");
