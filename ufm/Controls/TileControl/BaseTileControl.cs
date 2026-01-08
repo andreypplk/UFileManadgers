@@ -182,6 +182,7 @@ namespace ufm
             InvalidateArrange();
             UpdateLayout();
         }
+
         // Конструктор
         public BaseTileControl()
         {

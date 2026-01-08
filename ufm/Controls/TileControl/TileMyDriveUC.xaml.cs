@@ -1,4 +1,4 @@
-
+п»ї
 using System.Diagnostics;
 using System.Linq;
 using CommunityToolkit.WinUI;
@@ -25,7 +25,7 @@ namespace ufm
         {
             base.OnDisplayModeChanged();
 
-            // Переключение между режимами
+            // РџРµСЂРµРєР»СЋС‡РµРЅРёРµ РјРµР¶РґСѓ СЂРµР¶РёРјР°РјРё
             if (DisplayMode == "Vertical")
             {
                 HorizontalLayout.Visibility = Visibility.Collapsed;
@@ -42,14 +42,14 @@ namespace ufm
         {
             base.UpdateSize();
 
-            // Проверка на null элементов управления
+            // РџСЂРѕРІРµСЂРєР° РЅР° null СЌР»РµРјРµРЅС‚РѕРІ СѓРїСЂР°РІР»РµРЅРёСЏ
             if (progressBar == null || GridUsedSpaceString == null || BorderTotalSizeString == null ||
                 tbFreeSpaceString == null || tbUsedSpaceSString == null || tbTotalSizeString == null)
             {
                 return;
             }
 
-            // Приводим Size к нижнему регистру для унификации
+            // РџСЂРёРІРѕРґРёРј Size Рє РЅРёР¶РЅРµРјСѓ СЂРµРіРёСЃС‚СЂСѓ РґР»СЏ СѓРЅРёС„РёРєР°С†РёРё
             switch (Size.ToLower())
             {
                 case "extra small":
@@ -78,22 +78,22 @@ namespace ufm
                     SetElementVisibility(true, 14, 22);
                     break;
                 default:
-                    // Обработка неизвестного размера
-                    Debug.WriteLine($"Неизвестный размер: {Size}");
+                    // РћР±СЂР°Р±РѕС‚РєР° РЅРµРёР·РІРµСЃС‚РЅРѕРіРѕ СЂР°Р·РјРµСЂР°
+                    Debug.WriteLine($"РќРµРёР·РІРµСЃС‚РЅС‹Р№ СЂР°Р·РјРµСЂ: {Size}");
                     break;
             }
         }
 
         private void SetElementVisibility(bool isVisible, double fontSize, double indHeight)
         {
-            // Устанавливаем видимость элементов
+            // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РІРёРґРёРјРѕСЃС‚СЊ СЌР»РµРјРµРЅС‚РѕРІ
             progressBar.Visibility = isVisible.ToVisibility();
             BorderTotalSizeString.Visibility = isVisible.ToVisibility();
             GridUsedSpaceString.Visibility = isVisible.ToVisibility();
             tbFreeSpaceString.Visibility = isVisible.ToVisibility();
             tbUsedSpaceSString.Visibility = isVisible.ToVisibility();
 
-            // Устанавливаем минимальный размер шрифта 1 (вместо 0)
+            // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РјРёРЅРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ С€СЂРёС„С‚Р° 1 (РІРјРµСЃС‚Рѕ 0)
             double actualFontSize = isVisible ? fontSize : 1;
             tbFreeSpaceString.FontSize = actualFontSize;
             tbUsedSpaceSString.FontSize = actualFontSize;
@@ -110,7 +110,7 @@ namespace ufm
         {
             if (progressBar == null) return null;
 
-            // Поиск индикатора с учетом правильного регистра имени
+            // РџРѕРёСЃРє РёРЅРґРёРєР°С‚РѕСЂР° СЃ СѓС‡РµС‚РѕРј РїСЂР°РІРёР»СЊРЅРѕРіРѕ СЂРµРіРёСЃС‚СЂР° РёРјРµРЅРё
             return UIHelper.GetDescendantsOfType<Border>(progressBar)
                 .FirstOrDefault(b => b.Name == "Indicator");
         }

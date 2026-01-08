@@ -1430,10 +1430,10 @@ namespace ufm
             {
                 tileViewIcons.NavigationChanged -= TileView_NavigationChanged; // ÏĞÀÂÈËÜÍÎÅ ÈÌß
             }
-            //else if (control?.Content is TileListView tileListView)
-            //{
-            //    tileListView.NavigationChanged -= TileView_NavigationChanged; // ÏĞÀÂÈËÜÍÎÅ ÈÌß
-            //}
+            else if (control?.Content is TileListView tileListView)
+            {
+                tileListView.NavigationChanged -= TileView_NavigationChanged; // ÏĞÀÂÈËÜÍÎÅ ÈÌß
+            }
             //else if (control?.Content is TileTableView tileTableView)
             //{
             //    tileTableView.NavigationChanged -= TileView_NavigationChanged; // ÏĞÀÂÈËÜÍÎÅ ÈÌß

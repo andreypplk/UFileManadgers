@@ -115,15 +115,26 @@ namespace ufm
             ["Icons Huge"] = (260, 260, 230, 230, 22, "Segoe UI"),
 
             // Списки
-            ["List Tiny"] = (130, 130, 80, 80, 12, "Segoe UI"),
-            ["List Extra Small"] = (240, 30, 24, 24, 12, "Segoe UI"),
-            ["List Small"] = (280, 45, 32, 32, 14, "Segoe UI"),
-            ["List Below Medium"] = (180, 160, 100, 100, 12, "Segoe UI"),
-            ["List Medium"] = (320, 60, 42, 42, 16, "Segoe UI"),
-            ["List Above Medium"] = (180, 160, 100, 100, 12, "Segoe UI"),
-            ["List Large"] = (380, 75, 64, 64, 18, "Segoe UI"),
-            ["List Extra Large"] = (440, 90, 96, 96, 20, "Segoe UI"),
-            ["List Huge"] = (220, 220, 196, 196, 20, "Segoe UI"),
+            //["List Tiny"] = (130, 130, 80, 80, 12, "Segoe UI"),
+            //["List Extra Small"] = (240, 30, 24, 24, 12, "Segoe UI"),
+            //["List Small"] = (280, 45, 32, 32, 14, "Segoe UI"),
+            //["List Below Medium"] = (180, 160, 100, 100, 12, "Segoe UI"),
+            //["List Medium"] = (320, 60, 42, 42, 16, "Segoe UI"),
+            //["List Above Medium"] = (180, 160, 100, 100, 12, "Segoe UI"),
+            //["List Large"] = (380, 75, 64, 64, 18, "Segoe UI"),
+            //["List Extra Large"] = (440, 90, 96, 96, 20, "Segoe UI"),
+            //["List Huge"] = (220, 220, 196, 196, 20, "Segoe UI"),
+
+            // Списки (двухстрочный вариант)
+            ["List Tiny"] = (280, 48, 24, 24, 11, "Segoe UI"),          // Две строки текста
+            ["List Extra Small"] = (300, 52, 26, 26, 12, "Segoe UI"),   // Две строки текста
+            ["List Small"] = (320, 56, 28, 28, 13, "Segoe UI"),         // Две строки текста
+            ["List Below Medium"] = (340, 60, 30, 30, 14, "Segoe UI"),  // Две строки текста
+            ["List Medium"] = (360, 64, 32, 32, 15, "Segoe UI"),        // Две строки текста
+            ["List Above Medium"] = (380, 68, 34, 34, 16, "Segoe UI"),  // Две строки текста
+            ["List Large"] = (400, 72, 36, 36, 17, "Segoe UI"),         // Две строки текста
+            ["List Extra Large"] = (420, 76, 38, 38, 18, "Segoe UI"),   // Две строки текста
+            ["List Huge"] = (440, 80, 40, 40, 19, "Segoe UI"),          // Две строки текста
 
             // Компактные списки
             ["CompList Extra Small"] = (130, 130, 80, 80, 12, "Segoe UI"),

@@ -504,6 +504,7 @@ namespace ufm
 
             return new ExplorerItemViewModel(history)
             {
+                IsProgressBarVisible = true,
                 Name = driveInfo.VolumeLabel ?? drivePath,
                 FilePath = drivePath,
                 ImageSource = icon,

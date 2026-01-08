@@ -116,8 +116,8 @@
     <Style x:Key="ThickProgressBarStyle" TargetType="local:CustomProgressBar">
         <Setter Property="Background" Value="{StaticResource ProgressBarTrackBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ProgressBarThumbBrush}" />
-        <Setter Property="Height" Value="18" />
-        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Height" Value="14" />
+		<Setter Property="CornerRadius" Value="5" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:CustomProgressBar">
@@ -130,6 +130,7 @@
                             x:Name="Indicator"
                             Height="{TemplateBinding Height}"
                             HorizontalAlignment="Left"
+							VerticalAlignment="Top"
                             Background="{TemplateBinding Foreground}"
                             CornerRadius="{TemplateBinding CornerRadius}" />
                     </Grid>
