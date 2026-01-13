@@ -116,7 +116,7 @@
     <Style x:Key="ThickProgressBarStyle" TargetType="local:CustomProgressBar">
         <Setter Property="Background" Value="{StaticResource ProgressBarTrackBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ProgressBarThumbBrush}" />
-        <Setter Property="Height" Value="14" />
+        <Setter Property="Height" Value="10" />
 		<Setter Property="CornerRadius" Value="5" />
         <Setter Property="Template">
             <Setter.Value>

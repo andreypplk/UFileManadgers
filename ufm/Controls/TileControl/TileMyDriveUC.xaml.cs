@@ -52,6 +52,11 @@ namespace ufm
             // Приводим Size к нижнему регистру для унификации
             switch (Size.ToLower())
             {
+                case "tiny":
+                    BorderTotalSizeString.Height = 1;
+                    BorderTotalSizeString.Width = 1;
+                    SetElementVisibility(false, 0, 0);
+                    break;
                 case "extra small":
                     BorderTotalSizeString.Height = 1;
                     BorderTotalSizeString.Width = 1;
@@ -73,6 +78,11 @@ namespace ufm
                     SetElementVisibility(true, 12, 20);
                     break;
                 case "extra large":
+                    BorderTotalSizeString.Height = 85;
+                    BorderTotalSizeString.Width = 50;
+                    SetElementVisibility(true, 14, 22);
+                    break;
+                case "huge":
                     BorderTotalSizeString.Height = 85;
                     BorderTotalSizeString.Width = 50;
                     SetElementVisibility(true, 14, 22);

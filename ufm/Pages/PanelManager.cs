@@ -108,7 +108,7 @@ namespace ufm
                     State.ViewMode = Enum.TryParse(App.SettingsManager.GetSetting<string>($"{_panelId}_ViewMode"), out ViewMode viewMode)
                         ? viewMode : ViewMode.Icons;
 
-                    State.IconSize = App.SettingsManager.GetSetting<string>($"{_panelId}_IconSize", "Icons Medium");
+                    State.IconSize = App.SettingsManager.GetSetting<string>($"{_panelId}_IconSize");
                     State.CurrentPath = App.SettingsManager.GetSetting<string>($"{_panelId}_CurrentPath", "MyComputer");
                     State.HistoryIndex = App.SettingsManager.GetSetting<int>($"{_panelId}_HistoryIndex", -1);
 
