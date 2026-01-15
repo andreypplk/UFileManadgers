@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using System;
 using System.Diagnostics;
 using Windows.Storage;
 
@@ -61,6 +62,19 @@ namespace ufm
                 typeof(double),
                 typeof(BaseTileControl),
                 new PropertyMetadata(100.0));
+
+        //15 01 2026
+        // Свойство зависимости для режима редактирования
+        public static readonly DependencyProperty IsEditingProperty =
+            DependencyProperty.Register(
+                nameof(IsEditing),
+                typeof(bool),
+                typeof(BaseTileControl),
+                new PropertyMetadata(false, OnIsEditingChanged));
+
+        // Событие для уведомления о начале/окончании редактирования
+        public event EventHandler<bool> EditStateChanged;
+
         // Свойство Size
         public string Size
         {
@@ -110,6 +124,13 @@ namespace ufm
             set => SetValue(MaxIconHeightProperty, value);
         }
 
+        // Свойство IsEditing
+        public bool IsEditing
+        {
+            get => (bool)GetValue(IsEditingProperty);
+            set => SetValue(IsEditingProperty, value);
+        }
+
         // Обработчик изменения свойства Size
         private static void OnSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -132,6 +153,41 @@ namespace ufm
         {
             // Переопределяется в наследниках
         }
+        // Обработчик изменения режима редактирования
+        private static void OnIsEditingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is BaseTileControl control)
+            {
+                var oldValue = (bool)e.OldValue;
+                var newValue = (bool)e.NewValue;
+
+                control.OnIsEditingChanged(oldValue, newValue);
+                control.EditStateChanged?.Invoke(control, newValue);
+            }
+        }
+
+        // Виртуальный метод для обработки изменения режима редактирования
+        protected virtual void OnIsEditingChanged(bool oldValue, bool newValue)
+        {
+            // Переопределяется в наследниках
+        }
+
+        public virtual void StartEditing()
+        {
+            Debug.WriteLine($"[BaseTileControl] StartEditing called in {GetType().Name}");
+        }
+
+        public virtual void StopEditing()
+        {
+            Debug.WriteLine($"[BaseTileControl] StopEditing called in {GetType().Name}");
+        }
+
+        public virtual void CancelEditing()
+        {
+            Debug.WriteLine($"[BaseTileControl] CancelEditing called in {GetType().Name}");
+        }
+
+        public virtual bool CanEdit => false; // По умолчанию не поддерживает
 
         // Метод для обновления размеров и параметров
         public void UpdateSize(string selectedSize)
