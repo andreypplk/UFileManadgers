@@ -1960,6 +1960,837 @@
 //    }
 //}
 
+//using System.Diagnostics;
+//using System.Linq;
+//using CommunityToolkit.WinUI;
+//using Microsoft.UI.Xaml;
+//using Microsoft.UI.Xaml.Controls;
+//using Microsoft.UI.Xaml.Input;
+//using Windows.System;
+//using System.IO;
+//using System.Threading.Tasks;
+//using System;
+//using Core_FileManagement;
+
+//namespace ufm
+//{
+//    public sealed partial class TileMyDriveUc : BaseTileControl
+//    {
+//        private ScaleAnimator _scaleAnimator;
+//        private string _originalText = "";
+//        private ExplorerItemViewModel _viewModel;
+//        private bool _isInEditMode = false;
+
+//        public TileMyDriveUc()
+//        {
+//            this.InitializeComponent();
+
+//            if (BorderTileMyDriveUC != null)
+//            {
+//                _scaleAnimator = new ScaleAnimator(BorderTileMyDriveUC);
+//            }
+//        }
+
+//        // Переопределяем StartEditing
+//        public override void StartEditing()
+//        {
+//            try
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] StartEditing called");
+
+//                if (_isInEditMode)
+//                {
+//                    Debug.WriteLine($"[TileMyDriveUc] Already in edit mode, skipping");
+//                    return;
+//                }
+
+//                // Получаем ViewModel из DataContext
+//                _viewModel = this.DataContext as ExplorerItemViewModel;
+//                if (_viewModel == null)
+//                {
+//                    Debug.WriteLine($"[TileMyDriveUc] ViewModel is null");
+//                    return;
+//                }
+
+//                _isInEditMode = true;
+//                _originalText = _viewModel.Name;
+
+//                Debug.WriteLine($"[TileMyDriveUc] Starting edit for: {_originalText}");
+
+//                // Скрываем обычные текстовые блоки
+//                HorizontalTextBlock.Visibility = Visibility.Collapsed;
+//                VerticalTextBlock.Visibility = Visibility.Collapsed;
+//                ListTextBlock.Visibility = Visibility.Collapsed;
+
+//                // Показываем поля редактирования
+//                HorizontalEditBox.Visibility = Visibility.Visible;
+//                VerticalEditBox.Visibility = Visibility.Visible;
+//                ListEditBox.Visibility = Visibility.Visible;
+
+//                // Скрываем дополнительные элементы при редактировании
+//                progressBar.Visibility = Visibility.Collapsed;
+//                BorderTotalSizeString.Visibility = Visibility.Collapsed;
+//                GridUsedSpaceString.Visibility = Visibility.Collapsed;
+//                tbFreeSpaceString.Visibility = Visibility.Collapsed;
+//                tbUsedSpaceSString.Visibility = Visibility.Collapsed;
+
+//                // Устанавливаем текст в TextBox
+//                string currentText = _viewModel.Name;
+//                HorizontalEditBox.Text = currentText;
+//                VerticalEditBox.Text = currentText;
+//                ListEditBox.Text = currentText;
+
+//                // Устанавливаем фокус
+//                this.DispatcherQueue.TryEnqueue(() =>
+//                {
+//                    TextBox editBox = GetCurrentEditBox();
+//                    if (editBox != null)
+//                    {
+//                        editBox.Focus(FocusState.Programmatic);
+//                        editBox.SelectAll();
+//                        Debug.WriteLine($"[TileMyDriveUc] Focus set to edit box");
+//                    }
+//                });
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] Error in StartEditing: {ex.Message}");
+//                _isInEditMode = false;
+//            }
+//        }
+
+//        // Переопределяем StopEditing
+//        public override void StopEditing()
+//        {
+//            try
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] StopEditing called");
+
+//                if (!_isInEditMode) return;
+
+//                string newText = GetCurrentEditBox()?.Text?.Trim() ?? "";
+
+//                if (!string.IsNullOrEmpty(newText) && newText != _originalText)
+//                {
+//                    Debug.WriteLine($"[TileMyDriveUc] Saving changes: {_originalText} -> {newText}");
+//                    SaveChanges(newText);
+//                }
+//                else
+//                {
+//                    Debug.WriteLine($"[TileMyDriveUc] No changes to save");
+//                }
+
+//                FinishEditing();
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] Error in StopEditing: {ex.Message}");
+//                FinishEditing();
+//            }
+//        }
+
+//        // Переопределяем CancelEditing
+//        public override void CancelEditing()
+//        {
+//            try
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] CancelEditing called");
+
+//                if (!_isInEditMode) return;
+
+//                Debug.WriteLine($"[TileMyDriveUc] Cancelling changes, restoring: {_originalText}");
+
+//                if (_viewModel != null && !string.IsNullOrEmpty(_originalText))
+//                {
+//                    _viewModel.Name = _originalText;
+//                }
+
+//                FinishEditing();
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] Error in CancelEditing: {ex.Message}");
+//                FinishEditing();
+//            }
+//        }
+
+//        // Переопределяем CanEdit
+//        public override bool CanEdit => true;
+
+//        private void SaveChanges(string newText)
+//        {
+//            try
+//            {
+//                if (_viewModel != null)
+//                {
+//                    _viewModel.Name = newText;
+
+//                    // Вызываем команду сохранения если она доступна
+//                    if (_viewModel.SaveEditCommand?.CanExecute(null) == true)
+//                    {
+//                        _viewModel.SaveEditCommand.Execute(null);
+//                    }
+//                }
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] Error saving changes: {ex.Message}");
+//            }
+//        }
+
+//        private void FinishEditing()
+//        {
+//            try
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] FinishEditing called");
+
+//                _isInEditMode = false;
+
+//                // Показываем обычные текстовые блоки
+//                HorizontalTextBlock.Visibility = Visibility.Visible;
+//                VerticalTextBlock.Visibility = Visibility.Visible;
+//                ListTextBlock.Visibility = Visibility.Visible;
+
+//                // Скрываем поля редактирования
+//                HorizontalEditBox.Visibility = Visibility.Collapsed;
+//                VerticalEditBox.Visibility = Visibility.Collapsed;
+//                ListEditBox.Visibility = Visibility.Collapsed;
+
+//                // Восстанавливаем дополнительные элементы
+//                progressBar.Visibility = Visibility.Visible;
+//                BorderTotalSizeString.Visibility = Visibility.Visible;
+//                GridUsedSpaceString.Visibility = Visibility.Visible;
+//                tbFreeSpaceString.Visibility = Visibility.Visible;
+//                tbUsedSpaceSString.Visibility = Visibility.Visible;
+
+//                _viewModel = null;
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] Error in FinishEditing: {ex.Message}");
+//                _isInEditMode = false;
+//                _viewModel = null;
+//            }
+//        }
+
+//        // Обработчики событий для TextBox
+//        public void EditTextBox_Loaded(object sender, RoutedEventArgs e)
+//        {
+//            // Автоматическая фокусировка не нужна - она делается в StartEditing
+//        }
+
+//        public void EditTextBox_LostFocus(object sender, RoutedEventArgs e)
+//        {
+//            if (_isInEditMode)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] EditTextBox_LostFocus - saving changes");
+//                StopEditing();
+//            }
+//        }
+
+//        public void EditTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
+//        {
+//            if (!_isInEditMode) return;
+
+//            Debug.WriteLine($"[TileMyDriveUc] EditTextBox_KeyDown: {e.Key}");
+
+//            switch (e.Key)
+//            {
+//                case VirtualKey.Enter:
+//                    e.Handled = true;
+//                    Debug.WriteLine($"[TileMyDriveUc] Enter pressed - saving");
+//                    StopEditing();
+//                    break;
+
+//                case VirtualKey.Escape:
+//                    e.Handled = true;
+//                    Debug.WriteLine($"[TileMyDriveUc] Escape pressed - cancelling");
+//                    CancelEditing();
+//                    break;
+
+//                case VirtualKey.Tab:
+//                    e.Handled = true;
+//                    Debug.WriteLine($"[TileMyDriveUc] Tab pressed - saving");
+//                    StopEditing();
+//                    break;
+//            }
+//        }
+
+//        protected override void OnDisplayModeChanged()
+//        {
+//            base.OnDisplayModeChanged();
+
+//            if (DisplayMode == "Vertical")
+//            {
+//                HorizontalLayout.Visibility = Visibility.Collapsed;
+//                VerticalLayout.Visibility = Visibility.Visible;
+//                ListLayout.Visibility = Visibility.Collapsed;
+//            }
+//            else if (DisplayMode == "List")
+//            {
+//                HorizontalLayout.Visibility = Visibility.Collapsed;
+//                VerticalLayout.Visibility = Visibility.Collapsed;
+//                ListLayout.Visibility = Visibility.Visible;
+//            }
+//            else
+//            {
+//                HorizontalLayout.Visibility = Visibility.Visible;
+//                VerticalLayout.Visibility = Visibility.Collapsed;
+//                ListLayout.Visibility = Visibility.Collapsed;
+//            }
+//        }
+
+//        protected override void UpdateSize()
+//        {
+//            base.UpdateSize();
+
+//            if (progressBar == null || GridUsedSpaceString == null || BorderTotalSizeString == null ||
+//                tbFreeSpaceString == null || tbUsedSpaceSString == null || tbTotalSizeString == null)
+//            {
+//                return;
+//            }
+
+//            // Если в режиме редактирования - выходим
+//            if (_isInEditMode)
+//            {
+//                return;
+//            }
+
+//            // Скрываем для List режима
+//            if (DisplayMode == "List")
+//            {
+//                SetElementVisibility(false, 0, 0);
+//                return;
+//            }
+
+//            switch (Size.ToLower())
+//            {
+//                case "tiny":
+//                case "extra small":
+//                case "small":
+//                    BorderTotalSizeString.Height = 1;
+//                    BorderTotalSizeString.Width = 1;
+//                    SetElementVisibility(false, 0, 0);
+//                    break;
+//                case "medium":
+//                    BorderTotalSizeString.Height = 45;
+//                    BorderTotalSizeString.Width = 40;
+//                    SetElementVisibility(true, 10, 18);
+//                    break;
+//                case "large":
+//                    BorderTotalSizeString.Height = 75;
+//                    BorderTotalSizeString.Width = 45;
+//                    SetElementVisibility(true, 12, 20);
+//                    break;
+//                case "extra large":
+//                case "huge":
+//                    BorderTotalSizeString.Height = 85;
+//                    BorderTotalSizeString.Width = 50;
+//                    SetElementVisibility(true, 14, 22);
+//                    break;
+//                default:
+//                    Debug.WriteLine($"[TileMyDriveUc] Неизвестный размер: {Size}");
+//                    break;
+//            }
+//        }
+
+//        private void SetElementVisibility(bool isVisible, double fontSize, double indHeight)
+//        {
+//            progressBar.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+//            BorderTotalSizeString.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+//            GridUsedSpaceString.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+//            tbFreeSpaceString.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+//            tbUsedSpaceSString.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+
+//            double actualFontSize = isVisible ? fontSize : 1;
+//            tbFreeSpaceString.FontSize = actualFontSize;
+//            tbUsedSpaceSString.FontSize = actualFontSize;
+//            tbTotalSizeString.FontSize = actualFontSize;
+
+//            var indicator = GetProgressBarIndicator();
+//            if (indicator != null)
+//            {
+//                indicator.Height = isVisible ? indHeight : 0;
+//            }
+//        }
+
+//        private Border GetProgressBarIndicator()
+//        {
+//            if (progressBar == null) return null;
+
+//            return UIHelper.GetDescendantsOfType<Border>(progressBar)
+//                .FirstOrDefault(b => b.Name == "Indicator");
+//        }
+
+//        private TextBox GetCurrentEditBox()
+//        {
+//            switch (DisplayMode)
+//            {
+//                case "Horizontal":
+//                    return HorizontalEditBox;
+//                case "Vertical":
+//                    return VerticalEditBox;
+//                case "List":
+//                    return ListEditBox;
+//                default:
+//                    return HorizontalEditBox;
+//            }
+//        }
+//    }
+
+//    public static class VisibilityExtensions
+//    {
+//        public static Visibility ToVisibility(this bool isVisible) =>
+//            isVisible ? Visibility.Visible : Visibility.Collapsed;
+//    }
+//}
+
+
+//using System.Diagnostics;
+//using System.Linq;
+//using CommunityToolkit.WinUI;
+//using Microsoft.UI.Xaml;
+//using Microsoft.UI.Xaml.Controls;
+//using Microsoft.UI.Xaml.Input;
+//using Windows.System;
+//using System.IO;
+//using System.Threading.Tasks;
+//using System;
+//using Core_FileManagement;
+
+//namespace ufm
+//{
+//    public sealed partial class TileMyDriveUc : BaseTileControl
+//    {
+//        private ScaleAnimator _scaleAnimator;
+//        private string _originalText = "";
+//        private ExplorerItemViewModel _viewModel;
+//        private bool _isInEditMode = false;
+
+//        public TileMyDriveUc()
+//        {
+//            this.InitializeComponent();
+
+//            if (BorderTileMyDriveUC != null)
+//            {
+//                _scaleAnimator = new ScaleAnimator(BorderTileMyDriveUC);
+//            }
+//        }
+
+//        // Переопределяем StartEditing
+//        public override void StartEditing()
+//        {
+//            try
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] StartEditing called");
+
+//                if (_isInEditMode)
+//                {
+//                    Debug.WriteLine($"[TileMyDriveUc] Already in edit mode, skipping");
+//                    return;
+//                }
+
+//                // Получаем ViewModel из DataContext
+//                _viewModel = this.DataContext as ExplorerItemViewModel;
+//                if (_viewModel == null)
+//                {
+//                    Debug.WriteLine($"[TileMyDriveUc] ViewModel is null");
+//                    return;
+//                }
+
+//                _isInEditMode = true;
+//                _originalText = _viewModel.Name;
+
+//                Debug.WriteLine($"[TileMyDriveUc] Starting edit for: {_originalText}");
+
+//                // Инициализируем временное свойство в ViewModel
+//                _viewModel.NewNameForEdit = _originalText;
+
+//                // Скрываем обычные текстовые блоки
+//                HorizontalTextBlock.Visibility = Visibility.Collapsed;
+//                VerticalTextBlock.Visibility = Visibility.Collapsed;
+//                ListTextBlock.Visibility = Visibility.Collapsed;
+
+//                // Показываем поля редактирования
+//                HorizontalEditBox.Visibility = Visibility.Visible;
+//                VerticalEditBox.Visibility = Visibility.Visible;
+//                ListEditBox.Visibility = Visibility.Visible;
+
+//                // Скрываем дополнительные элементы при редактировании
+//                progressBar.Visibility = Visibility.Collapsed;
+//                BorderTotalSizeString.Visibility = Visibility.Collapsed;
+//                GridUsedSpaceString.Visibility = Visibility.Collapsed;
+//                tbFreeSpaceString.Visibility = Visibility.Collapsed;
+//                tbUsedSpaceSString.Visibility = Visibility.Collapsed;
+
+//                // Устанавливаем текст в TextBox
+//                string currentText = _viewModel.NewNameForEdit; // Используем временное свойство
+//                HorizontalEditBox.Text = currentText;
+//                VerticalEditBox.Text = currentText;
+//                ListEditBox.Text = currentText;
+
+//                // Устанавливаем фокус
+//                this.DispatcherQueue.TryEnqueue(() =>
+//                {
+//                    TextBox editBox = GetCurrentEditBox();
+//                    if (editBox != null)
+//                    {
+//                        editBox.Focus(FocusState.Programmatic);
+//                        editBox.SelectAll();
+//                        Debug.WriteLine($"[TileMyDriveUc] Focus set to edit box");
+//                    }
+//                });
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] Error in StartEditing: {ex.Message}");
+//                _isInEditMode = false;
+//            }
+//        }
+
+//        // Переопределяем StopEditing
+//        public override void StopEditing()
+//        {
+//            try
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] StopEditing called");
+
+//                if (!_isInEditMode) return;
+
+//                string newText = GetCurrentEditBox()?.Text?.Trim() ?? "";
+
+//                if (!string.IsNullOrEmpty(newText) && newText != _originalText)
+//                {
+//                    Debug.WriteLine($"[TileMyDriveUc] Saving changes: {_originalText} -> {newText}");
+//                    SaveChanges(newText);
+//                }
+//                else
+//                {
+//                    Debug.WriteLine($"[TileMyDriveUc] No changes to save");
+//                }
+
+//                FinishEditing();
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] Error in StopEditing: {ex.Message}");
+//                FinishEditing();
+//            }
+//        }
+
+//        // Переопределяем CancelEditing
+//        public override void CancelEditing()
+//        {
+//            try
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] CancelEditing called");
+
+//                if (!_isInEditMode) return;
+
+//                Debug.WriteLine($"[TileMyDriveUc] Cancelling changes, restoring: {_originalText}");
+
+//                if (_viewModel != null && !string.IsNullOrEmpty(_originalText))
+//                {
+//                    _viewModel.Name = _originalText;
+//                }
+
+//                FinishEditing();
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] Error in CancelEditing: {ex.Message}");
+//                FinishEditing();
+//            }
+//        }
+
+//        // Переопределяем CanEdit
+//        public override bool CanEdit => true;
+
+//        private void SaveChanges(string newText)
+//        {
+//            try
+//            {
+//                if (_viewModel != null)
+//                {
+//                    Debug.WriteLine($"[TileMyDriveUc] SaveChanges called with: '{newText}'");
+
+//                    // Устанавливаем новое имя во временное свойство ViewModel
+//                    _viewModel.NewNameForEdit = newText;
+
+//                    Debug.WriteLine($"[TileMyDriveUc] NewNameForEdit set to: '{_viewModel.NewNameForEdit}'");
+//                    Debug.WriteLine($"[TileMyDriveUc] Original name: '{_originalText}'");
+//                    Debug.WriteLine($"[TileMyDriveUc] IsEditing: {_viewModel.IsEditing}");
+
+//                    // Вызываем команду сохранения
+//                    if (_viewModel.SaveEditCommand?.CanExecute(null) == true)
+//                    {
+//                        Debug.WriteLine($"[TileMyDriveUc] SaveEditCommand can execute, calling Execute");
+//                        _viewModel.SaveEditCommand.Execute(null);
+//                    }
+//                    else
+//                    {
+//                        Debug.WriteLine($"[TileMyDriveUc] SaveEditCommand cannot execute. Reasons:");
+//                        Debug.WriteLine($"[TileMyDriveUc]   IsEditing: {_viewModel.IsEditing}");
+//                        Debug.WriteLine($"[TileMyDriveUc]   NewNameForEdit is null/empty: {string.IsNullOrEmpty(_viewModel.NewNameForEdit?.Trim())}");
+//                        Debug.WriteLine($"[TileMyDriveUc]   NewNameForEdit == Original: {_viewModel.NewNameForEdit?.Trim() == _originalText}");
+
+//                        // Альтернативный способ: все равно обновляем имя
+//                        if (!string.IsNullOrEmpty(newText) && newText != _originalText)
+//                        {
+//                            Debug.WriteLine($"[TileMyDriveUc] Falling back to direct name update");
+//                            _viewModel.Name = newText;
+//                            FinishEditing();
+//                        }
+//                    }
+//                }
+//                else
+//                {
+//                    Debug.WriteLine($"[TileMyDriveUc] ViewModel is null, cannot save changes");
+//                }
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] Error in SaveChanges: {ex.Message}");
+//            }
+//        }
+
+//        private void FinishEditing()
+//        {
+//            try
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] FinishEditing called");
+
+//                _isInEditMode = false;
+
+//                // Показываем обычные текстовые блоки
+//                HorizontalTextBlock.Visibility = Visibility.Visible;
+//                VerticalTextBlock.Visibility = Visibility.Visible;
+//                ListTextBlock.Visibility = Visibility.Visible;
+
+//                // Скрываем поля редактирования
+//                HorizontalEditBox.Visibility = Visibility.Collapsed;
+//                VerticalEditBox.Visibility = Visibility.Collapsed;
+//                ListEditBox.Visibility = Visibility.Collapsed;
+
+//                // Восстанавливаем дополнительные элементы
+//                progressBar.Visibility = Visibility.Visible;
+//                BorderTotalSizeString.Visibility = Visibility.Visible;
+//                GridUsedSpaceString.Visibility = Visibility.Visible;
+//                tbFreeSpaceString.Visibility = Visibility.Visible;
+//                tbUsedSpaceSString.Visibility = Visibility.Visible;
+
+//                _viewModel = null;
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] Error in FinishEditing: {ex.Message}");
+//                _isInEditMode = false;
+//                _viewModel = null;
+//            }
+//        }
+
+//        // Обработчики событий для TextBox
+//        public void EditTextBox_Loaded(object sender, RoutedEventArgs e)
+//        {
+//            // Автоматическая фокусировка не нужна - она делается в StartEditing
+//        }
+
+//        public void EditTextBox_LostFocus(object sender, RoutedEventArgs e)
+//        {
+//            if (_isInEditMode)
+//            {
+//                Debug.WriteLine($"[TileMyDriveUc] EditTextBox_LostFocus - saving changes");
+//                StopEditing();
+//            }
+//        }
+
+//        public void EditTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
+//        {
+//            if (!_isInEditMode) return;
+
+//            Debug.WriteLine($"[TileMyDriveUc] EditTextBox_KeyDown: {e.Key}");
+
+//            switch (e.Key)
+//            {
+//                case VirtualKey.Enter:
+//                    e.Handled = true;
+//                    Debug.WriteLine($"[TileMyDriveUc] Enter pressed - saving");
+
+//                    // Обновляем NewNameForEdit перед сохранением
+//                    TextBox textBox = sender as TextBox;
+//                    if (textBox != null && _viewModel != null)
+//                    {
+//                        _viewModel.NewNameForEdit = textBox.Text;
+//                    }
+
+//                    StopEditing();
+//                    break;
+
+//                case VirtualKey.Escape:
+//                    e.Handled = true;
+//                    Debug.WriteLine($"[TileMyDriveUc] Escape pressed - cancelling");
+//                    CancelEditing();
+//                    break;
+
+//                case VirtualKey.Tab:
+//                    e.Handled = true;
+//                    Debug.WriteLine($"[TileMyDriveUc] Tab pressed - saving");
+
+//                    // Аналогично для Tab
+//                    TextBox tabTextBox = sender as TextBox;
+//                    if (tabTextBox != null && _viewModel != null)
+//                    {
+//                        _viewModel.NewNameForEdit = tabTextBox.Text;
+//                    }
+
+//                    StopEditing();
+//                    break;
+//            }
+//        }
+
+//        public void EditTextBox_TextChanged(object sender, TextChangedEventArgs e)
+//        {
+//            if (_isInEditMode && _viewModel != null)
+//            {
+//                TextBox textBox = sender as TextBox;
+//                if (textBox != null)
+//                {
+//                    _viewModel.NewNameForEdit = textBox.Text;
+//                    Debug.WriteLine($"[TileMyDriveUc] TextChanged: NewNameForEdit = '{textBox.Text}'");
+//                }
+//            }
+//        }
+
+//        protected override void OnDisplayModeChanged()
+//        {
+//            base.OnDisplayModeChanged();
+
+//            if (DisplayMode == "Vertical")
+//            {
+//                HorizontalLayout.Visibility = Visibility.Collapsed;
+//                VerticalLayout.Visibility = Visibility.Visible;
+//                ListLayout.Visibility = Visibility.Collapsed;
+//            }
+//            else if (DisplayMode == "List")
+//            {
+//                HorizontalLayout.Visibility = Visibility.Collapsed;
+//                VerticalLayout.Visibility = Visibility.Collapsed;
+//                ListLayout.Visibility = Visibility.Visible;
+//            }
+//            else
+//            {
+//                HorizontalLayout.Visibility = Visibility.Visible;
+//                VerticalLayout.Visibility = Visibility.Collapsed;
+//                ListLayout.Visibility = Visibility.Collapsed;
+//            }
+//        }
+
+//        protected override void UpdateSize()
+//        {
+//            base.UpdateSize();
+
+//            if (progressBar == null || GridUsedSpaceString == null || BorderTotalSizeString == null ||
+//                tbFreeSpaceString == null || tbUsedSpaceSString == null || tbTotalSizeString == null)
+//            {
+//                return;
+//            }
+
+//            // Если в режиме редактирования - выходим
+//            if (_isInEditMode)
+//            {
+//                return;
+//            }
+
+//            // Скрываем для List режима
+//            if (DisplayMode == "List")
+//            {
+//                SetElementVisibility(false, 0, 0);
+//                return;
+//            }
+
+//            switch (Size.ToLower())
+//            {
+//                case "tiny":
+//                case "extra small":
+//                case "small":
+//                    BorderTotalSizeString.Height = 1;
+//                    BorderTotalSizeString.Width = 1;
+//                    SetElementVisibility(false, 0, 0);
+//                    break;
+//                case "medium":
+//                    BorderTotalSizeString.Height = 45;
+//                    BorderTotalSizeString.Width = 40;
+//                    SetElementVisibility(true, 10, 18);
+//                    break;
+//                case "large":
+//                    BorderTotalSizeString.Height = 75;
+//                    BorderTotalSizeString.Width = 45;
+//                    SetElementVisibility(true, 12, 20);
+//                    break;
+//                case "extra large":
+//                case "huge":
+//                    BorderTotalSizeString.Height = 85;
+//                    BorderTotalSizeString.Width = 50;
+//                    SetElementVisibility(true, 14, 22);
+//                    break;
+//                default:
+//                    Debug.WriteLine($"[TileMyDriveUc] Неизвестный размер: {Size}");
+//                    break;
+//            }
+//        }
+
+//        private void SetElementVisibility(bool isVisible, double fontSize, double indHeight)
+//        {
+//            progressBar.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+//            BorderTotalSizeString.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+//            GridUsedSpaceString.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+//            tbFreeSpaceString.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+//            tbUsedSpaceSString.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+
+//            double actualFontSize = isVisible ? fontSize : 1;
+//            tbFreeSpaceString.FontSize = actualFontSize;
+//            tbUsedSpaceSString.FontSize = actualFontSize;
+//            tbTotalSizeString.FontSize = actualFontSize;
+
+//            var indicator = GetProgressBarIndicator();
+//            if (indicator != null)
+//            {
+//                indicator.Height = isVisible ? indHeight : 0;
+//            }
+//        }
+
+//        private Border GetProgressBarIndicator()
+//        {
+//            if (progressBar == null) return null;
+
+//            return UIHelper.GetDescendantsOfType<Border>(progressBar)
+//                .FirstOrDefault(b => b.Name == "Indicator");
+//        }
+
+//        private TextBox GetCurrentEditBox()
+//        {
+//            switch (DisplayMode)
+//            {
+//                case "Horizontal":
+//                    return HorizontalEditBox;
+//                case "Vertical":
+//                    return VerticalEditBox;
+//                case "List":
+//                    return ListEditBox;
+//                default:
+//                    return HorizontalEditBox;
+//            }
+//        }
+//    }
+
+//    public static class VisibilityExtensions
+//    {
+//        public static Visibility ToVisibility(this bool isVisible) =>
+//            isVisible ? Visibility.Visible : Visibility.Collapsed;
+//    }
+//}
+
+
 using System.Diagnostics;
 using System.Linq;
 using CommunityToolkit.WinUI;
@@ -2017,6 +2848,13 @@ namespace ufm
 
                 Debug.WriteLine($"[TileMyDriveUc] Starting edit for: {_originalText}");
 
+                // ВАЖНО: Устанавливаем IsEditing в ViewModel!
+                _viewModel.IsEditing = true;
+                _viewModel.EditRequested = true;
+
+                // Инициализируем временное свойство в ViewModel
+                _viewModel.NewNameForEdit = _originalText;
+
                 // Скрываем обычные текстовые блоки
                 HorizontalTextBlock.Visibility = Visibility.Collapsed;
                 VerticalTextBlock.Visibility = Visibility.Collapsed;
@@ -2035,7 +2873,7 @@ namespace ufm
                 tbUsedSpaceSString.Visibility = Visibility.Collapsed;
 
                 // Устанавливаем текст в TextBox
-                string currentText = _viewModel.Name;
+                string currentText = _viewModel.NewNameForEdit;
                 HorizontalEditBox.Text = currentText;
                 VerticalEditBox.Text = currentText;
                 ListEditBox.Text = currentText;
@@ -2056,6 +2894,11 @@ namespace ufm
             {
                 Debug.WriteLine($"[TileMyDriveUc] Error in StartEditing: {ex.Message}");
                 _isInEditMode = false;
+                if (_viewModel != null)
+                {
+                    _viewModel.IsEditing = false;
+                    _viewModel.EditRequested = false;
+                }
             }
         }
 
@@ -2078,9 +2921,8 @@ namespace ufm
                 else
                 {
                     Debug.WriteLine($"[TileMyDriveUc] No changes to save");
+                    FinishEditing();
                 }
-
-                FinishEditing();
             }
             catch (Exception ex)
             {
@@ -2100,9 +2942,12 @@ namespace ufm
 
                 Debug.WriteLine($"[TileMyDriveUc] Cancelling changes, restoring: {_originalText}");
 
-                if (_viewModel != null && !string.IsNullOrEmpty(_originalText))
+                if (_viewModel != null)
                 {
+                    // Восстанавливаем оригинальное имя в ViewModel
                     _viewModel.Name = _originalText;
+                    _viewModel.NewNameForEdit = _originalText;
+                    _viewModel.CancelEdit();
                 }
 
                 FinishEditing();
@@ -2123,18 +2968,48 @@ namespace ufm
             {
                 if (_viewModel != null)
                 {
-                    _viewModel.Name = newText;
+                    Debug.WriteLine($"[TileMyDriveUc] SaveChanges called with: '{newText}'");
 
-                    // Вызываем команду сохранения если она доступна
+                    // Устанавливаем новое имя во временное свойство ViewModel
+                    _viewModel.NewNameForEdit = newText;
+
+                    Debug.WriteLine($"[TileMyDriveUc] NewNameForEdit set to: '{_viewModel.NewNameForEdit}'");
+                    Debug.WriteLine($"[TileMyDriveUc] Original name: '{_originalText}'");
+                    Debug.WriteLine($"[TileMyDriveUc] IsEditing: {_viewModel.IsEditing}");
+                    Debug.WriteLine($"[TileMyDriveUc] CanSaveEdit: {_viewModel.SaveEditCommand?.CanExecute(null)}");
+
+                    // Вызываем команду сохранения
                     if (_viewModel.SaveEditCommand?.CanExecute(null) == true)
                     {
+                        Debug.WriteLine($"[TileMyDriveUc] SaveEditCommand can execute, calling Execute");
                         _viewModel.SaveEditCommand.Execute(null);
+                        _ = DispatcherQueue.TryEnqueue(async () =>
+                        {
+                            await Task.Delay(10);
+                            FinishEditing();
+                        });
                     }
+                    else
+                    {
+                        Debug.WriteLine($"[TileMyDriveUc] SaveEditCommand cannot execute. Reasons:");
+                        Debug.WriteLine($"[TileMyDriveUc]   IsEditing: {_viewModel.IsEditing}");
+                        Debug.WriteLine($"[TileMyDriveUc]   NewNameForEdit is null/empty: {string.IsNullOrEmpty(_viewModel.NewNameForEdit?.Trim())}");
+                        Debug.WriteLine($"[TileMyDriveUc]   NewNameForEdit == Original: {_viewModel.NewNameForEdit?.Trim() == _originalText}");
+
+                        // Если команда не может выполниться, завершаем редактирование
+                        FinishEditing();
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine($"[TileMyDriveUc] ViewModel is null, cannot save changes");
+                    FinishEditing();
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[TileMyDriveUc] Error saving changes: {ex.Message}");
+                Debug.WriteLine($"[TileMyDriveUc] Error in SaveChanges: {ex.Message}");
+                FinishEditing();
             }
         }
 
@@ -2163,7 +3038,12 @@ namespace ufm
                 tbFreeSpaceString.Visibility = Visibility.Visible;
                 tbUsedSpaceSString.Visibility = Visibility.Visible;
 
-                _viewModel = null;
+                // Сбрасываем ViewModel
+                if (_viewModel != null)
+                {
+                    _viewModel.EditRequested = false;
+                    _viewModel = null;
+                }
             }
             catch (Exception ex)
             {
@@ -2199,6 +3079,14 @@ namespace ufm
                 case VirtualKey.Enter:
                     e.Handled = true;
                     Debug.WriteLine($"[TileMyDriveUc] Enter pressed - saving");
+
+                    // Обновляем NewNameForEdit перед сохранением
+                    TextBox textBox = sender as TextBox;
+                    if (textBox != null && _viewModel != null)
+                    {
+                        _viewModel.NewNameForEdit = textBox.Text;
+                    }
+
                     StopEditing();
                     break;
 
@@ -2211,8 +3099,29 @@ namespace ufm
                 case VirtualKey.Tab:
                     e.Handled = true;
                     Debug.WriteLine($"[TileMyDriveUc] Tab pressed - saving");
+
+                    // Аналогично для Tab
+                    TextBox tabTextBox = sender as TextBox;
+                    if (tabTextBox != null && _viewModel != null)
+                    {
+                        _viewModel.NewNameForEdit = tabTextBox.Text;
+                    }
+
                     StopEditing();
                     break;
+            }
+        }
+
+        public void EditTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isInEditMode && _viewModel != null)
+            {
+                TextBox textBox = sender as TextBox;
+                if (textBox != null)
+                {
+                    _viewModel.NewNameForEdit = textBox.Text;
+                    Debug.WriteLine($"[TileMyDriveUc] TextChanged: NewNameForEdit = '{textBox.Text}'");
+                }
             }
         }
 
@@ -2244,6 +3153,7 @@ namespace ufm
         {
             base.UpdateSize();
 
+            // Проверка на null элементов управления
             if (progressBar == null || GridUsedSpaceString == null || BorderTotalSizeString == null ||
                 tbFreeSpaceString == null || tbUsedSpaceSString == null || tbTotalSizeString == null)
             {
@@ -2263,10 +3173,19 @@ namespace ufm
                 return;
             }
 
+            // Приводим Size к нижнему регистру для унификации
             switch (Size.ToLower())
             {
                 case "tiny":
+                    BorderTotalSizeString.Height = 1;
+                    BorderTotalSizeString.Width = 1;
+                    SetElementVisibility(false, 0, 0);
+                    break;
                 case "extra small":
+                    BorderTotalSizeString.Height = 1;
+                    BorderTotalSizeString.Width = 1;
+                    SetElementVisibility(false, 0, 0);
+                    break;
                 case "small":
                     BorderTotalSizeString.Height = 1;
                     BorderTotalSizeString.Width = 1;
@@ -2283,12 +3202,17 @@ namespace ufm
                     SetElementVisibility(true, 12, 20);
                     break;
                 case "extra large":
+                    BorderTotalSizeString.Height = 85;
+                    BorderTotalSizeString.Width = 50;
+                    SetElementVisibility(true, 14, 22);
+                    break;
                 case "huge":
                     BorderTotalSizeString.Height = 85;
                     BorderTotalSizeString.Width = 50;
                     SetElementVisibility(true, 14, 22);
                     break;
                 default:
+                    // Обработка неизвестного размера
                     Debug.WriteLine($"[TileMyDriveUc] Неизвестный размер: {Size}");
                     break;
             }
