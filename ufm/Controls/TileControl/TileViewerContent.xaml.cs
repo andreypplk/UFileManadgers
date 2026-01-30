@@ -25,7 +25,7 @@ using Windows.Storage;
 
 namespace ufm
 {
-    public sealed partial class TileListView : UserControl, IDisposable, ISupportsIconSize, IRefreshablePanel, INotifyPropertyChanged
+    public sealed partial class TileViewerContent : UserControl, IDisposable, ISupportsIconSize, IRefreshablePanel, INotifyPropertyChanged
     {
         #region Поля и свойства
 
@@ -90,6 +90,25 @@ namespace ufm
             }
         }
 
+        // Свойство для режима отображения
+        private string _displayMode = "Horizontal";
+        public string DisplayMode
+        {
+            get => _displayMode;
+            set
+            {
+                if (_displayMode != value)
+                {
+                    _displayMode = value;
+                    UpdateDisplayMode();
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        // Текущий активный контрол
+        private ListViewBase _currentItemsControl;
+
         public double ItemWidth
         {
             get => _itemWidth;
@@ -98,7 +117,7 @@ namespace ufm
                 if (_itemWidth != value)
                 {
                     _itemWidth = value;
-                    UpdateListViewLayout();
+                    UpdateItemsControlLayout();
                 }
             }
         }
@@ -111,12 +130,12 @@ namespace ufm
                 if (_itemHeight != value)
                 {
                     _itemHeight = value;
-                    UpdateListViewLayout();
+                    UpdateItemsControlLayout();
                 }
             }
         }
 
-        private string _selectedSize = "List Medium";
+        private string _selectedSize = "Medium";
 
         private const int HorizontalPadding = 10;
         private const int VerticalPadding = 8;
@@ -146,7 +165,7 @@ namespace ufm
 
         #region Конструктор и Dispose
 
-        public TileListView()
+        public TileViewerContent()
         {
             InitializeComponent();
 
@@ -156,33 +175,65 @@ namespace ufm
 
             _fileSystemService = new FileSystemService();
 
+            // Устанавливаем текущий контрол
+            _currentItemsControl = ItemsListView;
             ItemsListView.ItemsSource = Items;
+            ItemsGridView.ItemsSource = Items;
+
             Loaded += OnLoaded;
 
             // Инициализируем таймер выделения при наведении
             InitializeHoverTimer();
 
-            ItemsListView.ContainerContentChanging += ItemsListView_ContainerContentChanging;
-            ItemsListView.DoubleTapped += ItemsListView_DoubleTapped;
-            ItemsListView.SelectionChanged += ItemsListView_SelectionChanged;
-            ItemsListView.KeyDown += ItemsListView_KeyDown;
-            ItemsListView.KeyUp += ItemsListView_KeyUp;
-            ItemsListView.PreviewKeyDown += ItemsListView_PreviewKeyDown;
+            // Подписываемся на события обоих контролов
+            SubscribeToEvents(ItemsListView);
+            SubscribeToEvents(ItemsGridView);
 
-            ItemsListView.PointerEntered += ItemsListView_PointerEntered;
-            ItemsListView.PointerExited += ItemsListView_PointerExited;
-            ItemsListView.PointerMoved += ItemsListView_PointerMoved;
-
-            ItemsListView.PointerPressed += ItemsListView_PointerPressed;
-            ItemsListView.PointerReleased += ItemsListView_PointerReleased;
-            ItemsListView.PointerMoved += ItemsListView_PointerMovedForDrag;
-
-            // Добавляем обработчик кликов на ItemsListView
-            ItemsListView.ItemClick += ItemsListView_OnItemClick;
+            // Добавляем обработчик кликов
+            ItemsListView.ItemClick += ItemsControl_OnItemClick;
+            ItemsGridView.ItemClick += ItemsControl_OnItemClick;
 
             this.Loaded += (s, e) => InitializeSelectionCanvas();
 
             CalculateItemDimensions();
+        }
+
+        private void SubscribeToEvents(ListViewBase itemsControl)
+        {
+            itemsControl.ContainerContentChanging += ItemsControl_ContainerContentChanging;
+            itemsControl.DoubleTapped += ItemsControl_DoubleTapped;
+            itemsControl.SelectionChanged += ItemsControl_SelectionChanged;
+            itemsControl.KeyDown += ItemsControl_KeyDown;
+            itemsControl.KeyUp += ItemsControl_KeyUp;
+            itemsControl.PreviewKeyDown += ItemsControl_PreviewKeyDown;
+
+            itemsControl.PointerEntered += ItemsControl_PointerEntered;
+            itemsControl.PointerExited += ItemsControl_PointerExited;
+            itemsControl.PointerMoved += ItemsControl_PointerMoved;
+
+            itemsControl.PointerPressed += ItemsControl_PointerPressed;
+            itemsControl.PointerReleased += ItemsControl_PointerReleased;
+            itemsControl.PointerMoved += ItemsControl_PointerMovedForDrag;
+            itemsControl.SizeChanged += ItemsControl_SizeChanged;
+        }
+
+        private void UnsubscribeFromEvents(ListViewBase itemsControl)
+        {
+            itemsControl.ContainerContentChanging -= ItemsControl_ContainerContentChanging;
+            itemsControl.DoubleTapped -= ItemsControl_DoubleTapped;
+            itemsControl.SelectionChanged -= ItemsControl_SelectionChanged;
+            itemsControl.KeyDown -= ItemsControl_KeyDown;
+            itemsControl.KeyUp -= ItemsControl_KeyUp;
+            itemsControl.PreviewKeyDown -= ItemsControl_PreviewKeyDown;
+
+            itemsControl.PointerEntered -= ItemsControl_PointerEntered;
+            itemsControl.PointerExited -= ItemsControl_PointerExited;
+            itemsControl.PointerMoved -= ItemsControl_PointerMoved;
+
+            itemsControl.PointerPressed -= ItemsControl_PointerPressed;
+            itemsControl.PointerReleased -= ItemsControl_PointerReleased;
+            itemsControl.PointerMoved -= ItemsControl_PointerMovedForDrag;
+            itemsControl.SizeChanged -= ItemsControl_SizeChanged;
         }
 
         public void Dispose()
@@ -193,20 +244,13 @@ namespace ufm
             _dummyHistory?.Dispose();
 
             Loaded -= OnLoaded;
-            ItemsListView.ContainerContentChanging -= ItemsListView_ContainerContentChanging;
-            ItemsListView.DoubleTapped -= ItemsListView_DoubleTapped;
-            ItemsListView.SelectionChanged -= ItemsListView_SelectionChanged;
-            ItemsListView.KeyDown -= ItemsListView_KeyDown;
-            ItemsListView.KeyUp -= ItemsListView_KeyUp;
-            ItemsListView.PreviewKeyDown -= ItemsListView_PreviewKeyDown;
-            ItemsListView.PointerEntered -= ItemsListView_PointerEntered;
-            ItemsListView.PointerExited -= ItemsListView_PointerExited;
-            ItemsListView.PointerMoved -= ItemsListView_PointerMoved;
-            ItemsListView.PointerPressed -= ItemsListView_PointerPressed;
-            ItemsListView.PointerReleased -= ItemsListView_PointerReleased;
-            ItemsListView.PointerMoved -= ItemsListView_PointerMovedForDrag;
-            ItemsListView.ItemClick -= ItemsListView_OnItemClick;
-            ItemsListView.SizeChanged -= ItemsListView_SizeChanged;
+
+            // Отписываемся от событий обоих контролов
+            UnsubscribeFromEvents(ItemsListView);
+            UnsubscribeFromEvents(ItemsGridView);
+
+            ItemsListView.ItemClick -= ItemsControl_OnItemClick;
+            ItemsGridView.ItemClick -= ItemsControl_OnItemClick;
 
             // Останавливаем и освобождаем таймер
             if (_hoverTimer != null)
@@ -251,6 +295,59 @@ namespace ufm
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
+
+        #region Обновление режима отображения
+
+        private void UpdateDisplayMode()
+        {
+            Debug.WriteLine($"[TileViewerContent] Switching to DisplayMode: {DisplayMode}");
+
+            // Сохраняем текущее выделение
+            var selectedItems = _currentItemsControl?.SelectedItems?.Cast<ExplorerItemViewModel>().ToList();
+
+            // Переключаем видимость контролов
+            switch (DisplayMode.ToLower())
+            {
+                case "horizontal":
+                case "list":
+                    ItemsListView.Visibility = Visibility.Visible;
+                    ItemsGridView.Visibility = Visibility.Collapsed;
+                    _currentItemsControl = ItemsListView;
+                    break;
+
+                case "vertical":
+                case "icons":
+                    ItemsListView.Visibility = Visibility.Collapsed;
+                    ItemsGridView.Visibility = Visibility.Visible;
+                    _currentItemsControl = ItemsGridView;
+                    break;
+
+                default:
+                    ItemsListView.Visibility = Visibility.Visible;
+                    ItemsGridView.Visibility = Visibility.Collapsed;
+                    _currentItemsControl = ItemsListView;
+                    break;
+            }
+
+            // Восстанавливаем выделение
+            if (selectedItems != null && _currentItemsControl != null)
+            {
+                _currentItemsControl.SelectedItems.Clear();
+                foreach (var item in selectedItems)
+                {
+                    _currentItemsControl.SelectedItems.Add(item);
+                }
+            }
+
+            // Обновляем размеры элементов
+            CalculateItemDimensions();
+            UpdateItemsControlLayout();
+
+            // Обновляем все элементы
+            UpdateAllTiles();
         }
 
         #endregion
@@ -323,9 +420,12 @@ namespace ufm
 
         #region Обработка событий мыши для выделения при наведении
 
-        private void ItemsListView_PointerEntered(object sender, PointerRoutedEventArgs e)
+        private void ItemsControl_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             if (!SingleClickOpenItem) return;
+
+            var itemsControl = sender as ListViewBase;
+            if (itemsControl != _currentItemsControl) return;
 
             var element = e.OriginalSource as FrameworkElement;
             var item = FindParentDataContext<ExplorerItemViewModel>(element);
@@ -337,17 +437,23 @@ namespace ufm
             }
         }
 
-        private void ItemsListView_PointerExited(object sender, PointerRoutedEventArgs e)
+        private void ItemsControl_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (!SingleClickOpenItem) return;
+
+            var itemsControl = sender as ListViewBase;
+            if (itemsControl != _currentItemsControl) return;
 
             StopHoverTimer();
             _hoveredItem = null;
         }
 
-        private void ItemsListView_PointerMoved(object sender, PointerRoutedEventArgs e)
+        private void ItemsControl_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (!SingleClickOpenItem) return;
+
+            var itemsControl = sender as ListViewBase;
+            if (itemsControl != _currentItemsControl) return;
 
             var element = e.OriginalSource as FrameworkElement;
             var item = FindParentDataContext<ExplorerItemViewModel>(element);
@@ -380,9 +486,12 @@ namespace ufm
 
         #region Выделение областью мышью - С НЕМЕДЛЕННЫМ ВЫДЕЛЕНИЕМ
 
-        private void ItemsListView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void ItemsControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var point = e.GetCurrentPoint(ItemsListView);
+            var itemsControl = sender as ListViewBase;
+            if (itemsControl != _currentItemsControl) return;
+
+            var point = e.GetCurrentPoint(itemsControl);
 
             // Сохраняем точку начала выделения
             _dragStartPoint = new Vector2((float)point.Position.X, (float)point.Position.Y);
@@ -395,25 +504,24 @@ namespace ufm
                 _isMouseMovingWithButton = false;
 
                 // Ищем элемент под курсором
-                var clickedItem = FindItemAtPoint(point.Position);
+                var clickedItem = FindItemAtPoint(point.Position, itemsControl);
                 if (clickedItem != null)
                 {
                     // Если кликнули на элементе - обрабатываем как обычный клик
-                    // Не обрабатываем событие, чтобы позволить стандартной обработке клика через ItemsListView_OnItemClick
                     e.Handled = false;
                 }
                 else
                 {
                     // Если кликнули на пустом месте - начинаем выделение областью
                     _isDragSelecting = true;
-                    ItemsListView.CapturePointer(e.Pointer);
+                    itemsControl.CapturePointer(e.Pointer);
                     CreateSelectionRectangle();
                     UpdateSelectionRectangle(_dragStartPoint, _dragStartPoint);
 
                     // Очищаем выделение если не нажат Ctrl
                     if (!_isCtrlPressed)
                     {
-                        ItemsListView.SelectedItems.Clear();
+                        itemsControl.SelectedItems.Clear();
                     }
 
                     e.Handled = true;
@@ -421,15 +529,18 @@ namespace ufm
             }
         }
 
-        private ListViewItem FindItemAtPoint(Windows.Foundation.Point point)
+        private Control FindItemAtPoint(Windows.Foundation.Point point, ListViewBase itemsControl)
         {
-            var elements = VisualTreeHelper.FindElementsInHostCoordinates(point, ItemsListView);
-            return elements.OfType<ListViewItem>().FirstOrDefault();
+            var elements = VisualTreeHelper.FindElementsInHostCoordinates(point, itemsControl);
+            return elements.OfType<Control>().FirstOrDefault(c => c is ListViewItem || c is GridViewItem);
         }
 
-        private void ItemsListView_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void ItemsControl_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            var point = e.GetCurrentPoint(ItemsListView);
+            var itemsControl = sender as ListViewBase;
+            if (itemsControl != _currentItemsControl) return;
+
+            var point = e.GetCurrentPoint(itemsControl);
 
             // Сбрасываем состояние при отпускании левой кнопки
             if (!point.Properties.IsLeftButtonPressed)
@@ -445,9 +556,9 @@ namespace ufm
                 }
 
                 // Освобождаем указатель только если он был захвачен
-                if (ItemsListView.PointerCaptures != null && ItemsListView.PointerCaptures.Count > 0)
+                if (itemsControl.PointerCaptures != null && itemsControl.PointerCaptures.Count > 0)
                 {
-                    ItemsListView.ReleasePointerCapture(e.Pointer);
+                    itemsControl.ReleasePointerCapture(e.Pointer);
                 }
             }
 
@@ -459,9 +570,9 @@ namespace ufm
                 _wasClickHandled = false;
 
                 // Освобождаем указатель если он был захвачен
-                if (ItemsListView.PointerCaptures != null && ItemsListView.PointerCaptures.Count > 0)
+                if (itemsControl.PointerCaptures != null && itemsControl.PointerCaptures.Count > 0)
                 {
-                    ItemsListView.ReleasePointerCapture(e.Pointer);
+                    itemsControl.ReleasePointerCapture(e.Pointer);
                 }
 
                 // Удаляем прямоугольник выделения
@@ -471,9 +582,12 @@ namespace ufm
             }
         }
 
-        private void ItemsListView_PointerMovedForDrag(object sender, PointerRoutedEventArgs e)
+        private void ItemsControl_PointerMovedForDrag(object sender, PointerRoutedEventArgs e)
         {
-            var point = e.GetCurrentPoint(ItemsListView);
+            var itemsControl = sender as ListViewBase;
+            if (itemsControl != _currentItemsControl) return;
+
+            var point = e.GetCurrentPoint(itemsControl);
 
             // ВАЖНО: проверяем зажата ли левая кнопка И движется ли мышь
             if (_isLeftMouseButtonPressed && point.Properties.IsLeftButtonPressed)
@@ -495,7 +609,7 @@ namespace ufm
                 {
                     _isDragSelecting = true;
                     // Захватываем указатель ТОЛЬКО при начале выделения областью
-                    ItemsListView.CapturePointer(e.Pointer);
+                    itemsControl.CapturePointer(e.Pointer);
                     // Создаем прямоугольник выделения
                     CreateSelectionRectangle();
                     UpdateSelectionRectangle(_dragStartPoint,
@@ -504,7 +618,7 @@ namespace ufm
                     // Очищаем выделение если не нажат Ctrl
                     if (!_isCtrlPressed)
                     {
-                        ItemsListView.SelectedItems.Clear();
+                        itemsControl.SelectedItems.Clear();
                     }
                 }
 
@@ -516,7 +630,7 @@ namespace ufm
                     UpdateSelectionRectangle(_dragStartPoint, currentPoint);
 
                     // НЕМЕДЛЕННО выделяем элементы внутри прямоугольника
-                    PerformRectangleSelection(_dragStartPoint, currentPoint, true);
+                    PerformRectangleSelection(_dragStartPoint, currentPoint, itemsControl, true);
 
                     e.Handled = true;
                 }
@@ -578,7 +692,7 @@ namespace ufm
         }
 
         // ОПТИМИЗИРОВАННОЕ выделение прямоугольником с НЕМЕДЛЕННЫМ применением
-        private void PerformRectangleSelection(Vector2 startPoint, Vector2 endPoint, bool applyImmediately = false)
+        private void PerformRectangleSelection(Vector2 startPoint, Vector2 endPoint, ListViewBase itemsControl, bool applyImmediately = false)
         {
             if (Items.Count == 0) return;
 
@@ -591,19 +705,19 @@ namespace ufm
             var newSelectedIndices = new HashSet<int>();
 
             // Используем ItemsWrapGrid.Children для быстрого доступа к видимым элементам
-            var panel = ItemsListView.ItemsPanelRoot as ItemsWrapGrid;
+            var panel = itemsControl.ItemsPanelRoot as ItemsWrapGrid;
             if (panel != null)
             {
                 // Проходим по всем видимым элементам
                 foreach (var child in panel.Children)
                 {
-                    if (child is ListViewItem container && container.Visibility == Visibility.Visible)
+                    if (child is FrameworkElement container && container.Visibility == Visibility.Visible)
                     {
-                        int index = ItemsListView.IndexFromContainer(container);
+                        int index = itemsControl.IndexFromContainer(container);
                         if (index >= 0 && index < Items.Count)
                         {
                             // Получаем позицию элемента
-                            var transform = container.TransformToVisual(ItemsListView);
+                            var transform = container.TransformToVisual(itemsControl);
                             var position = transform.TransformPoint(new Windows.Foundation.Point(0, 0));
 
                             float itemLeft = (float)position.X;
@@ -623,9 +737,9 @@ namespace ufm
                             {
                                 // Если элемент не входит в прямоугольник и не нажат Ctrl - снимаем выделение
                                 var item = Items[index];
-                                if (ItemsListView.SelectedItems.Contains(item))
+                                if (itemsControl.SelectedItems.Contains(item))
                                 {
-                                    ItemsListView.SelectedItems.Remove(item);
+                                    itemsControl.SelectedItems.Remove(item);
                                 }
                             }
                         }
@@ -642,15 +756,15 @@ namespace ufm
                     if (index >= 0 && index < Items.Count)
                     {
                         var item = Items[index];
-                        if (!ItemsListView.SelectedItems.Contains(item))
+                        if (!itemsControl.SelectedItems.Contains(item))
                         {
-                            ItemsListView.SelectedItems.Add(item);
+                            itemsControl.SelectedItems.Add(item);
                         }
                     }
                 }
 
                 // Обновляем визуальное состояние
-                UpdateSelectionVisual();
+                UpdateSelectionVisual(itemsControl);
             }
             else
             {
@@ -710,7 +824,7 @@ namespace ufm
         {
             if (string.IsNullOrEmpty(_selectedSize))
             {
-                _selectedSize = "List Medium";
+                _selectedSize = "Medium";
                 Debug.WriteLine("Используются настройки по умолчанию.");
             }
             else
@@ -724,7 +838,7 @@ namespace ufm
             await Task.Delay(50);
 
             UpdateAllTiles();
-            UpdateListViewLayout();
+            UpdateItemsControlLayout();
 
             if (PanelManager != null && !string.IsNullOrEmpty(PanelManager.CurrentPath))
             {
@@ -754,17 +868,25 @@ namespace ufm
             CalculateItemDimensions();
             Debug.WriteLine($"[{PanelId}] Установлен размер: {_selectedSize}");
 
-
             UpdateAllTiles();
-            UpdateListViewLayout();
+            UpdateItemsControlLayout();
             ItemsListView.UpdateLayout();
+            ItemsGridView.UpdateLayout();
         }
 
         private void CalculateItemDimensions()
         {
             var sizeParams = SizeManagerTile.GetSize(_selectedSize);
-            ItemWidth = Math.Max(sizeParams.Width + 20, MinimumItemWidth);
-            ItemHeight = Math.Max(sizeParams.Height + 20, MinimumItemHeight);
+            if (DisplayMode.ToLower() == "vertical" || DisplayMode.ToLower() == "icons")
+            {
+                ItemWidth = Math.Max(sizeParams.Width + 20, MinimumItemWidth);
+                ItemHeight = Math.Max(sizeParams.Height + 25, MinimumItemHeight);
+            }
+            else
+            {
+                ItemWidth = Math.Max(sizeParams.Width + 20, MinimumItemWidth);
+                ItemHeight = Math.Max(sizeParams.Height + 20, MinimumItemHeight);
+            }
             Debug.WriteLine($"Calculated dimensions: Width={ItemWidth}, Height={ItemHeight}");
         }
 
@@ -774,27 +896,70 @@ namespace ufm
 
         private void UpdateAllTiles()
         {
-            foreach (var item in ItemsListView.Items)
+            // Обновляем все видимые элементы
+            UpdateTilesInControl(ItemsListView);
+            UpdateTilesInControl(ItemsGridView);
+        }
+
+        private void UpdateTilesInControl(ListViewBase itemsControl)
+        {
+            foreach (var item in itemsControl.Items)
             {
-                var container = ItemsListView.ContainerFromItem(item) as ListViewItem;
+                // Используем ContainerFromItem с правильным типом
+                var container = GetContainerFromItem(itemsControl, item);
                 if (container != null)
                 {
-                    var tile = container.ContentTemplateRoot as BaseTileControl;
-                    if (tile != null)
+                    var tile = GetContentTemplateRootFromContainer(container);
+                    if (tile is BaseTileControl baseTile)
                     {
-                        tile.UpdateSize(_selectedSize);
+                        baseTile.UpdateSize(_selectedSize);
                     }
                 }
             }
         }
 
-        private void ItemsListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        private FrameworkElement GetContainerFromItem(ListViewBase itemsControl, object item)
+        {
+            if (itemsControl is ListView listView)
+            {
+                return listView.ContainerFromItem(item) as FrameworkElement;
+            }
+            else if (itemsControl is GridView gridView)
+            {
+                return gridView.ContainerFromItem(item) as FrameworkElement;
+            }
+            return null;
+        }
+
+        private FrameworkElement GetContentTemplateRootFromContainer(FrameworkElement container)
+        {
+            if (container is ListViewItem listViewItem)
+            {
+                return listViewItem.ContentTemplateRoot as FrameworkElement;
+            }
+            else if (container is GridViewItem gridViewItem)
+            {
+                return gridViewItem.ContentTemplateRoot as FrameworkElement;
+            }
+            return null;
+        }
+
+        private void ItemsControl_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             if (args.Phase != 0) return;
 
-            if (args.ItemContainer is ListViewItem container)
+            // Используем правильный тип для контейнера
+            if (args.ItemContainer is ListViewItem listViewItem)
             {
-                var tile = container.ContentTemplateRoot as BaseTileControl;
+                var tile = listViewItem.ContentTemplateRoot as BaseTileControl;
+                if (tile != null)
+                {
+                    tile.UpdateSize(_selectedSize);
+                }
+            }
+            else if (args.ItemContainer is GridViewItem gridViewItem)
+            {
+                var tile = gridViewItem.ContentTemplateRoot as BaseTileControl;
                 if (tile != null)
                 {
                     tile.UpdateSize(_selectedSize);
@@ -806,11 +971,11 @@ namespace ufm
 
         #region Обновление выделения
 
-        private void UpdateSelectionVisual()
+        private void UpdateSelectionVisual(ListViewBase itemsControl)
         {
-            foreach (var item in ItemsListView.SelectedItems)
+            foreach (var item in itemsControl.SelectedItems)
             {
-                var container = ItemsListView.ContainerFromItem(item) as ListViewItem;
+                var container = itemsControl.ContainerFromItem(item) as Control;
                 if (container != null)
                 {
                     VisualStateManager.GoToState(container, "Selected", false);
@@ -820,25 +985,25 @@ namespace ufm
 
         private void SelectItemOnHover(ExplorerItemViewModel item)
         {
-            if (item == null || _isDragSelecting) return;
+            if (item == null || _isDragSelecting || _currentItemsControl == null) return;
 
             // НЕ выделяем элемент ".." при наведении!
             if (item.Name == "..") return;
 
-            if (ItemsListView.SelectedItems.Contains(item))
+            if (_currentItemsControl.SelectedItems.Contains(item))
                 return;
 
             if (!_isCtrlPressed && !_isShiftPressed)
             {
-                ItemsListView.SelectedItems.Clear();
+                _currentItemsControl.SelectedItems.Clear();
             }
 
-            if (!ItemsListView.SelectedItems.Contains(item))
+            if (!_currentItemsControl.SelectedItems.Contains(item))
             {
-                ItemsListView.SelectedItems.Add(item);
+                _currentItemsControl.SelectedItems.Add(item);
             }
 
-            ItemsListView.SelectedItem = item;
+            _currentItemsControl.SelectedItem = item;
 
             Debug.WriteLine($"Hover selection: {item.Name}");
         }
@@ -847,18 +1012,34 @@ namespace ufm
 
         #region Layout и обновление UI
 
-        private void UpdateListViewLayout()
+        private void UpdateItemsControlLayout()
         {
-            if (ItemsListView?.ItemsPanelRoot is ItemsWrapGrid wrapGrid)
+            // Обновляем оба контрола
+            UpdateControlLayout(ItemsListView);
+            UpdateControlLayout(ItemsGridView);
+        }
+
+        private void UpdateControlLayout(ListViewBase itemsControl)
+        {
+            if (itemsControl?.ItemsPanelRoot is ItemsWrapGrid wrapGrid)
             {
                 wrapGrid.ItemWidth = ItemWidth;
                 wrapGrid.ItemHeight = ItemHeight;
 
-                // Динамически вычисляем максимальное количество строк/колонок
-                UpdateMaxRowsOrColumns();
+                if (itemsControl == ItemsListView)
+                {
+                    // Динамически вычисляем максимальное количество строк/колонок для ListView
+                    UpdateMaxRowsOrColumns();
+                    wrapGrid.MaximumRowsOrColumns = MaxRowsOrColumns;
+                }
+                else if (itemsControl == ItemsGridView)
+                {
+                    // Фиксированное значение для GridView
+                    wrapGrid.MaximumRowsOrColumns = 24;
+                }
 
-                Debug.WriteLine($"ListView layout updated: ItemWidth={wrapGrid.ItemWidth}, ItemHeight={wrapGrid.ItemHeight}, MaxRowsOrColumns={MaxRowsOrColumns}");
-                UpdateSelectionVisual();
+                Debug.WriteLine($"Control layout updated: ItemWidth={wrapGrid.ItemWidth}, ItemHeight={wrapGrid.ItemHeight}, MaxRowsOrColumns={wrapGrid.MaximumRowsOrColumns}");
+                UpdateSelectionVisual(itemsControl);
             }
         }
 
@@ -866,31 +1047,31 @@ namespace ufm
         {
             if (ItemHeight <= 0) return;
 
-            // Для горизонтальной ориентации (Orientation="Horizontal")
-            // MaximumRowsOrColumns означает максимальное количество СТРОК по вертикали
-
             var actualHeight = ItemsListView.ActualHeight;
             if (actualHeight > 0 && ItemHeight > 0)
             {
-                // Вычисляем сколько элементов помещается по высоте
-                // Вычитаем отступы и учитываем минимальный зазор
                 int maxRows = Math.Max(1, (int)((actualHeight - 20) / ItemHeight));
                 MaxRowsOrColumns = maxRows;
                 Debug.WriteLine($"MaxRowsOrColumns calculated: {maxRows} rows (Height={actualHeight}, ItemHeight={ItemHeight})");
             }
         }
 
-        // Обработчик изменения размера ListView
-        private void ItemsListView_SizeChanged(object sender, SizeChangedEventArgs e)
+        // Обработчик изменения размера контрола
+        private void ItemsControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            Debug.WriteLine($"ListView size changed: {e.NewSize.Width}x{e.NewSize.Height}");
-            UpdateMaxRowsOrColumns();
-            UpdateListViewLayout();
+            var itemsControl = sender as ListViewBase;
+            Debug.WriteLine($"ItemsControl size changed: {e.NewSize.Width}x{e.NewSize.Height} for {itemsControl.GetType().Name}");
+
+            if (itemsControl == ItemsListView)
+            {
+                UpdateMaxRowsOrColumns();
+            }
+            UpdateControlLayout(itemsControl);
         }
 
         private void UpdateUIForSelection()
         {
-            int selectedCount = ItemsListView.SelectedItems.Count;
+            int selectedCount = _currentItemsControl?.SelectedItems.Count ?? 0;
             Debug.WriteLine($"Update UI: {selectedCount} items selected");
         }
 
@@ -898,8 +1079,11 @@ namespace ufm
 
         #region Обработка кликов
 
-        private async void ItemsListView_OnItemClick(object sender, ItemClickEventArgs e)
+        private async void ItemsControl_OnItemClick(object sender, ItemClickEventArgs e)
         {
+            var itemsControl = sender as ListViewBase;
+            if (itemsControl != _currentItemsControl) return;
+
             // Защита от быстрых повторных кликов
             var now = DateTime.Now;
             if ((now - _lastClickTime).TotalMilliseconds < 300)
@@ -909,7 +1093,7 @@ namespace ufm
             }
             _lastClickTime = now;
 
-            Debug.WriteLine($"[{PanelId}] === ItemsListView_OnItemClick START ===");
+            Debug.WriteLine($"[{PanelId}] === ItemsControl_OnItemClick START ===");
             Debug.WriteLine($"[{PanelId}] SingleClickOpenItem: {SingleClickOpenItem}");
 
             if (e.ClickedItem is not ExplorerItemViewModel item) return;
@@ -929,7 +1113,7 @@ namespace ufm
                 if (_wasClickHandled)
                 {
                     Debug.WriteLine($"[{PanelId}] Click already handled, returning");
-                    Debug.WriteLine($"[{PanelId}] === ItemsListView_OnItemClick END (skipped) ===");
+                    Debug.WriteLine($"[{PanelId}] === ItemsControl_OnItemClick END (skipped) ===");
                     return;
                 }
                 _wasClickHandled = true;
@@ -944,7 +1128,7 @@ namespace ufm
                     // Shift+клик - выделение диапазона
                     if (_shiftSelectionStartItem == null)
                     {
-                        _shiftSelectionStartItem = ItemsListView.SelectedItem as ExplorerItemViewModel;
+                        _shiftSelectionStartItem = _currentItemsControl.SelectedItem as ExplorerItemViewModel;
                         if (_shiftSelectionStartItem == null && Items.Count > 0)
                         {
                             _shiftSelectionStartItem = Items[0];
@@ -962,21 +1146,21 @@ namespace ufm
                 else if (isCtrlPressed)
                 {
                     // Ctrl+клик - множественное выделение
-                    if (ItemsListView.SelectedItems.Contains(item))
+                    if (_currentItemsControl.SelectedItems.Contains(item))
                     {
-                        ItemsListView.SelectedItems.Remove(item);
+                        _currentItemsControl.SelectedItems.Remove(item);
                     }
                     else
                     {
-                        ItemsListView.SelectedItems.Add(item);
+                        _currentItemsControl.SelectedItems.Add(item);
                     }
                     _shiftSelectionStartItem = item;
                 }
                 else
                 {
                     // Обычный клик - открываем элемент
-                    ItemsListView.SelectedItems.Clear();
-                    ItemsListView.SelectedItem = item;
+                    _currentItemsControl.SelectedItems.Clear();
+                    _currentItemsControl.SelectedItem = item;
                     _shiftSelectionStartItem = item;
 
                     // Используем оптимизированный метод открытия
@@ -991,7 +1175,7 @@ namespace ufm
                     // Shift+клик - выделение диапазона
                     if (_shiftSelectionStartItem == null)
                     {
-                        _shiftSelectionStartItem = ItemsListView.SelectedItem as ExplorerItemViewModel;
+                        _shiftSelectionStartItem = _currentItemsControl.SelectedItem as ExplorerItemViewModel;
                         if (_shiftSelectionStartItem == null && Items.Count > 0)
                         {
                             _shiftSelectionStartItem = Items[0];
@@ -1009,21 +1193,21 @@ namespace ufm
                 else if (isCtrlPressed)
                 {
                     // Ctrl+клик - множественное выделение
-                    if (ItemsListView.SelectedItems.Contains(item))
+                    if (_currentItemsControl.SelectedItems.Contains(item))
                     {
-                        ItemsListView.SelectedItems.Remove(item);
+                        _currentItemsControl.SelectedItems.Remove(item);
                     }
                     else
                     {
-                        ItemsListView.SelectedItems.Add(item);
+                        _currentItemsControl.SelectedItems.Add(item);
                     }
                     _shiftSelectionStartItem = item;
                 }
                 else
                 {
                     // Обычный клик - выделяем и ждем возможного двойного клика
-                    ItemsListView.SelectedItems.Clear();
-                    ItemsListView.SelectedItem = item;
+                    _currentItemsControl.SelectedItems.Clear();
+                    _currentItemsControl.SelectedItem = item;
                     _shiftSelectionStartItem = item;
 
                     var currentTime = DateTime.Now;
@@ -1053,7 +1237,7 @@ namespace ufm
                 }
             }
 
-            Debug.WriteLine($"[{PanelId}] === ItemsListView_OnItemClick END ===");
+            Debug.WriteLine($"[{PanelId}] === ItemsControl_OnItemClick END ===");
         }
 
         #endregion
@@ -1073,7 +1257,7 @@ namespace ufm
 
             CancelCurrentOperation();
             Items.Clear();
-            UpdateListViewLayout();
+            UpdateItemsControlLayout();
 
             try
             {
@@ -1177,7 +1361,7 @@ namespace ufm
 
             CancelCurrentOperation();
             Items.Clear();
-            UpdateListViewLayout();
+            UpdateItemsControlLayout();
 
             try
             {
@@ -1191,7 +1375,7 @@ namespace ufm
                     {
                         Items.Add(item);
                     }
-                    UpdateListViewLayout();
+                    UpdateItemsControlLayout();
                     Debug.WriteLine($"[{PanelId}] Drives loaded successfully, items count: {Items.Count}");
                 });
             }
@@ -1210,7 +1394,7 @@ namespace ufm
                 await this.DispatcherQueue.EnqueueAsync(() =>
                 {
                     Items.Clear();
-                    UpdateListViewLayout();
+                    UpdateItemsControlLayout();
                     Debug.WriteLine($"[{PanelId}] Cleared items due to error");
                 });
             }
@@ -1260,7 +1444,7 @@ namespace ufm
                     {
                         Items.Add(item);
                     }
-                    UpdateListViewLayout();
+                    UpdateItemsControlLayout();
                 });
                 Debug.WriteLine($"[{PanelId}] Folder contents loaded successfully, items count: {Items.Count}");
             }
@@ -1289,8 +1473,11 @@ namespace ufm
 
         #region Обработка клавиатуры
 
-        private void ItemsListView_KeyDown(object sender, KeyRoutedEventArgs e)
+        private void ItemsControl_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            var itemsControl = sender as ListViewBase;
+            if (itemsControl != _currentItemsControl) return;
+
             UpdateModifierKeyState(e.Key, true);
 
             bool isCtrlPressed = _isCtrlPressed;
@@ -1301,7 +1488,7 @@ namespace ufm
             switch (e.Key)
             {
                 case VirtualKey.A when isCtrlPressed && !isShiftPressed:
-                    ItemsListView.SelectAll();
+                    _currentItemsControl.SelectAll();
                     e.Handled = true;
                     Debug.WriteLine("Ctrl+A: Select all");
                     break;
@@ -1313,7 +1500,7 @@ namespace ufm
                     break;
 
                 case VirtualKey.Enter:
-                    if (ItemsListView.SelectedItem != null)
+                    if (_currentItemsControl.SelectedItem != null)
                     {
                         OpenSelectedItem();
                         e.Handled = true;
@@ -1322,7 +1509,7 @@ namespace ufm
                     break;
 
                 case VirtualKey.F2:
-                    if (ItemsListView.SelectedItems.Count == 1)
+                    if (_currentItemsControl.SelectedItems.Count == 1)
                     {
                         RenameSelectedItem();
                         e.Handled = true;
@@ -1331,7 +1518,7 @@ namespace ufm
                     break;
 
                 case VirtualKey.Delete:
-                    if (ItemsListView.SelectedItems.Count > 0)
+                    if (_currentItemsControl.SelectedItems.Count > 0)
                     {
                         DeleteSelectedItems();
                         e.Handled = true;
@@ -1361,8 +1548,11 @@ namespace ufm
             }
         }
 
-        private void ItemsListView_KeyUp(object sender, KeyRoutedEventArgs e)
+        private void ItemsControl_KeyUp(object sender, KeyRoutedEventArgs e)
         {
+            var itemsControl = sender as ListViewBase;
+            if (itemsControl != _currentItemsControl) return;
+
             UpdateModifierKeyState(e.Key, false);
 
             if (e.Key == VirtualKey.Shift)
@@ -1372,8 +1562,9 @@ namespace ufm
             }
         }
 
-        private void ItemsListView_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+        private void ItemsControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
         {
+            // Можем добавить предварительную обработку при необходимости
         }
 
         private void UpdateModifierKeyState(VirtualKey key, bool isPressed)
@@ -1404,24 +1595,53 @@ namespace ufm
 
         private void HandleArrowKeyNavigation(VirtualKey key, bool isCtrlPressed, bool isShiftPressed)
         {
-            int currentIndex = ItemsListView.SelectedIndex;
-            int newIndex = currentIndex;
-            int itemsPerColumn = CalculateItemsPerColumn();
+            if (_currentItemsControl == null) return;
 
-            switch (key)
+            int currentIndex = _currentItemsControl.SelectedIndex;
+            int newIndex = currentIndex;
+
+            // Разная логика для ListView и GridView
+            if (_currentItemsControl == ItemsListView)
             {
-                case VirtualKey.Up:
-                    newIndex = Math.Max(0, currentIndex - 1);
-                    break;
-                case VirtualKey.Down:
-                    newIndex = Math.Min(Items.Count - 1, currentIndex + 1);
-                    break;
-                case VirtualKey.Left:
-                    newIndex = Math.Max(0, currentIndex - itemsPerColumn);
-                    break;
-                case VirtualKey.Right:
-                    newIndex = Math.Min(Items.Count - 1, currentIndex + itemsPerColumn);
-                    break;
+                // Логика для ListView (горизонтальный режим)
+                int itemsPerColumn = CalculateItemsPerColumnForListView();
+
+                switch (key)
+                {
+                    case VirtualKey.Up:
+                        newIndex = Math.Max(0, currentIndex - 1);
+                        break;
+                    case VirtualKey.Down:
+                        newIndex = Math.Min(Items.Count - 1, currentIndex + 1);
+                        break;
+                    case VirtualKey.Left:
+                        newIndex = Math.Max(0, currentIndex - itemsPerColumn);
+                        break;
+                    case VirtualKey.Right:
+                        newIndex = Math.Min(Items.Count - 1, currentIndex + itemsPerColumn);
+                        break;
+                }
+            }
+            else
+            {
+                // Логика для GridView (вертикальный режим)
+                int itemsPerRow = CalculateItemsPerRowForGridView();
+
+                switch (key)
+                {
+                    case VirtualKey.Up:
+                        newIndex = Math.Max(0, currentIndex - itemsPerRow);
+                        break;
+                    case VirtualKey.Down:
+                        newIndex = Math.Min(Items.Count - 1, currentIndex + itemsPerRow);
+                        break;
+                    case VirtualKey.Left:
+                        newIndex = Math.Max(0, currentIndex - 1);
+                        break;
+                    case VirtualKey.Right:
+                        newIndex = Math.Min(Items.Count - 1, currentIndex + 1);
+                        break;
+                }
             }
 
             if (newIndex != currentIndex && newIndex >= 0 && newIndex < Items.Count)
@@ -1434,14 +1654,14 @@ namespace ufm
                 }
                 else if (isCtrlPressed)
                 {
-                    ItemsListView.SelectedItem = newItem;
-                    ItemsListView.ScrollIntoView(newItem);
+                    _currentItemsControl.SelectedItem = newItem;
+                    _currentItemsControl.ScrollIntoView(newItem);
                 }
                 else
                 {
-                    ItemsListView.SelectedItems.Clear();
-                    ItemsListView.SelectedItem = newItem;
-                    ItemsListView.ScrollIntoView(newItem);
+                    _currentItemsControl.SelectedItems.Clear();
+                    _currentItemsControl.SelectedItem = newItem;
+                    _currentItemsControl.ScrollIntoView(newItem);
                     _shiftSelectionStartItem = newItem;
                 }
 
@@ -1451,6 +1671,8 @@ namespace ufm
 
         private void HandleHomeEndNavigation(VirtualKey key, bool isCtrlPressed, bool isShiftPressed)
         {
+            if (_currentItemsControl == null) return;
+
             int newIndex = -1;
 
             switch (key)
@@ -1473,14 +1695,14 @@ namespace ufm
                 }
                 else if (isCtrlPressed)
                 {
-                    ItemsListView.SelectedItem = newItem;
-                    ItemsListView.ScrollIntoView(newItem);
+                    _currentItemsControl.SelectedItem = newItem;
+                    _currentItemsControl.ScrollIntoView(newItem);
                 }
                 else
                 {
-                    ItemsListView.SelectedItems.Clear();
-                    ItemsListView.SelectedItem = newItem;
-                    ItemsListView.ScrollIntoView(newItem);
+                    _currentItemsControl.SelectedItems.Clear();
+                    _currentItemsControl.SelectedItem = newItem;
+                    _currentItemsControl.ScrollIntoView(newItem);
                 }
 
                 Debug.WriteLine($"{key} navigation to index {newIndex}");
@@ -1489,7 +1711,9 @@ namespace ufm
 
         private void HandlePageNavigation(VirtualKey key, bool isCtrlPressed, bool isShiftPressed)
         {
-            int currentIndex = ItemsListView.SelectedIndex;
+            if (_currentItemsControl == null) return;
+
+            int currentIndex = _currentItemsControl.SelectedIndex;
             int itemsPerPage = CalculateItemsPerPage();
             int newIndex = currentIndex;
 
@@ -1513,30 +1737,51 @@ namespace ufm
                 }
                 else
                 {
-                    ItemsListView.SelectedItems.Clear();
-                    ItemsListView.SelectedItem = newItem;
-                    ItemsListView.ScrollIntoView(newItem);
+                    _currentItemsControl.SelectedItems.Clear();
+                    _currentItemsControl.SelectedItem = newItem;
+                    _currentItemsControl.ScrollIntoView(newItem);
                 }
 
                 Debug.WriteLine($"{key}: from {currentIndex} to {newIndex}");
             }
         }
 
-        private int CalculateItemsPerColumn()
+        private int CalculateItemsPerColumnForListView()
         {
-            // Для горизонтальной ориентации - это количество элементов в колонке (по вертикали)
+            // Для горизонтальной ориентации ListView - это количество элементов в колонке (по вертикали)
             return MaxRowsOrColumns;
+        }
+
+        private int CalculateItemsPerRowForGridView()
+        {
+            if (ItemWidth <= 0) return 1;
+
+            var grid = ItemsGridView.ItemsPanelRoot as ItemsWrapGrid;
+            if (grid != null && grid.ActualWidth > 0)
+            {
+                return (int)Math.Floor(grid.ActualWidth / ItemWidth);
+            }
+
+            return 6;
         }
 
         private int CalculateItemsPerPage()
         {
-            if (ItemWidth <= 0) return 1;
+            if (ItemHeight <= 0) return 1;
 
-            var grid = ItemsListView.ItemsPanelRoot as FrameworkElement;
-            if (grid != null && grid.ActualWidth > 0)
+            var itemsControl = _currentItemsControl;
+            var panel = itemsControl?.ItemsPanelRoot as FrameworkElement;
+            if (panel != null && panel.ActualHeight > 0)
             {
-                int columnsPerPage = (int)Math.Floor(grid.ActualWidth / ItemWidth);
-                return columnsPerPage * CalculateItemsPerColumn();
+                int rowsPerPage = (int)Math.Floor(panel.ActualHeight / ItemHeight);
+                if (itemsControl == ItemsListView)
+                {
+                    return rowsPerPage * CalculateItemsPerColumnForListView();
+                }
+                else
+                {
+                    return rowsPerPage * CalculateItemsPerRowForGridView();
+                }
             }
 
             return 20;
@@ -1550,7 +1795,7 @@ namespace ufm
         {
             if (_shiftSelectionStartItem == null)
             {
-                _shiftSelectionStartItem = ItemsListView.SelectedItem as ExplorerItemViewModel;
+                _shiftSelectionStartItem = _currentItemsControl.SelectedItem as ExplorerItemViewModel;
                 if (_shiftSelectionStartItem == null && Items.Count > 0)
                 {
                     _shiftSelectionStartItem = Items[0];
@@ -1569,7 +1814,7 @@ namespace ufm
 
         private void HandleShiftRangeSelection(int newIndex)
         {
-            int currentIndex = ItemsListView.SelectedIndex;
+            int currentIndex = _currentItemsControl.SelectedIndex;
             if (currentIndex >= 0)
             {
                 SelectRange(currentIndex, newIndex);
@@ -1587,33 +1832,33 @@ namespace ufm
 
             if (!_isCtrlPressed)
             {
-                ItemsListView.SelectedItems.Clear();
+                _currentItemsControl.SelectedItems.Clear();
             }
 
             for (int i = minIndex; i <= maxIndex; i++)
             {
-                if (!ItemsListView.SelectedItems.Contains(Items[i]))
+                if (!_currentItemsControl.SelectedItems.Contains(Items[i]))
                 {
-                    ItemsListView.SelectedItems.Add(Items[i]);
+                    _currentItemsControl.SelectedItems.Add(Items[i]);
                 }
             }
 
-            ItemsListView.SelectedItem = Items[endIndex];
-            ItemsListView.ScrollIntoView(Items[endIndex]);
+            _currentItemsControl.SelectedItem = Items[endIndex];
+            _currentItemsControl.ScrollIntoView(Items[endIndex]);
         }
 
         private void ToggleCurrentSelection()
         {
-            if (ItemsListView.SelectedItem is ExplorerItemViewModel currentItem)
+            if (_currentItemsControl.SelectedItem is ExplorerItemViewModel currentItem)
             {
-                if (ItemsListView.SelectedItems.Contains(currentItem))
+                if (_currentItemsControl.SelectedItems.Contains(currentItem))
                 {
-                    ItemsListView.SelectedItems.Remove(currentItem);
+                    _currentItemsControl.SelectedItems.Remove(currentItem);
                     Debug.WriteLine($"Removed {currentItem.Name} from selection");
                 }
                 else
                 {
-                    ItemsListView.SelectedItems.Add(currentItem);
+                    _currentItemsControl.SelectedItems.Add(currentItem);
                     Debug.WriteLine($"Added {currentItem.Name} to selection");
                 }
             }
@@ -1623,8 +1868,11 @@ namespace ufm
 
         #region Обработка двойного клика
 
-        private async void ItemsListView_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        private async void ItemsControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
+            var itemsControl = sender as ListViewBase;
+            if (itemsControl != _currentItemsControl) return;
+
             if (SingleClickOpenItem) return;
 
             var element = e.OriginalSource as FrameworkElement;
@@ -1647,9 +1895,12 @@ namespace ufm
 
         #region Обработка выделения
 
-        private void ItemsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ItemsControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Debug.WriteLine($"[{PanelId}] Selection changed: {ItemsListView.SelectedItems.Count} items selected");
+            var itemsControl = sender as ListViewBase;
+            if (itemsControl != _currentItemsControl) return;
+
+            Debug.WriteLine($"[{PanelId}] Selection changed: {itemsControl.SelectedItems.Count} items selected");
 
             foreach (ExplorerItemViewModel addedItem in e.AddedItems)
             {
@@ -1735,13 +1986,14 @@ namespace ufm
 
             // ВАЖНО: Сбрасываем состояние редактирования при открытии другого элемента
             // Отменяем редактирование, если оно было активно
-            if (ItemsListView.SelectedItem is ExplorerItemViewModel selectedItem && selectedItem.IsEditing)
+            if (_currentItemsControl.SelectedItem is ExplorerItemViewModel selectedItem && selectedItem.IsEditing)
             {
                 Debug.WriteLine($"[{PanelId}] Cancelling edit mode before opening new item");
-                var container = ItemsListView.ContainerFromItem(selectedItem) as ListViewItem;
-                if (container?.ContentTemplateRoot is BaseTileControl tileControl && tileControl.IsEditing)
+                var container = GetContainerFromItem(_currentItemsControl, selectedItem);
+                var tile = GetContentTemplateRootFromContainer(container) as BaseTileControl;
+                if (tile != null && tile.IsEditing)
                 {
-                    tileControl.CancelEditing();
+                    tile.CancelEditing();
                 }
             }
 
@@ -1800,18 +2052,19 @@ namespace ufm
 
         private async void OpenSelectedItem()
         {
-            if (ItemsListView.SelectedItem is ExplorerItemViewModel selectedItem)
+            if (_currentItemsControl.SelectedItem is ExplorerItemViewModel selectedItem)
             {
                 await OpenItem(selectedItem);
             }
         }
+
         private void RenameSelectedItem()
         {
             try
             {
                 Debug.WriteLine($"[{PanelId}] === RenameSelectedItem START ===");
 
-                if (ItemsListView.SelectedItem is ExplorerItemViewModel selectedItem)
+                if (_currentItemsControl.SelectedItem is ExplorerItemViewModel selectedItem)
                 {
                     Debug.WriteLine($"[{PanelId}] Selected item: {selectedItem.Name}");
                     Debug.WriteLine($"[{PanelId}] IsEditing: {selectedItem.IsEditing}, EditRequested: {selectedItem.EditRequested}");
@@ -1824,16 +2077,17 @@ namespace ufm
                     }
 
                     // Находим контейнер элемента
-                    var container = ItemsListView.ContainerFromItem(selectedItem) as ListViewItem;
+                    var container = GetContainerFromItem(_currentItemsControl, selectedItem);
                     if (container != null)
                     {
                         // Получаем контрол элемента
-                        if (container.ContentTemplateRoot is BaseTileControl tileControl)
+                        var tile = GetContentTemplateRootFromContainer(container) as BaseTileControl;
+                        if (tile != null)
                         {
-                            if (tileControl.CanEdit)
+                            if (tile.CanEdit)
                             {
                                 Debug.WriteLine($"[{PanelId}] Calling StartEditing on tile control");
-                                tileControl.StartEditing();
+                                tile.StartEditing();
                             }
                             else
                             {
@@ -1850,18 +2104,19 @@ namespace ufm
                         Debug.WriteLine($"[{PanelId}] Container not found, scrolling into view...");
 
                         // Прокручиваем к элементу
-                        ItemsListView.ScrollIntoView(selectedItem);
+                        _currentItemsControl.ScrollIntoView(selectedItem);
 
                         // Пытаемся снова через небольшую задержку
                         _ = this.DispatcherQueue.EnqueueAsync(async () =>
                         {
                             await Task.Delay(100);
 
-                            container = ItemsListView.ContainerFromItem(selectedItem) as ListViewItem;
-                            if (container?.ContentTemplateRoot is BaseTileControl tileControl2 && tileControl2.CanEdit)
+                            container = GetContainerFromItem(_currentItemsControl, selectedItem);
+                            var tile = GetContentTemplateRootFromContainer(container) as BaseTileControl;
+                            if (tile != null && tile.CanEdit)
                             {
                                 Debug.WriteLine($"[{PanelId}] Retry successful, calling StartEditing");
-                                tileControl2.StartEditing();
+                                tile.StartEditing();
                             }
                         }, Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal);
                     }
@@ -1881,7 +2136,7 @@ namespace ufm
 
         private async void DeleteSelectedItems()
         {
-            var selectedItems = ItemsListView.SelectedItems.Cast<ExplorerItemViewModel>().ToList();
+            var selectedItems = _currentItemsControl.SelectedItems.Cast<ExplorerItemViewModel>().ToList();
             if (selectedItems.Count > 0)
             {
                 Debug.WriteLine($"Delete {selectedItems.Count} items");
@@ -1894,12 +2149,15 @@ namespace ufm
 
         public void RefreshNavigation()
         {
-            Debug.WriteLine($"[TileListView {PanelId}] Refreshing navigation via mediator");
+            Debug.WriteLine($"[TileViewerContent {PanelId}] Refreshing navigation via mediator");
 
             _ = this.DispatcherQueue.EnqueueAsync(() =>
             {
-                ItemsListView.SelectedItem = null;
-                ItemsListView.SelectedItems.Clear();
+                if (_currentItemsControl != null)
+                {
+                    _currentItemsControl.SelectedItem = null;
+                    _currentItemsControl.SelectedItems.Clear();
+                }
                 _lastClickedItem = null;
                 _lastClickTime = DateTime.MinValue;
                 _shiftSelectionStartItem = null;
@@ -1926,7 +2184,7 @@ namespace ufm
         {
             try
             {
-                Debug.WriteLine($"[TileListView {PanelId}] Starting refresh");
+                Debug.WriteLine($"[TileViewerContent {PanelId}] Starting refresh");
 
                 string pathToReload = await DispatcherQueue.EnqueueAsync(() =>
                 {
@@ -1937,7 +2195,10 @@ namespace ufm
                     _currentLoadedPath = null;
                     _isInitialized = false;
                     Items.Clear();
-                    ItemsListView.SelectedItems.Clear();
+                    if (_currentItemsControl != null)
+                    {
+                        _currentItemsControl.SelectedItems.Clear();
+                    }
                     _shiftSelectionStartItem = null;
                     _isCtrlPressed = false;
                     _isShiftPressed = false;
@@ -1953,12 +2214,12 @@ namespace ufm
 
                     RemoveSelectionRectangle();
                     _tempSelectedIndices.Clear();
-                    UpdateListViewLayout();
+                    UpdateItemsControlLayout();
 
                     return path;
                 });
 
-                Debug.WriteLine($"[TileListView {PanelId}] Reloading path: '{pathToReload}'");
+                Debug.WriteLine($"[TileViewerContent {PanelId}] Reloading path: '{pathToReload}'");
 
                 _fileSystemService.ClearPanelCache(PanelId);
                 CancelCurrentOperation();
@@ -1972,11 +2233,11 @@ namespace ufm
                     await Task.Run(() => LoadInitialContent());
                 }
 
-                Debug.WriteLine($"[TileListView {PanelId}] Refresh completed");
+                Debug.WriteLine($"[TileViewerContent {PanelId}] Refresh completed");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[TileListView {PanelId}] Refresh error: {ex}");
+                Debug.WriteLine($"[TileViewerContent {PanelId}] Refresh error: {ex}");
 
                 try
                 {
@@ -1984,7 +2245,7 @@ namespace ufm
                 }
                 catch (Exception fallbackEx)
                 {
-                    Debug.WriteLine($"[TileListView {PanelId}] Fallback failed: {fallbackEx}");
+                    Debug.WriteLine($"[TileViewerContent {PanelId}] Fallback failed: {fallbackEx}");
                 }
             }
         }

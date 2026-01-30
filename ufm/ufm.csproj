@@ -19,6 +19,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="Controls\TileControl\TileListView.xaml" />
+	  <None Remove="Controls\TileControl\TileViewerContent.xaml" />
 	  <None Remove="Themes\BlueTheme.xaml" />
 	  <None Remove="Themes\CommonResources.xaml" />
 	  <None Remove="Themes\DarkGreenTheme.xaml" />
@@ -94,6 +95,12 @@
 	  <Content Update="Assets\home.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Update="Controls\TileControl\TileViewerContent.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 	<ItemGroup>
