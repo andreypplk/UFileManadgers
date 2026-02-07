@@ -2955,14 +2955,6 @@ namespace ufm
             {
                 tileViewerContent.NavigationChanged -= TileView_NavigationChanged;
             }
-            else if (control?.Content is TileViewIcons tileViewIcons)
-            {
-                tileViewIcons.NavigationChanged -= TileView_NavigationChanged;
-            }
-            else if (control?.Content is TileListView tileListView)
-            {
-                tileListView.NavigationChanged -= TileView_NavigationChanged;
-            }
             //else if (control?.Content is TileTableView tileTableView)
             //{
             //    tileTableView.NavigationChanged -= TileView_NavigationChanged;
