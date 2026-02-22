@@ -989,7 +989,7 @@ namespace ufm
                     }
                     else
                     {
-                        Debug.WriteLine("m_AppWindow is null");
+                        //Debug.WriteLine("m_AppWindow is null");
                     }
 
                     // Убедитесь, что TitleBarTable и StackPanelSettings инициализированы
