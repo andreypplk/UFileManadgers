@@ -61,6 +61,7 @@ namespace ufm
 
         // Статический экземпляр SettingsManager
         public static SettingsManager SettingsManager { get; private set; }
+        public static IconService IconService { get; private set; }
 
         //public static Window StartupWindow
         //{
@@ -156,7 +157,7 @@ namespace ufm
 
         private void OnLanguageChanged(object sender, LanguageChangedEventArgs e)
         {
-         
+
             MainWindow.DispatcherQueue.TryEnqueue(() =>
             {
                 try
@@ -398,3 +399,4 @@ namespace ufm
         //private Window m_window;
     }
 }
+

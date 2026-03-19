@@ -15,13 +15,10 @@ namespace ufm
     {
         #region Поля и свойства
 
-        // ИСПРАВЛЕНО: правильное объявление IconService
         private static readonly Core_FileManagement.IIconService _iconService =
             new Core_FileManagement.IconService();
 
         private CancellationTokenSource _currentOperationCts;
-
-        // ИСПРАВЛЕНО: словарь для индивидуальных кэшей по ID панели
         private readonly Dictionary<string, List<ExplorerItemViewModel>> _panelCaches = new();
 
         public bool IsDisposed { get; private set; }
@@ -32,13 +29,12 @@ namespace ufm
             {
                 try
                 {
-                    // Используем App.SettingsManager для получения настройки
                     return App.SettingsManager?.GetSetting<bool>("ShowNavigationBackItem", true) ?? true;
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Error getting navigation setting: {ex}");
-                    return true; // По умолчанию показываем
+                    return true;
                 }
             }
         }
@@ -50,8 +46,6 @@ namespace ufm
         public FileSystemService()
         {
             _currentOperationCts = new CancellationTokenSource();
-
-            // Инициализация кэша
             FileCacheService.Initialize(_iconService);
         }
 
@@ -59,9 +53,6 @@ namespace ufm
 
         #region Основные методы для TileViewIcons
 
-        /// <summary>
-        /// Загружает содержимое указанного пути
-        /// </summary>
         public async Task<List<ExplorerItemViewModel>> LoadPathContentsAsync(string path, string panelId = "DefaultPanel", IDirectoryHistory history = null)
         {
             if (IsDisposed) throw new ObjectDisposedException(nameof(FileSystemService));
@@ -71,7 +62,6 @@ namespace ufm
 
             try
             {
-                // ИСПРАВЛЕНО: создаем историю, если не передана
                 var localHistory = history ?? new DirectoryHistory("MyComputer", "Мой Компьютер");
 
                 switch (path)
@@ -86,40 +76,30 @@ namespace ufm
                         if (Directory.Exists(path))
                             return await LoadFolderContentsAsync(path, localHistory, token);
                         else
-                            return await LoadMyComputerAsync(panelId, localHistory, token); // Fallback
+                            return await LoadMyComputerAsync(panelId, localHistory, token);
                 }
             }
             catch (OperationCanceledException)
             {
-                Debug.WriteLine("LoadPathContentsAsync canceled");
                 return new List<ExplorerItemViewModel>();
             }
         }
 
-        /// <summary>
-        /// Загружает содержимое "Мой компьютер" с индивидуальным кэшированием по panelId
-        /// </summary>
         public async Task<List<ExplorerItemViewModel>> LoadMyComputerAsync(string panelId, IDirectoryHistory history, CancellationToken token = default)
         {
-            // ИСПРАВЛЕНО: используем индивидуальный кэш для каждой панели
             if (_panelCaches.TryGetValue(panelId, out var cachedItems) && !token.IsCancellationRequested)
             {
                 return new List<ExplorerItemViewModel>(cachedItems);
             }
 
-            // Создаем новый кэш для этой панели
             var items = await InitializeMyComputerCacheAsync(panelId, history, token);
             return new List<ExplorerItemViewModel>(items);
         }
 
-        /// <summary>
-        /// Загружает список дисков
-        /// </summary>
         public async Task<List<ExplorerItemViewModel>> LoadDrivesAsync(IDirectoryHistory history, CancellationToken token = default)
         {
             var items = new List<ExplorerItemViewModel>();
 
-            // Добавляем кнопку "Назад"
             if (ShowNavigationBackItem)
             {
                 items.Add(CreateBackItem(history));
@@ -138,8 +118,6 @@ namespace ufm
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Error loading drive {logicalDrive}: {ex.Message}");
-
-                    // Fallback item
                     items.Add(new ExplorerItemViewModel(history)
                     {
                         Name = logicalDrive,
@@ -152,9 +130,6 @@ namespace ufm
             return items;
         }
 
-        /// <summary>
-        /// Загружает содержимое папки
-        /// </summary>
         public async Task<List<ExplorerItemViewModel>> LoadFolderContentsAsync(string folderPath, IDirectoryHistory history, CancellationToken token = default)
         {
             if (!Directory.Exists(folderPath))
@@ -162,15 +137,12 @@ namespace ufm
 
             var items = new List<ExplorerItemViewModel>();
 
-            // Добавляем кнопку "Назад"
             if (ShowNavigationBackItem)
             {
                 items.Add(CreateBackItem(history));
             }
-            // Загружаем папки
-            await LoadSubfoldersAsync(items, folderPath, history, token);
 
-            // Загружаем файлы
+            await LoadSubfoldersAsync(items, folderPath, history, token);
             await LoadFilesAsync(items, folderPath, history, token);
 
             return items;
@@ -178,36 +150,33 @@ namespace ufm
 
         #endregion
 
-        #region Методы для TreeView (синхронные и асинхронные)
+        #region Методы для TreeView
 
-        /// <summary>
-        /// Загружает диски синхронно для TreeView (сохраняет оригинальную логику)
-        /// </summary>
-        public List<ExplorerItemViewModel> LoadDrivesSync(IDirectoryHistory history)
+        public async Task<List<ExplorerItemViewModel>> LoadDrivesTree(IDirectoryHistory history, CancellationToken token = default)
         {
             var items = new List<ExplorerItemViewModel>();
 
             foreach (var logicalDrive in Directory.GetLogicalDrives())
             {
+                if (token.IsCancellationRequested) break;
+
                 try
                 {
                     var driveInfo = new DriveInfo(logicalDrive);
-                    var folder = StorageFolder.GetFolderFromPathAsync(logicalDrive).GetAwaiter().GetResult();
-                    var icon = _iconService.GetIconAsync(folder.Path, true).GetAwaiter().GetResult();
-
+                    var icon = await _iconService.GetIconAsync(logicalDrive, true).ConfigureAwait(false);
                     var driveViewModel = new DriveViewModel(driveInfo, EntityFlags.IsDrive);
 
                     var fileSystemItem = new ExplorerItemViewModel(history)
                     {
                         IsProgressBarVisible = true,
-                        Name = string.IsNullOrEmpty(folder.DisplayName) ? logicalDrive : folder.DisplayName,
+                        Name = GetDriveDisplayName(driveInfo, logicalDrive),
                         FilePath = logicalDrive,
                         ImageSource = icon,
                         UsedSpaceString = driveViewModel.UsedSpaceString,
                         FreeSpaceString = driveViewModel.FreeSpaceString,
                         TotalSizeString = driveViewModel.TotalSizeString,
                         UsedProcentValue = driveViewModel.UsedProcentValue,
-                        IsTreeViewNode = true // ДОБАВЛЕНО
+                        IsTreeViewNode = true
                     };
 
                     items.Add(fileSystemItem);
@@ -215,15 +184,19 @@ namespace ufm
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Ошибка загрузки диска {logicalDrive}: {ex.Message}");
+                    items.Add(new ExplorerItemViewModel(history)
+                    {
+                        Name = logicalDrive,
+                        FilePath = logicalDrive,
+                        ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/harddisk.png")),
+                        IsTreeViewNode = true
+                    });
                 }
             }
 
             return items;
         }
 
-        /// <summary>
-        /// Загружает подпапки для TreeView (сохраняет оригинальную логику с throttler)
-        /// </summary>
         public async Task<List<ExplorerItemViewModel>> LoadSubfoldersForTreeViewAsync(string folderPath, IDirectoryHistory history, CancellationToken token = default)
         {
             var items = new List<ExplorerItemViewModel>();
@@ -241,17 +214,14 @@ namespace ufm
                     try
                     {
                         var icon = await _iconService.GetIconAsync(subfolder, true);
-
-                        var fileSystemItem = new ExplorerItemViewModel(history)
+                        return new ExplorerItemViewModel(history)
                         {
                             IsProgressBarVisible = false,
                             Name = Path.GetFileName(subfolder),
                             FilePath = subfolder,
                             ImageSource = icon ?? defaultIcon,
-                            IsTreeViewNode = true // ДОБАВЛЕНО
+                            IsTreeViewNode = true
                         };
-
-                        return fileSystemItem;
                     }
                     finally
                     {
@@ -270,9 +240,6 @@ namespace ufm
             return items;
         }
 
-        /// <summary>
-        /// Загружает только папки для TreeView (без файлов и кнопки "Назад")
-        /// </summary>
         public async Task<List<ExplorerItemViewModel>> LoadFoldersOnlyAsync(string folderPath, IDirectoryHistory history, CancellationToken token = default)
         {
             var items = new List<ExplorerItemViewModel>();
@@ -297,7 +264,7 @@ namespace ufm
                             Name = dirInfo.Name,
                             FilePath = folder,
                             ImageSource = icon,
-                            IsTreeViewNode = true // ДОБАВЛЕНО
+                            IsTreeViewNode = true
                         });
                     }
                     catch (Exception ex)
@@ -322,19 +289,15 @@ namespace ufm
         {
             var items = new List<ExplorerItemViewModel>();
 
-            // Добавляем основной элемент "Мой компьютер"
             items.Add(new ExplorerItemViewModel(history)
             {
                 Name = "Мой Компьютер",
                 FilePath = "Drives",
                 ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/computer.png")),
-                IsTreeViewNode = true // ДОБАВЛЕНО
+                IsTreeViewNode = true
             });
 
-            // Добавляем системные папки
             await LoadSystemFoldersAsync(items, history, token);
-
-            // Сохраняем в индивидуальный кэш панели
             _panelCaches[panelId] = items;
 
             return items;
@@ -342,13 +305,11 @@ namespace ufm
 
         public async Task<List<ExplorerItemViewModel>> LoadHomeAsync(string panelId, IDirectoryHistory history, CancellationToken token = default)
         {
-            // ИСПРАВЛЕНО: используем индивидуальный кэш для каждой панели
             if (_panelCaches.TryGetValue(panelId, out var cachedItems) && !token.IsCancellationRequested)
             {
                 return new List<ExplorerItemViewModel>(cachedItems);
             }
 
-            // Создаем новый кэш для этой панели
             var items = await InitializeHomeCacheAsync(panelId, history, token);
             return new List<ExplorerItemViewModel>(items);
         }
@@ -356,13 +317,8 @@ namespace ufm
         private async Task<List<ExplorerItemViewModel>> InitializeHomeCacheAsync(string panelId, IDirectoryHistory history, CancellationToken token)
         {
             var items = new List<ExplorerItemViewModel>();
-
-            // Добавляем ТОЛЬКО системные папки как отдельные узлы
             await LoadSystemFoldersAsync(items, history, token);
-
-            // Сохраняем в индивидуальный кэш панели
             _panelCaches[panelId] = items;
-
             return items;
         }
 
@@ -393,30 +349,27 @@ namespace ufm
                         Name = folder.Name,
                         FilePath = folder.Path,
                         ImageSource = icon ?? new BitmapImage(new Uri("ms-appx:///Assets/folder1.png")),
-                        IsTreeViewNode = true, // ДОБАВЛЕНО
-                        IsSpecialFolderNode = true // ДОБАВЛЕНО
+                        IsTreeViewNode = true,
+                        IsSpecialFolderNode = true
                     });
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Error loading system folder {folder.Name}: {ex.Message}");
-
-                    // Fallback
                     items.Add(new ExplorerItemViewModel(history)
                     {
                         Name = folder.Name,
                         FilePath = folder.Path,
                         ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/folder1.png")),
-                        IsTreeViewNode = true, // ДОБАВЛЕНО
-                        IsSpecialFolderNode = true // ДОБАВЛЕНО
+                        IsTreeViewNode = true,
+                        IsSpecialFolderNode = true
                     });
                 }
 
-                await Task.Delay(1, token); // Небольшая пауза
+                await Task.Delay(1, token);
             }
         }
 
-        // В класс FileSystemService добавим метод
         public ExplorerItemViewModel CreateSpecialFoldersItem(IDirectoryHistory history)
         {
             return new ExplorerItemViewModel(history)
@@ -448,7 +401,7 @@ namespace ufm
                         Name = dirInfo.Name,
                         FilePath = folder,
                         ImageSource = icon,
-                        IsTreeViewNode = true // ДОБАВЛЕНО для вложенных папок в TreeView
+                        IsTreeViewNode = true
                     });
                 }
                 catch (Exception ex)
@@ -477,7 +430,7 @@ namespace ufm
                         Name = fileInfo.Name,
                         FilePath = file,
                         ImageSource = icon,
-                        IsTreeViewNode = true // ДОБАВЛЕНО для файлов в TreeView
+                        IsTreeViewNode = true
                     });
                 }
                 catch (Exception ex)
@@ -505,14 +458,14 @@ namespace ufm
             return new ExplorerItemViewModel(history)
             {
                 IsProgressBarVisible = true,
-                Name = driveInfo.VolumeLabel ?? drivePath,
+                Name = GetDriveDisplayName(driveInfo, drivePath),
                 FilePath = drivePath,
                 ImageSource = icon,
                 UsedSpaceString = driveViewModel.UsedSpaceString,
                 FreeSpaceString = driveViewModel.FreeSpaceString,
                 TotalSizeString = driveViewModel.TotalSizeString,
                 UsedProcentValue = driveViewModel.UsedProcentValue,
-                IsTreeViewNode = true // ДОБАВЛЕНО
+                IsTreeViewNode = true
             };
         }
 
@@ -523,8 +476,17 @@ namespace ufm
                 Name = "..",
                 FilePath = "..",
                 ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/ahead-only.png")),
-                IsTreeViewNode = true // ДОБАВЛЕНО
+                IsTreeViewNode = true
             };
+        }
+
+        private string GetDriveDisplayName(DriveInfo driveInfo, string drivePath)
+        {
+            string driveLetter = drivePath.TrimEnd('\\');
+            if (string.IsNullOrWhiteSpace(driveInfo.VolumeLabel))
+                return driveLetter;
+            else
+                return $"{driveInfo.VolumeLabel} ({driveLetter})";
         }
 
         #endregion
@@ -543,9 +505,6 @@ namespace ufm
             CancelCurrentOperation();
         }
 
-        /// <summary>
-        /// Очищает кэш для конкретной панели
-        /// </summary>
         public void ClearPanelCache(string panelId)
         {
             if (_panelCaches.TryGetValue(panelId, out var cache))
@@ -559,9 +518,6 @@ namespace ufm
             }
         }
 
-        /// <summary>
-        /// Очищает все кэши панелей
-        /// </summary>
         public void ClearAllCaches()
         {
             foreach (var (panelId, cache) in _panelCaches)
@@ -581,10 +537,6 @@ namespace ufm
             {
                 bool showBackNavigation = ShowNavigationBackItem;
                 ClearAllCaches();
-
-                Debug.WriteLine($"[FileSystemService] Refreshing navigation settings via mediator");
-
-                // Уведомляем медиатор
                 NavigationSettingsMediator.NotifySettingsChanged(showBackNavigation);
             }
             catch (Exception ex)
@@ -597,9 +549,6 @@ namespace ufm
 
         #region Вспомогательные методы
 
-        /// <summary>
-        /// Проверяет, является ли путь навигационным (папка, диск и т.д.)
-        /// </summary>
         public bool IsNavigationPath(string path)
         {
             return path == ".." ||
@@ -626,4 +575,3 @@ namespace ufm
         #endregion
     }
 }
-

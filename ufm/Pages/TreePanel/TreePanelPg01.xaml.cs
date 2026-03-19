@@ -354,7 +354,7 @@ namespace ufm
                 // Раскрываем узел только если это разрешено настройкой
                 if (ExpanderNodesMyPcStartsSetting)
                 {
-                    LoadDrivesSync(myComputerNode);
+                    await LoadDrivesSync(myComputerNode);
                     await PreloadFirstLevelAsync(myComputerNode);
 
                     ExpandMyComputerNode(myComputerNode);
@@ -686,12 +686,12 @@ namespace ufm
 
         #region Методы работы с узлами TreeView
 
-        private void LoadDrivesSync(TreeViewNode parentNode)
+        private async Task LoadDrivesSync(TreeViewNode parentNode)
         {
             try
             {
                 // Используем FileSystemService для загрузки дисков
-                var driveItems = _fileSystemService.LoadDrivesSync(_history);
+                var driveItems = await _fileSystemService.LoadDrivesTree(_history);
 
                 foreach (var driveItem in driveItems)
                 {
