@@ -1296,6 +1296,7 @@ namespace Core_FileManagement
             _metadataCache.Clear();
             _iconService?.ClearCache();
         }
+
     }
 
     public class FileCacheEventArgs : EventArgs

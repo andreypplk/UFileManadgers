@@ -140,18 +140,7 @@ namespace ufm
             // Если ни в одном окне тема не задана явно - используем системную
             return Application.Current.RequestedTheme == ApplicationTheme.Dark;
         }
-        //public static void ForceThemeUpdate()
-        //{
-        //    foreach (Window window in WindowHelper.ActiveWindows)
-        //    {
-        //        if (window.Content is FrameworkElement rootElement)
-        //        {
-        //            var currentTheme = rootElement.RequestedTheme;
-        //            rootElement.RequestedTheme = ElementTheme.Default;
-        //            rootElement.RequestedTheme = currentTheme;
-        //        }
-        //    }
-        //}
+
         public static void ForceThemeUpdate()
         {
             try

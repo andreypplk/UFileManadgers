@@ -3,10 +3,8 @@ using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Diagnostics;
 using Windows.Storage;
 using WinRT;
-using Windows.UI;
 using Microsoft.UI.Composition;
 
 namespace ufm
@@ -24,12 +22,20 @@ namespace ufm
 
         private readonly Window _window;
         private readonly WindowsSystemDispatcherQueueHelper _wsdqHelper;
-        private BackdropType _currentBackdrop;
+        private BackdropType _currentBackdropType;
         public BackdropType CurrentBackdropType { get; private set; } = BackdropType.DefaultColor;
 
         private MicaController _micaController;
         private DesktopAcrylicController _acrylicController;
         private SystemBackdropConfiguration _configurationSource;
+        private ICompositionSupportsSystemBackdrop _compositionTarget;
+
+        // Кэширование поддержки
+        private readonly bool _isMicaSupported;
+        private readonly bool _isAcrylicSupported;
+
+        // Для оптимизации SetConfigurationSourceTheme
+        private SystemBackdropTheme _lastAppliedTheme;
 
         // События для уведомления UI
         public event Action<string> BackdropChanged;
@@ -39,11 +45,24 @@ namespace ufm
         {
             _window = window ?? throw new ArgumentNullException(nameof(window));
 
-            // Инициализируем диспетчер очереди
+            // Инициализируем диспетчер очереди (только один раз)
             _wsdqHelper = new WindowsSystemDispatcherQueueHelper();
             _wsdqHelper.EnsureWindowsSystemDispatcherQueueController();
 
+            // Получаем интерфейс для системного фона один раз
+            _compositionTarget = _window.As<ICompositionSupportsSystemBackdrop>();
+
+            // Кэшируем поддержку системных эффектов
+            _isMicaSupported = MicaController.IsSupported();
+            _isAcrylicSupported = DesktopAcrylicController.IsSupported();
+
+            // Создаём конфигурацию один раз
+            _configurationSource = new SystemBackdropConfiguration();
+            _configurationSource.IsInputActive = true;
+            SetConfigurationSourceTheme();
+
             // Подписываемся на события окна
+            _window.Activated += Window_Activated;
             _window.Closed += Window_Closed;
 
             if (_window.Content is FrameworkElement rootElement)
@@ -56,61 +75,72 @@ namespace ufm
         {
             try
             {
+                // Если тип не изменился, ничего не делаем
+                if (_currentBackdropType == type)
+                    return;
+
                 // Сохраняем выбранный тип поверхности в локальных настройках
                 SaveBackdropSetting(type.ToString());
 
-                // Сброс до цвета по умолчанию
-                CurrentBackdropType = type;
-                _currentBackdrop = BackdropType.DefaultColor;
-
                 // Очищаем старые контроллеры
                 DisposeControllers();
-
-                // Отписываемся от старых событий (кроме тех, что в конструкторе)
-                _window.Activated -= Window_Activated;
-                _configurationSource = null;
 
                 // Устанавливаем новый backdrop
                 bool success = false;
                 string backdropName = "None (default theme color)";
 
+                // Обрабатываем типы, используя fallback без рекурсии
                 switch (type)
                 {
                     case BackdropType.Mica:
-                        if (TrySetMicaBackdrop(false))
+                        if (_isMicaSupported && TrySetMicaBackdrop(false))
                         {
                             backdropName = "Custom Mica";
-                            _currentBackdrop = type;
                             success = true;
                         }
                         else
                         {
                             BackdropChangeFailed?.Invoke("Mica не поддерживается. Попробуем Acrylic.");
-                            SetBackdrop(BackdropType.DesktopAcrylicBase);
-                            return;
+                            // Fallback без рекурсии: пытаемся установить AcrylicBase
+                            if (_isAcrylicSupported && TrySetAcrylicBackdrop(false))
+                            {
+                                type = BackdropType.DesktopAcrylicBase;
+                                backdropName = "Custom Acrylic (Base)";
+                                success = true;
+                            }
+                            else
+                            {
+                                BackdropChangeFailed?.Invoke("Acrylic Base также не поддерживается. Переключаемся на цвет по умолчанию.");
+                            }
                         }
                         break;
 
                     case BackdropType.MicaAlt:
-                        if (TrySetMicaBackdrop(true))
+                        if (_isMicaSupported && TrySetMicaBackdrop(true))
                         {
                             backdropName = "Custom MicaAlt";
-                            _currentBackdrop = type;
                             success = true;
                         }
                         else
                         {
                             BackdropChangeFailed?.Invoke("MicaAlt не поддерживается. Попробуем Acrylic.");
-                            SetBackdrop(BackdropType.DesktopAcrylicBase);
-                            return;
+                            if (_isAcrylicSupported && TrySetAcrylicBackdrop(false))
+                            {
+                                type = BackdropType.DesktopAcrylicBase;
+                                backdropName = "Custom Acrylic (Base)";
+                                success = true;
+                            }
+                            else
+                            {
+                                BackdropChangeFailed?.Invoke("Acrylic Base также не поддерживается. Переключаемся на цвет по умолчанию.");
+                            }
                         }
                         break;
 
                     case BackdropType.DesktopAcrylicBase:
-                        if (TrySetAcrylicBackdrop(false))
+                        if (_isAcrylicSupported && TrySetAcrylicBackdrop(false))
                         {
                             backdropName = "Custom Acrylic (Base)";
-                            _currentBackdrop = type;
                             success = true;
                         }
                         else
@@ -120,10 +150,9 @@ namespace ufm
                         break;
 
                     case BackdropType.DesktopAcrylicThin:
-                        if (TrySetAcrylicBackdrop(true))
+                        if (_isAcrylicSupported && TrySetAcrylicBackdrop(true))
                         {
                             backdropName = "Custom Acrylic (Thin)";
-                            _currentBackdrop = type;
                             success = true;
                         }
                         else
@@ -135,12 +164,21 @@ namespace ufm
 
                 if (success)
                 {
+                    _currentBackdropType = type;
+                    CurrentBackdropType = type;
                     BackdropChanged?.Invoke(backdropName);
+                }
+                else
+                {
+                    // Если ничего не удалось, сбрасываем на цвет по умолчанию
+                    DisposeControllers();
+                    _currentBackdropType = BackdropType.DefaultColor;
+                    CurrentBackdropType = BackdropType.DefaultColor;
+                    BackdropChanged?.Invoke("None (default theme color)");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"SetBackdrop error: {ex}");
                 BackdropChangeFailed?.Invoke($"Ошибка установки фона: {ex.Message}");
             }
         }
@@ -149,17 +187,10 @@ namespace ufm
         {
             try
             {
-                if (!MicaController.IsSupported())
-                {
-                    Debug.WriteLine("MicaController is not supported on this system");
+                if (!_isMicaSupported)
                     return false;
-                }
 
-                _configurationSource = new SystemBackdropConfiguration();
-                _window.Activated += Window_Activated;
-
-                // Начальное состояние конфигурации
-                _configurationSource.IsInputActive = true;
+                // Настраиваем конфигурацию (уже создана, просто обновляем)
                 SetConfigurationSourceTheme();
 
                 _micaController = new MicaController
@@ -167,17 +198,13 @@ namespace ufm
                     Kind = useMicaAlt ? MicaKind.BaseAlt : MicaKind.Base
                 };
 
-                // Включение системного фона
-                _micaController.AddSystemBackdropTarget(
-                    _window.As<ICompositionSupportsSystemBackdrop>());
+                _micaController.AddSystemBackdropTarget(_compositionTarget);
                 _micaController.SetSystemBackdropConfiguration(_configurationSource);
 
-                Debug.WriteLine($"Mica backdrop set successfully (Alt: {useMicaAlt})");
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"TrySetMicaBackdrop error: {ex}");
                 return false;
             }
         }
@@ -186,17 +213,9 @@ namespace ufm
         {
             try
             {
-                if (!DesktopAcrylicController.IsSupported())
-                {
-                    Debug.WriteLine("DesktopAcrylicController is not supported on this system");
+                if (!_isAcrylicSupported)
                     return false;
-                }
 
-                _configurationSource = new SystemBackdropConfiguration();
-                _window.Activated += Window_Activated;
-
-                // Начальное состояние конфигурации
-                _configurationSource.IsInputActive = true;
                 SetConfigurationSourceTheme();
 
                 _acrylicController = new DesktopAcrylicController
@@ -204,23 +223,20 @@ namespace ufm
                     Kind = useAcrylicThin ? DesktopAcrylicKind.Thin : DesktopAcrylicKind.Base
                 };
 
-                // Включение системного фона
-                _acrylicController.AddSystemBackdropTarget(
-                    _window.As<ICompositionSupportsSystemBackdrop>());
+                _acrylicController.AddSystemBackdropTarget(_compositionTarget);
                 _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
 
-                Debug.WriteLine($"Acrylic backdrop set successfully (Thin: {useAcrylicThin})");
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"TrySetAcrylicBackdrop error: {ex}");
                 return false;
             }
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)
         {
+            // Обновляем состояние активности
             if (_configurationSource != null)
             {
                 _configurationSource.IsInputActive = args.WindowActivationState != WindowActivationState.Deactivated;
@@ -243,31 +259,35 @@ namespace ufm
 
             if (_window.Content is FrameworkElement rootElement)
             {
-                _configurationSource.Theme = rootElement.ActualTheme switch
+                var newTheme = rootElement.ActualTheme switch
                 {
                     ElementTheme.Dark => SystemBackdropTheme.Dark,
                     ElementTheme.Light => SystemBackdropTheme.Light,
                     _ => SystemBackdropTheme.Default
                 };
 
-                Debug.WriteLine($"Configuration theme updated to: {_configurationSource.Theme}");
+                // Обновляем только если тема изменилась
+                if (_lastAppliedTheme != newTheme)
+                {
+                    _configurationSource.Theme = newTheme;
+                    _lastAppliedTheme = newTheme;
+                }
             }
         }
 
         public void SetTheme(ElementTheme theme)
         {
-            if (_window.Content is FrameworkElement rootElement)
+            try
             {
-                try
+                if (_window.Content is FrameworkElement rootElement)
                 {
                     rootElement.RequestedTheme = theme;
                     SetConfigurationSourceTheme();
-                    Debug.WriteLine($"Window theme set to: {theme}");
                 }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"SetTheme error: {ex}");
-                }
+            }
+            catch
+            {
+                // Игнорируем ошибки установки темы
             }
         }
 
@@ -285,6 +305,8 @@ namespace ufm
                     rootElement.ActualThemeChanged -= Window_ThemeChanged;
                 }
             }
+
+            _configurationSource = null;
         }
 
         private void DisposeControllers()
@@ -296,12 +318,10 @@ namespace ufm
 
                 _acrylicController?.Dispose();
                 _acrylicController = null;
-
-                Debug.WriteLine("Backdrop controllers disposed");
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"DisposeControllers error: {ex}");
+                // Игнорируем ошибки при освобождении контроллеров
             }
         }
 
@@ -311,31 +331,27 @@ namespace ufm
             {
                 bool saved = false;
 
-                // Пробуем сохранить через SettingsManager
                 if (App.SettingsManager != null)
                 {
                     try
                     {
                         App.SettingsManager.SaveSetting("SelectedBackdropType", value);
                         saved = true;
-                        Debug.WriteLine($"Backdrop saved to SettingsManager: {value}");
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Debug.WriteLine($"Error saving to SettingsManager: {ex}");
+                        // Игнорируем ошибки сохранения в SettingsManager
                     }
                 }
 
-                // Fallback на LocalSettings
                 if (!saved)
                 {
                     ApplicationData.Current.LocalSettings.Values["SelectedBackdropType"] = value;
-                    Debug.WriteLine($"Backdrop saved to LocalSettings: {value}");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"SaveBackdropSetting error: {ex}");
+                // Игнорируем ошибки сохранения
             }
         }
 
@@ -345,13 +361,11 @@ namespace ufm
             {
                 string savedBackdrop = null;
 
-                // Пробуем получить из SettingsManager
                 if (App.SettingsManager != null)
                 {
                     savedBackdrop = App.SettingsManager.GetSetting<string>("SelectedBackdropType");
                 }
 
-                // Если не получили из SettingsManager, пробуем LocalSettings
                 if (string.IsNullOrEmpty(savedBackdrop))
                 {
                     var localSettings = ApplicationData.Current.LocalSettings.Values;
@@ -365,17 +379,14 @@ namespace ufm
                     Enum.TryParse<BackdropType>(savedBackdrop, out var backdropType))
                 {
                     SetBackdrop(backdropType);
-                    Debug.WriteLine($"Loaded saved backdrop: {backdropType}");
                 }
                 else
                 {
                     SetBackdrop(BackdropType.DefaultColor);
-                    Debug.WriteLine("Using default backdrop");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"LoadSavedBackdrop error: {ex}");
                 SetBackdrop(BackdropType.DefaultColor);
             }
         }

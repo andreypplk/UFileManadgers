@@ -1,1192 +1,1212 @@
+//using Core_FileManagement;
+//using Core_Language;
 //using Microsoft.UI;
 //using Microsoft.UI.Input;
 //using Microsoft.UI.Windowing;
 //using Microsoft.UI.Xaml;
 //using Microsoft.UI.Xaml.Controls;
+//using Microsoft.UI.Xaml.Controls.Primitives;
 //using Microsoft.UI.Xaml.Media;
 //using System;
+//using System.ComponentModel;
 //using System.Diagnostics;
+//using System.Threading.Tasks;
+//using ufm.Pages;
 //using Windows.Foundation;
 //using Windows.Storage;
-//using Core_Language;
-//using WinRT; // required to support Window.As<ICompositionSupportsSystemBackdrop>()
 //using WinRT.Interop;
-//using WindowActivatedEventArgs = Microsoft.UI.Xaml.WindowActivatedEventArgs;
-//using ufm.Pages;
-//using System.Linq;
-//using Microsoft.UI.Xaml.Controls.Primitives;
-//using Core_FileManagement;
-
-//// To learn more about WinUI, the WinUI project structure,
-//// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 //namespace ufm
 //{
-//    /// <summary>
-//    /// An empty window that can be used on its own or navigated to within a Frame.
-//    /// </summary>
-
 //    public sealed partial class MainWindow : Window
 //    {
-//        //Объявляет приватное поле m_AppWindow типа AppWindow, которое будет использоваться для представления окна приложения.
+//        // Поля окна
 //        public AppWindow m_AppWindow;
-
-//        //Объявляет приватное поле _presenter типа OverlappedPresenter, которое будет использоваться для представления наложенного представителя (презентера).
 //        private OverlappedPresenter _presenter;
 //        private IntPtr hWnd;
-
-//        //private RefreshUI _refreshUI;
-
-//        //Перебор типов тем встроенных в систему
-//        public enum BackdropType
-//        {
-//            DefaultColor,
-//            Mica,
-//            MicaAlt,
-//            DesktopAcrylicBase,
-//            DesktopAcrylicThin,
-//        }
-
+//        private BackdropManager _backdropManager;
 //        public new AppWindow AppWindow { get; private set; }
-//        private TabViewManager _tabViewManager;
-//        //private Window tabTearOutWindow = null;
+//        public TabViewManager TabViewManager { get; private set; }   // автосвойство
+//        public TabView MainTabsView => TabsView;
+//        internal bool IsCreatedByDragAndDrop { get; set; } = false;
+
+
 //        private Win32WindowHelper win32WindowHelper;
 //        private readonly LocalizationViewModel _locVM;
 //        private readonly MainViewModel _mainVM;
-
-//        //Визуал меню
 //        private readonly VisibilityToggler _menuFirstVisibilityToggler;
 //        private readonly VisibilityToggler _menuSecondVisibilityToggler;
+//        private StatusBarPerformanceMetricsUC _statusBar;
+
+//        // Для синхронизации доступа к настройкам
+//        private readonly object _settingsLock = new object();
+
+//        // Для дебаунсинга изменения размера
+//        private DispatcherTimer _resizeDebounceTimer;
+
+//        // Загруженные значения настроек
+//        private string _loadedBackdropType;
+//        private string _loadedCustomTheme;
+//        private string _loadedStandardTheme;
+
+//        // Обработчик изменения свойства ViewModel
+//        private PropertyChangedEventHandler _mainVMPropertyChangedHandler;
+
+//        public BackdropManager.BackdropType CurrentBackdropType =>
+//            _backdropManager?.CurrentBackdropType ?? BackdropManager.BackdropType.DefaultColor;
 
 //        public MainWindow()
 //        {
-//            this.InitializeComponent();
-
-//            WindowHelper.TrackWindow(this); // Добавляем это
-
-//            _locVM = new LocalizationViewModel();
-//            _mainVM = new MainViewModel();
-//            GridGlobal.DataContext = _locVM; // Установка DataContext
-
-//            // Инициализация динамических тем ДО загрузки сохраненной темы
-//            CustomThemeManager.Initialize();
-
-//            // Создание и настройка статусбара
-//            var statusBar = new StatusBarPerformanceMetricsUC();
-//            statusBar.ViewModel = _mainVM.CurrentExplorerItem;
-
-//            // Добавление статусбара в интерфейс (предполагая, что есть ContentControl с именем StatusBarContainer)
-//            StatusBarContentRight.Content = statusBar;
-
-//            // Подписка на изменения CurrentExplorerItem
-//            _mainVM.PropertyChanged += (s, e) =>
+//            try
 //            {
-//                if (e.PropertyName == nameof(MainViewModel.CurrentExplorerItem))
+//                this.InitializeComponent();
+//                WindowHelper.TrackWindow(this);
+
+//                _locVM = new LocalizationViewModel();
+//                _mainVM = new MainViewModel();
+//                GridGlobal.DataContext = _locVM;
+
+//                CustomThemeManager.Initialize();
+
+//                // Статусбар
+//                _statusBar = new StatusBarPerformanceMetricsUC();
+//                _statusBar.ViewModel = _mainVM.CurrentExplorerItem;
+//                StatusBarContentRight.Content = _statusBar;
+//                _mainVMPropertyChangedHandler = (s, e) =>
 //                {
-//                    statusBar.ViewModel = _mainVM.CurrentExplorerItem;
-//                }
-//            };
-//            //Получает объект AppWindow для текущего окна.
-//            m_AppWindow = GetAppWindowForCurrentWindow();
-//            hWnd = WindowNative.GetWindowHandle(this);
+//                    if (e.PropertyName == nameof(MainViewModel.CurrentExplorerItem))
+//                    {
+//                        _statusBar.ViewModel = _mainVM.CurrentExplorerItem;
+//                    }
+//                };
+//                _mainVM.PropertyChanged += _mainVMPropertyChangedHandler;
 
-//            //Фиксируем размер окна
-//            m_AppWindow.Resize(new Windows.Graphics.SizeInt32(1440, 900));
-//            //Устанавливает корневую тему
-//            ((FrameworkElement)this.Content).RequestedTheme = ThemeHelper.RootTheme;
+//                // Окно
+//                m_AppWindow = GetAppWindowForCurrentWindow();
+//                hWnd = WindowNative.GetWindowHandle(this);
+//                m_AppWindow.Resize(new Windows.Graphics.SizeInt32(1440, 900));
+//                ((FrameworkElement)this.Content).RequestedTheme = ThemeHelper.RootTheme;
+//                _presenter = m_AppWindow.Presenter as OverlappedPresenter;
+//                m_AppWindow.IsShownInSwitchers = true;
+//                _presenter.SetBorderAndTitleBar(true, true);
+//                m_AppWindow.SetIcon("folder1.ico");
+//                SetTitleBar(TitleBarGrid);
 
-//            //Объявляем помошника диспетчера очереди
-//            m_wsdqHelper = new WindowsSystemDispatcherQueueHelper();
-//            m_wsdqHelper.EnsureWindowsSystemDispatcherQueueController();
+//                // BackdropManager
+//                _backdropManager = new BackdropManager(this);
+//                _backdropManager.BackdropChanged += OnBackdropChanged;
+//                _backdropManager.BackdropChangeFailed += OnBackdropChangeFailed;
 
-//            //Привязывает _presenter к представителю (презентеру) m_AppWindow.
-//            _presenter = m_AppWindow.Presenter as OverlappedPresenter;
+//                // TabViewManager
+//                TabViewManager = new TabViewManager(TabsView, ContentFrame);
 
-//            //Определяет, будет ли окно отображаться в переключателях задач (Alt+Tab).
-//            m_AppWindow.IsShownInSwitchers = true;
+//                // VisibilityTogglers – остаются в конструкторе
+//                _menuFirstVisibilityToggler = new VisibilityToggler(
+//                    rootFrame: ContentFrame,
+//                    containerPageName: "rootPage",
+//                    frameName: "FrameViewDataPanel",
+//                    targetPageName: "ViewPage",
+//                    elementName: "GridMenuFirst");
+//                _menuSecondVisibilityToggler = new VisibilityToggler(
+//                    rootFrame: ContentFrame,
+//                    containerPageName: "rootPage",
+//                    frameName: "FrameViewDataPanel",
+//                    targetPageName: "ViewPage",
+//                    elementName: "GridMenuSecond");
 
-//            //Устанавливает границы и строку заголовка окна.
-//            //Если оба значения поставить в True то появятся системные кнопки 
-//            _presenter.SetBorderAndTitleBar(true, true);
+//                // Подписки
+//                TitleBarGrid.Loaded += TitleBarGrid_Loaded;
+//                TitleBarGrid.SizeChanged += TitleBarGrid_SizeChanged;
+//                this.Closed += MainWindow_Closed;
 
-//            //Создает переменную titleBar, представляющую строку заголовка окна.
-//            var titleBar = m_AppWindow.TitleBar;
-
-//            //Устанавливаем собственный значёк
-//            m_AppWindow.SetIcon("folder1.ico");
-
-//            TitleBarGrid.Loaded += TitleBarGrid_Loaded;
-//            TitleBarGrid.SizeChanged += TitleBarGrid_SizeChanged;
-//            //Данный код убирает иконку и меню из главного окна
-//            //m_AppWindow.TitleBar.IconShowOptions = IconShowOptions.HideIconAndSystemMenu;
-
-//            //Если системный заголовок спрятан то цвета настраиваемого нужно изменять в XAML в Grid 
-//            //Пока отключить так как в своём TitleBar смена цвета пока не реализована
-//            //SetTitleBarColors();
-
-//            //Устанавливает пользовательскую строку заголовка, используя элемент TitleBarGrid.
-//            SetTitleBar(TitleBarGrid);
-//            LoadSavedBackdropType();
-//            LoadSavedTheme();
-//            _tabViewManager = new TabViewManager(TabsView, ContentFrame);
-
-//            //передаем кде искать меню
-//            _menuFirstVisibilityToggler = new VisibilityToggler(
-//                rootFrame: ContentFrame,
-//                containerPageName: "rootPage",
-//                frameName: "FrameViewDataPanel",
-//                targetPageName: "ViewPage",
-//                elementName: "GridMenuFirst");
-//            _menuSecondVisibilityToggler = new VisibilityToggler(
-//                rootFrame: ContentFrame,
-//                containerPageName: "rootPage",
-//                frameName: "FrameViewDataPanel",
-//                targetPageName: "ViewPage",
-//                elementName: "GridMenuSecond");
-//            //SetTitleBarColors();
-//        }
-
-//        private bool SetTitleBarColors()
-//        {
-
-//            if (AppWindowTitleBar.IsCustomizationSupported())
-//            {
-//                AppWindowTitleBar m_TitleBar = m_AppWindow.TitleBar;
-
-//                // Set active window colors.
-//                // Note: No effect when app is running on Windows 10
-//                // because color customization is not supported.
-//                m_TitleBar.ForegroundColor = Colors.White;
-//                m_TitleBar.BackgroundColor = Colors.Green;
-//                m_TitleBar.ButtonForegroundColor = Colors.White;
-//                m_TitleBar.ButtonBackgroundColor = Colors.SeaGreen;
-//                m_TitleBar.ButtonHoverForegroundColor = Colors.Gainsboro;
-//                m_TitleBar.ButtonHoverBackgroundColor = Colors.DarkSeaGreen;
-//                m_TitleBar.ButtonPressedForegroundColor = Colors.Gray;
-//                m_TitleBar.ButtonPressedBackgroundColor = Colors.LightGreen;
-
-//                // Set inactive window colors.
-//                // Note: No effect when app is running on Windows 10
-//                // because color customization is not supported.
-//                m_TitleBar.InactiveForegroundColor = Colors.Gainsboro;
-//                m_TitleBar.InactiveBackgroundColor = Colors.SeaGreen;
-//                m_TitleBar.ButtonInactiveForegroundColor = Colors.Gainsboro;
-//                m_TitleBar.ButtonInactiveBackgroundColor = Colors.SeaGreen;
-//                return true;
+//                // Асинхронная загрузка настроек
+//#pragma warning disable CS4014
+//                _ = LoadSettingsAsync();
+//#pragma warning restore CS4014
 //            }
-//            return false;
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка в конструкторе MainWindow: {ex}");
+//                throw;
+//            }
 //        }
 
-//        public void SetupWindowMinSize(Window window)
-//        {
-//            win32WindowHelper = new Win32WindowHelper(window);
-//            win32WindowHelper.SetWindowMinMaxSize(new Win32.POINT() { x = 800, y = 600 });
-//        }
-
+//        // ------------------------------------------------------------------------
+//        // Получение AppWindow
+//        // ------------------------------------------------------------------------
 //        private AppWindow GetAppWindowForCurrentWindow()
 //        {
-//            //Поучаем дескриптор текущего окна
-//            IntPtr hWnd = WindowNative.GetWindowHandle(this);
-//            //Получаем идентификатор окна из дескриптора
-//            WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
-//            //Возвращаем объект AppWindow для указанного идентификатора окна
-//            return AppWindow.GetFromWindowId(wndId);
+//            try
+//            {
+//                IntPtr hWnd = WindowNative.GetWindowHandle(this);
+//                WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
+//                return AppWindow.GetFromWindowId(wndId);
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка при получении AppWindow: {ex}");
+//                throw;
+//            }
 //        }
 
+//        // ------------------------------------------------------------------------
+//        // Настройка минимального размера окна
+//        // ------------------------------------------------------------------------
+//        public void SetupWindowMinSize(Window window)
+//        {
+//            try
+//            {
+//                win32WindowHelper = new Win32WindowHelper(window);
+//                win32WindowHelper.SetWindowMinMaxSize(new Win32.POINT() { x = 800, y = 600 });
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка при установке минимального размера окна: {ex}");
+//            }
+//        }
+
+//        // ------------------------------------------------------------------------
+//        // Обработчики строки заголовка
+//        // ------------------------------------------------------------------------
 //        private void TitleBarGrid_Loaded(object sender, RoutedEventArgs e)
 //        {
-//            if (ExtendsContentIntoTitleBar == true)
+//            try
 //            {
-//                // Set the initial interactive regions.
-//                SetRegionsForCustomTitleBar();
+//                if (ExtendsContentIntoTitleBar == true)
+//                {
+//                    SetRegionsForCustomTitleBar();
+//                }
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка в TitleBarGrid_Loaded: {ex}");
 //            }
 //        }
 
 //        private void TitleBarGrid_SizeChanged(object sender, SizeChangedEventArgs e)
 //        {
-//            if (ExtendsContentIntoTitleBar == true)
+//            try
 //            {
-//                // Update interactive regions if the size of the window changes.
-//                SetRegionsForCustomTitleBar();
+//                if (ExtendsContentIntoTitleBar != true) return;
+
+//                // Дебаунсинг
+//                _resizeDebounceTimer?.Stop();
+//                if (_resizeDebounceTimer == null)
+//                {
+//                    _resizeDebounceTimer = new DispatcherTimer
+//                    {
+//                        Interval = TimeSpan.FromMilliseconds(100)
+//                    };
+//                    _resizeDebounceTimer.Tick += (s, args) =>
+//                    {
+//                        _resizeDebounceTimer.Stop();
+//                        SetRegionsForCustomTitleBar();
+//                    };
+//                }
+//                _resizeDebounceTimer.Start();
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка в TitleBarGrid_SizeChanged: {ex}");
 //            }
 //        }
 
 //        private void SetRegionsForCustomTitleBar()
 //        {
-//            // Убедитесь, что TitleBarGrid инициализирован
-//            if (TitleBarGrid != null)
+//            try
 //            {
-//                // Убедитесь, что XamlRoot инициализирован
-//                if (TitleBarGrid.XamlRoot != null)
+//                if (TitleBarGrid == null || TitleBarGrid.XamlRoot == null || m_AppWindow == null)
+//                    return;
+
+//                double scaleAdjustment = TitleBarGrid.XamlRoot.RasterizationScale;
+//                RightPaddingColumn.Width = new GridLength(m_AppWindow.TitleBar.RightInset / scaleAdjustment);
+//                LeftPaddingColumn.Width = new GridLength(m_AppWindow.TitleBar.LeftInset / scaleAdjustment);
+
+//                if (TabsView != null && StackPanelSettings != null)
 //                {
-//                    // Specify the interactive regions of the title bar.
-//                    double scaleAdjustment = TitleBarGrid.XamlRoot.RasterizationScale;
+//                    GeneralTransform transform = TabsView.TransformToVisual(null);
+//                    Rect bounds = transform.TransformBounds(new Rect(0, 0, TabsView.ActualWidth, TabsView.ActualHeight));
+//                    Windows.Graphics.RectInt32 searchBoxRect = GetRect(bounds, scaleAdjustment);
 
-//                    // Убедитесь, что m_AppWindow инициализирован
-//                    if (m_AppWindow != null)
-//                    {
-//                        RightPaddingColumn.Width = new GridLength(m_AppWindow.TitleBar.RightInset / scaleAdjustment);
-//                        LeftPaddingColumn.Width = new GridLength(m_AppWindow.TitleBar.LeftInset / scaleAdjustment);
-//                    }
-//                    else
-//                    {
-//                        Debug.WriteLine("m_AppWindow is null");
-//                    }
+//                    transform = StackPanelSettings.TransformToVisual(null);
+//                    bounds = transform.TransformBounds(new Rect(0, 0, StackPanelSettings.ActualWidth, StackPanelSettings.ActualHeight));
+//                    Windows.Graphics.RectInt32 personPicRect = GetRect(bounds, scaleAdjustment);
 
-//                    // Убедитесь, что TitleBarTable и StackPanelSettings инициализированы
-//                    if (TabsView != null && StackPanelSettings != null)
-//                    {
-//                        GeneralTransform transform = TabsView.TransformToVisual(null);
-//                        Rect bounds = transform.TransformBounds(new Rect(0, 0, TabsView.ActualWidth,
-//                            TabsView.ActualHeight));
-//                        Windows.Graphics.RectInt32 SearchBoxRect = GetRect(bounds, scaleAdjustment);
-
-//                        transform = StackPanelSettings.TransformToVisual(null);
-//                        bounds = transform.TransformBounds(new Rect(0, 0, StackPanelSettings.ActualWidth,
-//                            StackPanelSettings.ActualHeight));
-//                        Windows.Graphics.RectInt32 PersonPicRect = GetRect(bounds, scaleAdjustment);
-
-//                        var rectArray = new Windows.Graphics.RectInt32[] { SearchBoxRect, PersonPicRect };
-
-//                        InputNonClientPointerSource nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(m_AppWindow.Id);
-//                        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
-//                    }
-//                    else
-//                    {
-//                        if (TabsView == null)
-//                        {
-//                            Debug.WriteLine("TitleBarTable is null");
-//                        }
-
-//                        if (StackPanelSettings == null)
-//                        {
-//                            Debug.WriteLine("StackPanelSettings is null");
-//                        }
-//                    }
-//                }
-//                else
-//                {
-//                    Debug.WriteLine("TitleBarGrid.XamlRoot is null");
+//                    var rectArray = new[] { searchBoxRect, personPicRect };
+//                    InputNonClientPointerSource nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(m_AppWindow.Id);
+//                    nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
 //                }
 //            }
-//            else
+//            catch (Exception ex)
 //            {
-//                Debug.WriteLine("TitleBarGrid is null");
+//                Debug.WriteLine($"Ошибка при установке областей заголовка: {ex}");
 //            }
 //        }
 
 //        private Windows.Graphics.RectInt32 GetRect(Rect bounds, double scale)
 //        {
-//            return new Windows.Graphics.RectInt32(
-//                _X: (int)Math.Round(bounds.X * scale),
-//                _Y: (int)Math.Round(bounds.Y * scale),
-//                _Width: (int)Math.Round(bounds.Width * scale),
-//                _Height: (int)Math.Round(bounds.Height * scale)
-//            );
-//        }
-
-//        #region Themes Group
-
-//        //Группа отвечает за применение тем
-//        WindowsSystemDispatcherQueueHelper m_wsdqHelper;
-//        BackdropType m_currentBackdrop;
-//        public BackdropType CurrentBackdropType { get; private set; } = BackdropType.DefaultColor;
-
-//        Microsoft.UI.Composition.SystemBackdrops.MicaController m_micaController;
-//        Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicController m_acrylicController;
-//        Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration m_configurationSource;
-
-//        public void SetBackdrop(BackdropType type)
-//        {
-//            // Сброс до цвета по умолчанию. Если запрашиваемый тип поддерживается, мы обновим его.
-//            // Примечание: Этот пример полностью удаляет любой предыдущий контроллер, чтобы сбросить его в состояние по умолчанию.
-//            // Это сделано для того, чтобы этот пример мог показать наиболее распространенный шаблон приложения, просто выбирающего один тип контроллера, который устанавливается при запуске.
-//            // Если приложение хочет переключаться между Mica и Acrylic, оно может просто вызвать RemoveSystemBackdropTarget() на старом контроллере, а затем настроить новый контроллер, повторно используя любой существующий m_configurationSource и обработчики событий Activated/Closed.
-//            m_currentBackdrop = BackdropType.DefaultColor;
-//            CurrentBackdropType = type;
-
-//            // Сохраняем выбранный тип поверхности в локальных настройках
-//            ApplicationData.Current.LocalSettings.Values["SelectedBackdropType"] = type.ToString();
-
-//            tbCurrentBackdrop.Text = "None (default theme color)";
-//            tbChangeStatus.Text = "";
-//            if (m_micaController != null)
+//            try
 //            {
-//                m_micaController.Dispose();
-//                m_micaController = null;
+//                return new Windows.Graphics.RectInt32(
+//                    _X: (int)Math.Round(bounds.X * scale),
+//                    _Y: (int)Math.Round(bounds.Y * scale),
+//                    _Width: (int)Math.Round(bounds.Width * scale),
+//                    _Height: (int)Math.Round(bounds.Height * scale)
+//                );
 //            }
-
-//            if (m_acrylicController != null)
+//            catch (Exception ex)
 //            {
-//                m_acrylicController.Dispose();
-//                m_acrylicController = null;
-//            }
-
-//            this.Activated -= Window_Activated;
-//            this.Closed -= Window_Closed;
-//            ((FrameworkElement)this.Content).ActualThemeChanged -= Window_ThemeChanged;
-//            m_configurationSource = null;
-
-//            if (type == BackdropType.Mica)
-//            {
-//                if (TrySetMicaBackdrop(false))
-//                {
-//                    tbCurrentBackdrop.Text = "Custom Mica";
-//                    m_currentBackdrop = type;
-//                }
-//                else
-//                {
-//                    // Mica не поддерживается. Попробуйте Acrylic.
-//                    type = BackdropType.DesktopAcrylicBase;
-//                    tbChangeStatus.Text += "  Mica не поддерживается. Попробуем Acrylic.";
-//                }
-//            }
-
-//            if (type == BackdropType.MicaAlt)
-//            {
-//                if (TrySetMicaBackdrop(true))
-//                {
-//                    tbCurrentBackdrop.Text = "Custom MicaAlt";
-//                    m_currentBackdrop = type;
-//                }
-//                else
-//                {
-//                    // MicaAlt не поддерживается. Попробуйте Acrylic.
-//                    type = BackdropType.DesktopAcrylicBase;
-//                    tbChangeStatus.Text += "  MicaAlt не поддерживается. Попробуем Acrylic.";
-//                }
-//            }
-
-//            if (type == BackdropType.DesktopAcrylicBase)
-//            {
-//                if (TrySetAcrylicBackdrop(false))
-//                {
-//                    tbCurrentBackdrop.Text = "Custom Acrylic (Base)";
-//                    m_currentBackdrop = type;
-//                }
-//                else
-//                {
-//                    // Acrylic не поддерживается, поэтому выберите следующий вариант, который является DefaultColor, который уже установлен.
-//                    tbChangeStatus.Text += "  Acrylic Base не поддерживается. Переключаемся на цвет по умолчанию.";
-//                }
-//            }
-
-//            if (type == BackdropType.DesktopAcrylicThin)
-//            {
-//                if (TrySetAcrylicBackdrop(true))
-//                {
-//                    tbCurrentBackdrop.Text = "Custom Acrylic (Thin)";
-//                    m_currentBackdrop = type;
-//                }
-//                else
-//                {
-//                    // Acrylic не поддерживается, поэтому выберите следующий вариант, который является DefaultColor, который уже установлен.
-//                    tbChangeStatus.Text += "  Acrylic Thin не поддерживается. Переключаемся на цвет по умолчанию.";
-//                }
-//            }
-
-//            // объявить визуальное изменение для автоматизации
-//            UIHelper.AnnounceActionForAccessibility(ButSetting, $"Background changed to {tbCurrentBackdrop.Text}",
-//                "BackgroundChangedNotificationActivityId");
-//        }
-
-//        bool TrySetMicaBackdrop(bool useMicaAlt)
-//        {
-//            if (Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported())
-//            {
-//                // Подключение объекта политики.
-//                m_configurationSource = new Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration();
-//                this.Activated += Window_Activated;
-//                this.Closed += Window_Closed;
-//                ((FrameworkElement)this.Content).ActualThemeChanged += Window_ThemeChanged;
-
-//                // Начальное состояние конфигурации.
-//                m_configurationSource.IsInputActive = true;
-//                SetConfigurationSourceTheme();
-
-//                m_micaController = new Microsoft.UI.Composition.SystemBackdrops.MicaController();
-
-//                m_micaController.Kind = useMicaAlt
-//                    ? Microsoft.UI.Composition.SystemBackdrops.MicaKind.BaseAlt
-//                    : Microsoft.UI.Composition.SystemBackdrops.MicaKind.Base;
-
-//                // Включить системный фон.
-//                // Примечание: Убедитесь, что у вас есть "using WinRT;", чтобы поддерживать вызов Window.As<...>().
-//                m_micaController.AddSystemBackdropTarget(this
-//                    .As<Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop>());
-//                m_micaController.SetSystemBackdropConfiguration(m_configurationSource);
-//                return true; // Успешно.
-//            }
-
-//            return false; // Mica не поддерживается на этой системе.
-//        }
-
-//        bool TrySetAcrylicBackdrop(bool useAcrylicThin)
-//        {
-//            if (Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicController.IsSupported())
-//            {
-//                // Подключение объекта политики.
-//                m_configurationSource = new Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration();
-//                this.Activated += Window_Activated;
-//                this.Closed += Window_Closed;
-//                ((FrameworkElement)this.Content).ActualThemeChanged += Window_ThemeChanged;
-
-//                // Начальное состояние конфигурации.
-//                m_configurationSource.IsInputActive = true;
-//                SetConfigurationSourceTheme();
-
-//                m_acrylicController = new Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicController();
-
-//                m_acrylicController.Kind = useAcrylicThin
-//                    ? Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicKind.Thin
-//                    : Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicKind.Base;
-
-//                // Включить системный фон.
-//                // Примечание: Убедитесь, что у вас есть "using WinRT;", чтобы поддерживать вызов Window.As<...>().
-//                m_acrylicController.AddSystemBackdropTarget(
-//                    this.As<Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop>());
-//                m_acrylicController.SetSystemBackdropConfiguration(m_configurationSource);
-//                return true; // Успешно.
-//            }
-
-//            return false; // Acrylic не поддерживается на этой системе.
-//        }
-
-//        private void Window_Activated(object sender, WindowActivatedEventArgs args)
-//        {
-//            m_configurationSource.IsInputActive = args.WindowActivationState != WindowActivationState.Deactivated;
-//        }
-
-//        private void Window_Closed(object sender, WindowEventArgs args)
-//        {
-//            // Убедитесь, что любой контроллер Mica/Acrylic удален, чтобы он не пытался использовать это закрытое окна.
-//            if (m_micaController != null)
-//            {
-//                m_micaController.Dispose();
-//                m_micaController = null;
-//            }
-
-//            if (m_acrylicController != null)
-//            {
-//                m_acrylicController.Dispose();
-//                m_acrylicController = null;
-//            }
-
-//            this.Activated -= Window_Activated;
-//            m_configurationSource = null;
-//        }
-
-//        private void Window_ThemeChanged(FrameworkElement sender, object args)
-//        {
-//            if (m_configurationSource != null)
-//            {
-//                SetConfigurationSourceTheme();
+//                Debug.WriteLine($"Ошибка в GetRect: {ex}");
+//                return new Windows.Graphics.RectInt32(0, 0, 0, 0);
 //            }
 //        }
 
-//        private void SetConfigurationSourceTheme()
-//        {
-//            if (m_configurationSource == null)
-//            {
-//                // Инициализируем m_configurationSource, если он не был инициализирован
-//                m_configurationSource = new Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration();
-//            }
-
-//            if (this.Content is FrameworkElement rootElement)
-//            {
-//                switch (rootElement.ActualTheme)
-//                {
-//                    case ElementTheme.Dark:
-//                        m_configurationSource.Theme = Microsoft.UI.Composition.SystemBackdrops.SystemBackdropTheme.Dark;
-//                        break;
-//                    case ElementTheme.Light:
-//                        m_configurationSource.Theme = Microsoft.UI.Composition.SystemBackdrops.SystemBackdropTheme.Light;
-//                        break;
-//                    case ElementTheme.Default:
-//                        m_configurationSource.Theme = Microsoft.UI.Composition.SystemBackdrops.SystemBackdropTheme.Default;
-//                        break;
-
-//                }
-//            }
-//            else
-//            {
-//                throw new InvalidOperationException("Root element is not a FrameworkElement.");
-//            }
-//        }
-
-//        public void SetTheme(ElementTheme theme)
-//        {
-//            if (this.Content is FrameworkElement rootElement)
-//            {
-//                rootElement.RequestedTheme = theme;
-//                SetConfigurationSourceTheme();
-//            }
-//        }
-
-//        private void LoadSavedTheme()
+//        // ------------------------------------------------------------------------
+//        // BackdropManager
+//        // ------------------------------------------------------------------------
+//        private void OnBackdropChanged(string backdropName)
 //        {
 //            try
 //            {
-//                // Сначала пробуем загрузить кастомную тему (включая динамические)
-//                string savedCustomTheme = null;
+//                if (tbCurrentBackdrop != null)
+//                    tbCurrentBackdrop.Text = backdropName;
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка в OnBackdropChanged: {ex}");
+//            }
+//        }
 
-//                // Пробуем получить из SettingsManager
-//                if (App.SettingsManager != null)
-//                {
-//                    savedCustomTheme = App.SettingsManager.GetSetting<string>("SelectedCustomTheme");
-//                }
+//        private void OnBackdropChangeFailed(string errorMessage)
+//        {
+//            try
+//            {
+//                if (tbChangeStatus != null)
+//                    tbChangeStatus.Text = errorMessage;
+//                Debug.WriteLine(errorMessage);
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка в OnBackdropChangeFailed: {ex}");
+//            }
+//        }
 
-//                // Если не получили, пробуем LocalSettings
-//                if (string.IsNullOrEmpty(savedCustomTheme))
+//        public void SetBackdrop(BackdropManager.BackdropType type)
+//        {
+//            try
+//            {
+//                _backdropManager?.SetBackdrop(type);
+//                UIHelper.AnnounceActionForAccessibility(ButSetting,
+//                    $"Background changed to {_backdropManager?.CurrentBackdropType}",
+//                    "BackgroundChangedNotificationActivityId");
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка при установке фона: {ex}");
+//            }
+//        }
+
+//        // ------------------------------------------------------------------------
+//        // Тема и настройки
+//        // ------------------------------------------------------------------------
+//        public void SetTheme(ElementTheme theme)
+//        {
+//            try
+//            {
+//                _backdropManager?.SetTheme(theme);
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка при установке темы: {ex}");
+//            }
+//        }
+
+//        private async Task LoadSettingsAsync()
+//        {
+//            Task<string> loadBackdropTask = Task.Run(() => LoadBackdropSettings());
+//            Task<(string custom, string standard)> loadThemeTask = Task.Run(() => LoadThemeSettings());
+
+//            await Task.WhenAll(loadBackdropTask, loadThemeTask);
+
+//            _loadedBackdropType = loadBackdropTask.Result;
+//            (_loadedCustomTheme, _loadedStandardTheme) = loadThemeTask.Result;
+
+//            DispatcherQueue.TryEnqueue(() =>
+//            {
+//                ApplyLoadedBackdrop();
+//                ApplyLoadedTheme();
+//            });
+//        }
+
+//        private string LoadBackdropSettings()
+//        {
+//            try
+//            {
+//                return GetSettingWithFallback("BackdropType");
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка загрузки настройки BackdropType: {ex}");
+//                return null;
+//            }
+//        }
+
+//        private (string customTheme, string standardTheme) LoadThemeSettings()
+//        {
+//            try
+//            {
+//                string custom = GetSettingWithFallback("SelectedCustomTheme");
+//                string standard = GetSettingWithFallback("SelectedTheme");
+//                return (custom, standard);
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка загрузки настроек темы: {ex}");
+//                return (null, null);
+//            }
+//        }
+
+//        private string GetSettingWithFallback(string key)
+//        {
+//            lock (_settingsLock)
+//            {
+//                try
 //                {
-//                    var localSettings = ApplicationData.Current.LocalSettings.Values;
-//                    if (localSettings?.ContainsKey("SelectedCustomTheme") == true)
+//                    string value = null;
+//                    if (App.SettingsManager != null)
 //                    {
-//                        savedCustomTheme = localSettings["SelectedCustomTheme"]?.ToString();
+//                        value = App.SettingsManager.GetSetting<string>(key);
 //                    }
-//                }
 
-//                if (!string.IsNullOrEmpty(savedCustomTheme))
-//                {
-//                    // Сначала проверяем встроенные темы
-//                    if (Enum.TryParse(savedCustomTheme, out CustomThemeManager.CustomThemeType customTheme))
+//                    if (string.IsNullOrEmpty(value))
 //                    {
-//                        // Применяем кастомную тему
-//                        CustomThemeManager.ApplyCustomTheme(customTheme);
-
-//                        // Устанавливаем соответствующую базовую тему
-//                        ElementTheme baseTheme = customTheme switch
+//                        var localSettings = ApplicationData.Current.LocalSettings.Values;
+//                        if (localSettings?.ContainsKey(key) == true)
 //                        {
-//                            CustomThemeManager.CustomThemeType.Light => ElementTheme.Light,
-//                            CustomThemeManager.CustomThemeType.Dark => ElementTheme.Dark,
-//                            CustomThemeManager.CustomThemeType.DarkRed => ElementTheme.Dark,
-//                            CustomThemeManager.CustomThemeType.Lemon => ElementTheme.Light,
-//                            CustomThemeManager.CustomThemeType.DarkLemon => ElementTheme.Dark,
-//                            CustomThemeManager.CustomThemeType.Gold => ElementTheme.Light,
-//                            CustomThemeManager.CustomThemeType.DarkGold => ElementTheme.Dark,
-//                            CustomThemeManager.CustomThemeType.Green => ElementTheme.Light,
-//                            CustomThemeManager.CustomThemeType.DarkGreen => ElementTheme.Dark,
-//                            CustomThemeManager.CustomThemeType.Blue => ElementTheme.Light,
-//                            CustomThemeManager.CustomThemeType.DarkBlue => ElementTheme.Dark,
-//                            _ => ElementTheme.Default
-//                        };
-
-//                        SetTheme(baseTheme);
-//                        return;
+//                            value = localSettings[key]?.ToString();
+//                        }
 //                    }
-//                    // Затем проверяем динамические темы
-//                    else if (CustomThemeManager.DynamicThemeExists(savedCustomTheme))
+
+//                    return value;
+//                }
+//                catch (Exception ex)
+//                {
+//                    Debug.WriteLine($"Ошибка чтения настройки {key}: {ex}");
+//                    return null;
+//                }
+//            }
+//        }
+
+//        private void ApplyLoadedBackdrop()
+//        {
+//            try
+//            {
+//                if (!string.IsNullOrEmpty(_loadedBackdropType) &&
+//                    Enum.TryParse(_loadedBackdropType, out BackdropManager.BackdropType type))
+//                {
+//                    _backdropManager.SetBackdrop(type);
+//                }
+//                else
+//                {
+//                    _backdropManager.LoadSavedBackdrop();
+//                }
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка применения фона: {ex}");
+//            }
+//        }
+
+//        private void ApplyLoadedTheme()
+//        {
+//            try
+//            {
+//                if (!string.IsNullOrEmpty(_loadedCustomTheme) &&
+//                    CustomThemeManager.DynamicThemeExists(_loadedCustomTheme))
+//                {
+//                    CustomThemeManager.ApplyDynamicTheme(_loadedCustomTheme);
+//                    bool isDark = _loadedCustomTheme.Contains("Dark", StringComparison.OrdinalIgnoreCase);
+//                    SetTheme(isDark ? ElementTheme.Dark : ElementTheme.Light);
+//                    return;
+//                }
+
+//                if (Enum.TryParse(_loadedCustomTheme, out CustomThemeManager.CustomThemeType customType))
+//                {
+//                    CustomThemeManager.ApplyCustomTheme(customType);
+//                    ElementTheme baseTheme = customType switch
 //                    {
-//                        // Применяем динамическую тему
-//                        CustomThemeManager.ApplyDynamicTheme(savedCustomTheme);
-
-//                        // Определяем базовую тему на основе имени
-//                        bool isDarkTheme = savedCustomTheme.Contains("Dark", StringComparison.OrdinalIgnoreCase);
-//                        var baseTheme = isDarkTheme ? ElementTheme.Dark : ElementTheme.Light;
-//                        SetTheme(baseTheme);
-//                        return;
-//                    }
+//                        CustomThemeManager.CustomThemeType.Light => ElementTheme.Light,
+//                        CustomThemeManager.CustomThemeType.Dark => ElementTheme.Dark,
+//                        CustomThemeManager.CustomThemeType.DarkRed => ElementTheme.Dark,
+//                        CustomThemeManager.CustomThemeType.Lemon => ElementTheme.Light,
+//                        CustomThemeManager.CustomThemeType.DarkLemon => ElementTheme.Dark,
+//                        CustomThemeManager.CustomThemeType.Gold => ElementTheme.Light,
+//                        CustomThemeManager.CustomThemeType.DarkGold => ElementTheme.Dark,
+//                        CustomThemeManager.CustomThemeType.Green => ElementTheme.Light,
+//                        CustomThemeManager.CustomThemeType.DarkGreen => ElementTheme.Dark,
+//                        CustomThemeManager.CustomThemeType.Blue => ElementTheme.Light,
+//                        CustomThemeManager.CustomThemeType.DarkBlue => ElementTheme.Dark,
+//                        _ => ElementTheme.Default
+//                    };
+//                    SetTheme(baseTheme);
+//                    return;
 //                }
 
-//                // Если кастомной темы нет, загружаем стандартную тему
-//                string savedTheme = null;
-
-//                // Пробуем получить из SettingsManager
-//                if (App.SettingsManager != null)
+//                if (!string.IsNullOrEmpty(_loadedStandardTheme) &&
+//                    Enum.TryParse(_loadedStandardTheme, out ElementTheme stdTheme))
 //                {
-//                    savedTheme = App.SettingsManager.GetSetting<string>("SelectedTheme");
-//                }
-
-//                // Если не получили, пробуем LocalSettings
-//                if (string.IsNullOrEmpty(savedTheme))
-//                {
-//                    var localSettings = ApplicationData.Current.LocalSettings.Values;
-//                    if (localSettings?.ContainsKey("SelectedTheme") == true)
-//                    {
-//                        savedTheme = localSettings["SelectedTheme"]?.ToString();
-//                    }
-//                }
-
-//                if (!string.IsNullOrEmpty(savedTheme) && Enum.TryParse(savedTheme, out ElementTheme theme))
-//                {
-//                    SetTheme(theme);
-//                    // Для стандартных тем применяем соответствующую кастомную тему
-//                    CustomThemeManager.CustomThemeType customThemeType = theme switch
+//                    SetTheme(stdTheme);
+//                    CustomThemeManager.CustomThemeType fallbackType = stdTheme switch
 //                    {
 //                        ElementTheme.Light => CustomThemeManager.CustomThemeType.Light,
 //                        ElementTheme.Dark => CustomThemeManager.CustomThemeType.Dark,
 //                        _ => CustomThemeManager.CustomThemeType.Default
 //                    };
-//                    CustomThemeManager.ApplyCustomTheme(customThemeType);
+//                    CustomThemeManager.ApplyCustomTheme(fallbackType);
+//                    return;
 //                }
-//                else
-//                {
-//                    // Устанавливаем тему по умолчанию
-//                    SetTheme(ElementTheme.Default);
-//                    CustomThemeManager.ApplyCustomTheme(CustomThemeManager.CustomThemeType.Default);
-//                }
+
+//                SetTheme(ElementTheme.Default);
+//                CustomThemeManager.ApplyCustomTheme(CustomThemeManager.CustomThemeType.Default);
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"LoadSavedTheme error: {ex}");
-//                // Устанавливаем тему по умолчанию при ошибке
+//                Debug.WriteLine($"Ошибка применения темы: {ex}");
 //                SetTheme(ElementTheme.Default);
 //                CustomThemeManager.ApplyCustomTheme(CustomThemeManager.CustomThemeType.Default);
 //            }
 //        }
 
-//        private void LoadSavedBackdropType()
+//        // ------------------------------------------------------------------------
+//        // Обработчики меню
+//        // ------------------------------------------------------------------------
+//        private void ButVisibleFirstToolBar_OnClick(object sender, RoutedEventArgs e)
 //        {
 //            try
 //            {
-//                string savedBackdrop = null;
-
-//                // Пробуем получить из SettingsManager
-//                if (App.SettingsManager != null)
-//                {
-//                    savedBackdrop = App.SettingsManager.GetSetting<string>("SelectedBackdropType");
-//                }
-
-//                // Если не получили из SettingsManager, пробуем LocalSettings
-//                if (string.IsNullOrEmpty(savedBackdrop))
-//                {
-//                    var localSettings = ApplicationData.Current.LocalSettings.Values;
-//                    if (localSettings?.ContainsKey("SelectedBackdropType") == true)
-//                    {
-//                        savedBackdrop = localSettings["SelectedBackdropType"]?.ToString();
-//                    }
-//                }
-
-//                if (!string.IsNullOrEmpty(savedBackdrop) &&
-//                    Enum.TryParse<BackdropType>(savedBackdrop, out var backdropType))
-//                {
-//                    SetBackdrop(backdropType);
-//                }
-//                else
-//                {
-//                    // Устанавливаем тип поверхности по умолчанию
-//                    SetBackdrop(BackdropType.DefaultColor);
-//                }
+//                var toggleItem = (ToggleMenuFlyoutItem)sender;
+//                bool newVisibility = !_menuFirstVisibilityToggler.IsCurrentlyVisible();
+//                _menuFirstVisibilityToggler.SetVisibility(newVisibility ? Visibility.Visible : Visibility.Collapsed);
+//                toggleItem.IsChecked = newVisibility;
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"LoadSavedBackdropType error: {ex}");
-//                SetBackdrop(BackdropType.DefaultColor);
+//                Debug.WriteLine($"Ошибка в ButVisibleFirstToolBar_OnClick: {ex}");
 //            }
-//        }
-//        #endregion
-
-//        #region Menu Group
-
-//        private void ButVisibleFirstToolBar_OnClick(object sender, RoutedEventArgs e)
-//        {
-//            var toggleItem = (ToggleMenuFlyoutItem)sender;
-
-//            // Инвертируем текущее состояние
-//            bool newVisibility = !_menuFirstVisibilityToggler.IsCurrentlyVisible();
-
-//            // Применяем изменения
-//            _menuFirstVisibilityToggler.SetVisibility(newVisibility ? Visibility.Visible : Visibility.Collapsed);
-//            toggleItem.IsChecked = newVisibility;
 //        }
 
 //        private void ButVisibleSecondToolBar_OnClick(object sender, RoutedEventArgs e)
 //        {
-//            var toggleItem = (ToggleMenuFlyoutItem)sender;
-
-//            bool newVisibility = !_menuSecondVisibilityToggler.IsCurrentlyVisible();
-//            _menuSecondVisibilityToggler.SetVisibility(newVisibility ? Visibility.Visible : Visibility.Collapsed);
-//            toggleItem.IsChecked = newVisibility;
+//            try
+//            {
+//                var toggleItem = (ToggleMenuFlyoutItem)sender;
+//                bool newVisibility = !_menuSecondVisibilityToggler.IsCurrentlyVisible();
+//                _menuSecondVisibilityToggler.SetVisibility(newVisibility ? Visibility.Visible : Visibility.Collapsed);
+//                toggleItem.IsChecked = newVisibility;
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка в ButVisibleSecondToolBar_OnClick: {ex}");
+//            }
 //        }
 
-//        #endregion
-
-//        #region Работа с модальным окном
-
+//        // ------------------------------------------------------------------------
+//        // Модальное окно настроек
+//        // ------------------------------------------------------------------------
 //        private void MenuFlyoutSettings_OnClick(object sender, RoutedEventArgs e)
 //        {
-//            var newWindow = new SettingWindow(this);
-//            newWindow.Activate();
+//            try
+//            {
+//                var newWindow = new SettingWindow(this);
+//                newWindow.Activate();
 
-//            var hWnd = WindowNative.GetWindowHandle(newWindow);
-//            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-//            var appWindow = AppWindow.GetFromWindowId(windowId);
+//                var hWnd = WindowNative.GetWindowHandle(newWindow);
+//                var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+//                var appWindow = AppWindow.GetFromWindowId(windowId);
+//                var presenter = (OverlappedPresenter)appWindow.Presenter;
 
-//            var presenter = (OverlappedPresenter)appWindow.Presenter;
+//                var newWindowSize = new Windows.Graphics.SizeInt32(800, 600);
+//                appWindow.Resize(newWindowSize);
+//                presenter.IsResizable = false;
+//                presenter.IsMinimizable = false;
+//                presenter.IsMaximizable = false;
 
-//            // Установите размер окна
-//            var newWindowSize = new Windows.Graphics.SizeInt32(800, 600);
-//            appWindow.Resize(newWindowSize);
+//                var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Primary);
+//                var centerX = (displayArea.WorkArea.Width - newWindowSize.Width) / 2;
+//                var centerY = (displayArea.WorkArea.Height - newWindowSize.Height) / 2;
+//                appWindow.MoveAndResize(new Windows.Graphics.RectInt32(centerX, centerY, newWindowSize.Width, newWindowSize.Height));
 
-//            // Запретить изменение размера окна
-//            presenter.IsResizable = false;
-
-//            // Убрать системные кнопки свернуть и развернуть
-//            presenter.IsMinimizable = false;
-//            presenter.IsMaximizable = false;
-
-//            // Получить размеры экрана
-//            var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Primary);
-//            var centerX = (displayArea.WorkArea.Width - newWindowSize.Width) / 2;
-//            var centerY = (displayArea.WorkArea.Height - newWindowSize.Height) / 2;
-
-//            // Переместить и изменить размер окна, чтобы оно было по центру
-//            appWindow.MoveAndResize(new Windows.Graphics.RectInt32(centerX, centerY, newWindowSize.Width, newWindowSize.Height));
-
-//            // Сделать окно модальным
-//            DisableParentWindow();
+//                DisableParentWindow();
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка открытия окна настроек: {ex}");
+//            }
 //        }
 
 //        private void DisableParentWindow()
 //        {
-//            var parentWindowHandle = WindowNative.GetWindowHandle(this);
-//            EnableWindow(parentWindowHandle, false);
+//            try
+//            {
+//                var parentWindowHandle = WindowNative.GetWindowHandle(this);
+//                EnableWindow(parentWindowHandle, false);
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка блокировки родительского окна: {ex}");
+//            }
 //        }
 
 //        internal void EnableParentWindow()
 //        {
-//            var parentWindowHandle = WindowNative.GetWindowHandle(this);
-//            EnableWindow(parentWindowHandle, true);
+//            try
+//            {
+//                var parentWindowHandle = WindowNative.GetWindowHandle(this);
+//                EnableWindow(parentWindowHandle, true);
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка разблокировки родительского окна: {ex}");
+//            }
 //        }
 
 //        [System.Runtime.InteropServices.DllImport("user32.dll")]
 //        private static extern bool EnableWindow(System.IntPtr hWnd, bool enable);
 
-//        #endregion
+//        // ------------------------------------------------------------------------
+//        // Закрытие окна и очистка ресурсов
+//        // ------------------------------------------------------------------------
+//        private void MainWindow_Closed(object sender, WindowEventArgs args)
+//        {
+//            try
+//            {
+//                TitleBarGrid.Loaded -= TitleBarGrid_Loaded;
+//                TitleBarGrid.SizeChanged -= TitleBarGrid_SizeChanged;
+//                this.Closed -= MainWindow_Closed;
+
+//                _resizeDebounceTimer?.Stop();
+
+//                if (_mainVM != null && _mainVMPropertyChangedHandler != null)
+//                {
+//                    _mainVM.PropertyChanged -= _mainVMPropertyChangedHandler;
+//                }
+
+//                if (_backdropManager != null)
+//                {
+//                    _backdropManager.BackdropChanged -= OnBackdropChanged;
+//                    _backdropManager.BackdropChangeFailed -= OnBackdropChangeFailed;
+//                    _backdropManager.Dispose();
+//                    _backdropManager = null;
+//                }
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"Ошибка при закрытии окна: {ex}");
+//            }
+//        }
 //    }
 //}
 
 
-
+using Core_FileManagement;
+using Core_Language;
 using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using ufm.Pages;
 using Windows.Foundation;
 using Windows.Storage;
-using Core_Language;
 using WinRT.Interop;
-using WindowActivatedEventArgs = Microsoft.UI.Xaml.WindowActivatedEventArgs;
-using ufm.Pages;
-using System.Linq;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Core_FileManagement;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace ufm
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
-
     public sealed partial class MainWindow : Window
     {
-        //Объявляет приватное поле m_AppWindow типа AppWindow, которое будет использоваться для представления окна приложения.
+        // Поля окна
         public AppWindow m_AppWindow;
-
-        //Объявляет приватное поле _presenter типа OverlappedPresenter, которое будет использоваться для представления наложенного представителя (презентера).
         private OverlappedPresenter _presenter;
         private IntPtr hWnd;
-
-        //private RefreshUI _refreshUI;
         private BackdropManager _backdropManager;
-
         public new AppWindow AppWindow { get; private set; }
-        private TabViewManager _tabViewManager;
+        public TabViewManager TabViewManager { get; private set; }
+        public TabView MainTabsView => TabsView;
+        internal bool IsCreatedByDragAndDrop { get; set; } = false;
+
         private Win32WindowHelper win32WindowHelper;
         private readonly LocalizationViewModel _locVM;
         private readonly MainViewModel _mainVM;
-
-        //Визуал меню
         private readonly VisibilityToggler _menuFirstVisibilityToggler;
         private readonly VisibilityToggler _menuSecondVisibilityToggler;
+        private StatusBarPerformanceMetricsUC _statusBar;
 
-        // Свойство для доступа к текущему BackdropType из других классов
-        public BackdropManager.BackdropType CurrentBackdropType => _backdropManager?.CurrentBackdropType ?? BackdropManager.BackdropType.DefaultColor;
+        // Для синхронизации доступа к настройкам
+        private readonly object _settingsLock = new object();
 
-        public MainWindow()
+        // Для дебаунсинга изменения размера
+        private DispatcherTimer _resizeDebounceTimer;
+
+        // Загруженные значения настроек
+        private string _loadedBackdropType;
+        private string _loadedCustomTheme;
+        private string _loadedStandardTheme;
+
+        // Обработчик изменения свойства ViewModel
+        private PropertyChangedEventHandler _mainVMPropertyChangedHandler;
+
+        public BackdropManager.BackdropType CurrentBackdropType =>
+            _backdropManager?.CurrentBackdropType ?? BackdropManager.BackdropType.DefaultColor;
+
+        // Публичный конструктор для обычного запуска
+        public MainWindow() : this(false)
         {
-            this.InitializeComponent();
+        }
 
-            WindowHelper.TrackWindow(this); // Добавляем это
+        // Внутренний конструктор для создания окна через перетаскивание
+        internal MainWindow(bool isCreatedByDragAndDrop)
+        {
+            IsCreatedByDragAndDrop = isCreatedByDragAndDrop;
 
-            _locVM = new LocalizationViewModel();
-            _mainVM = new MainViewModel();
-            GridGlobal.DataContext = _locVM; // Установка DataContext
-
-            // Инициализация динамических тем ДО загрузки сохраненной темы
-            CustomThemeManager.Initialize();
-
-            // Создание и настройка статусбара
-            var statusBar = new StatusBarPerformanceMetricsUC();
-            statusBar.ViewModel = _mainVM.CurrentExplorerItem;
-
-            // Добавление статусбара в интерфейс (предполагая, что есть ContentControl с именем StatusBarContainer)
-            StatusBarContentRight.Content = statusBar;
-
-            // Подписка на изменения CurrentExplorerItem
-            _mainVM.PropertyChanged += (s, e) =>
+            try
             {
-                if (e.PropertyName == nameof(MainViewModel.CurrentExplorerItem))
+                this.InitializeComponent();
+                WindowHelper.TrackWindow(this);
+
+                _locVM = new LocalizationViewModel();
+                _mainVM = new MainViewModel();
+                GridGlobal.DataContext = _locVM;
+
+                CustomThemeManager.Initialize();
+
+                // Статусбар
+                _statusBar = new StatusBarPerformanceMetricsUC();
+                _statusBar.ViewModel = _mainVM.CurrentExplorerItem;
+                StatusBarContentRight.Content = _statusBar;
+                _mainVMPropertyChangedHandler = (s, e) =>
                 {
-                    statusBar.ViewModel = _mainVM.CurrentExplorerItem;
-                }
-            };
-            //Получает объект AppWindow для текущего окна.
-            m_AppWindow = GetAppWindowForCurrentWindow();
-            hWnd = WindowNative.GetWindowHandle(this);
+                    if (e.PropertyName == nameof(MainViewModel.CurrentExplorerItem))
+                    {
+                        _statusBar.ViewModel = _mainVM.CurrentExplorerItem;
+                    }
+                };
+                _mainVM.PropertyChanged += _mainVMPropertyChangedHandler;
 
-            //Фиксируем размер окна
-            m_AppWindow.Resize(new Windows.Graphics.SizeInt32(1440, 900));
-            //Устанавливает корневую тему
-            ((FrameworkElement)this.Content).RequestedTheme = ThemeHelper.RootTheme;
+                // Окно
+                m_AppWindow = GetAppWindowForCurrentWindow();
+                hWnd = WindowNative.GetWindowHandle(this);
+                m_AppWindow.Resize(new Windows.Graphics.SizeInt32(1440, 900));
+                ((FrameworkElement)this.Content).RequestedTheme = ThemeHelper.RootTheme;
+                _presenter = m_AppWindow.Presenter as OverlappedPresenter;
+                m_AppWindow.IsShownInSwitchers = true;
+                _presenter.SetBorderAndTitleBar(true, true);
+                m_AppWindow.SetIcon("folder1.ico");
+                SetTitleBar(TitleBarGrid);
 
-            //Привязывает _presenter к представителю (презентеру) m_AppWindow.
-            _presenter = m_AppWindow.Presenter as OverlappedPresenter;
+                // BackdropManager
+                _backdropManager = new BackdropManager(this);
+                _backdropManager.BackdropChanged += OnBackdropChanged;
+                _backdropManager.BackdropChangeFailed += OnBackdropChangeFailed;
 
-            //Определяет, будет ли окно отображаться в переключателях задач (Alt+Tab).
-            m_AppWindow.IsShownInSwitchers = true;
+                // TabViewManager с флагом пропуска начальной вкладки
+                TabViewManager = new TabViewManager(TabsView, ContentFrame, isCreatedByDragAndDrop);
 
-            //Устанавливает границы и строку заголовка окна.
-            //Если оба значения поставить в True то появятся системные кнопки 
-            _presenter.SetBorderAndTitleBar(true, true);
+                // VisibilityTogglers
+                _menuFirstVisibilityToggler = new VisibilityToggler(
+                    rootFrame: ContentFrame,
+                    containerPageName: "rootPage",
+                    frameName: "FrameViewDataPanel",
+                    targetPageName: "ViewPage",
+                    elementName: "GridMenuFirst");
+                _menuSecondVisibilityToggler = new VisibilityToggler(
+                    rootFrame: ContentFrame,
+                    containerPageName: "rootPage",
+                    frameName: "FrameViewDataPanel",
+                    targetPageName: "ViewPage",
+                    elementName: "GridMenuSecond");
 
-            //Создает переменную titleBar, представляющую строку заголовка окна.
-            var titleBar = m_AppWindow.TitleBar;
+                // Подписки
+                TitleBarGrid.Loaded += TitleBarGrid_Loaded;
+                TitleBarGrid.SizeChanged += TitleBarGrid_SizeChanged;
+                this.Closed += MainWindow_Closed;
 
-            //Устанавливаем собственный значёк
-            m_AppWindow.SetIcon("folder1.ico");
-
-            TitleBarGrid.Loaded += TitleBarGrid_Loaded;
-            TitleBarGrid.SizeChanged += TitleBarGrid_SizeChanged;
-
-            //Данный код убирает иконку и меню из главного окна
-            //m_AppWindow.TitleBar.IconShowOptions = IconShowOptions.HideIconAndSystemMenu;
-
-            //Если системный заголовок спрятан то цвета настраиваемого нужно изменять в XAML в Grid 
-            //Пока отключить так как в своём TitleBar смена цвета пока не реализована
-            //SetTitleBarColors();
-
-            //Устанавливает пользовательскую строку заголовка, используя элемент TitleBarGrid.
-            SetTitleBar(TitleBarGrid);
-
-            // Инициализируем BackdropManager вместо старого кода
-            _backdropManager = new BackdropManager(this);
-            _backdropManager.BackdropChanged += OnBackdropChanged;
-            _backdropManager.BackdropChangeFailed += OnBackdropChangeFailed;
-
-            // Загружаем сохраненные настройки через BackdropManager
-            _backdropManager.LoadSavedBackdrop();
-            LoadSavedThemeWithBackdropManager();
-
-            _tabViewManager = new TabViewManager(TabsView, ContentFrame);
-
-            //передаем кде искать меню
-            _menuFirstVisibilityToggler = new VisibilityToggler(
-                rootFrame: ContentFrame,
-                containerPageName: "rootPage",
-                frameName: "FrameViewDataPanel",
-                targetPageName: "ViewPage",
-                elementName: "GridMenuFirst");
-            _menuSecondVisibilityToggler = new VisibilityToggler(
-                rootFrame: ContentFrame,
-                containerPageName: "rootPage",
-                frameName: "FrameViewDataPanel",
-                targetPageName: "ViewPage",
-                elementName: "GridMenuSecond");
-            //SetTitleBarColors();
-
-            // Подписываемся на закрытие окна для очистки ресурсов
-            this.Closed += MainWindow_Closed;
-        }
-
-        private bool SetTitleBarColors()
-        {
-            if (AppWindowTitleBar.IsCustomizationSupported())
-            {
-                AppWindowTitleBar m_TitleBar = m_AppWindow.TitleBar;
-
-                // Set active window colors.
-                // Note: No effect when app is running on Windows 10
-                // because color customization is not supported.
-                m_TitleBar.ForegroundColor = Colors.White;
-                m_TitleBar.BackgroundColor = Colors.Green;
-                m_TitleBar.ButtonForegroundColor = Colors.White;
-                m_TitleBar.ButtonBackgroundColor = Colors.SeaGreen;
-                m_TitleBar.ButtonHoverForegroundColor = Colors.Gainsboro;
-                m_TitleBar.ButtonHoverBackgroundColor = Colors.DarkSeaGreen;
-                m_TitleBar.ButtonPressedForegroundColor = Colors.Gray;
-                m_TitleBar.ButtonPressedBackgroundColor = Colors.LightGreen;
-
-                // Set inactive window colors.
-                // Note: No effect when app is running on Windows 10
-                // because color customization is not supported.
-                m_TitleBar.InactiveForegroundColor = Colors.Gainsboro;
-                m_TitleBar.InactiveBackgroundColor = Colors.SeaGreen;
-                m_TitleBar.ButtonInactiveForegroundColor = Colors.Gainsboro;
-                m_TitleBar.ButtonInactiveBackgroundColor = Colors.SeaGreen;
-                return true;
+                // Асинхронная загрузка настроек
+#pragma warning disable CS4014
+                _ = LoadSettingsAsync();
+#pragma warning restore CS4014
             }
-            return false;
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка в конструкторе MainWindow: {ex}");
+                throw;
+            }
         }
 
-        public void SetupWindowMinSize(Window window)
-        {
-            win32WindowHelper = new Win32WindowHelper(window);
-            win32WindowHelper.SetWindowMinMaxSize(new Win32.POINT() { x = 800, y = 600 });
-        }
-
+        // ------------------------------------------------------------------------
+        // Получение AppWindow
+        // ------------------------------------------------------------------------
         private AppWindow GetAppWindowForCurrentWindow()
         {
-            //Поучаем дескриптор текущего окна
-            IntPtr hWnd = WindowNative.GetWindowHandle(this);
-            //Получаем идентификатор окна из дескриптора
-            WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            //Возвращаем объект AppWindow для указанного идентификатора окна
-            return AppWindow.GetFromWindowId(wndId);
+            try
+            {
+                IntPtr hWnd = WindowNative.GetWindowHandle(this);
+                WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
+                return AppWindow.GetFromWindowId(wndId);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка при получении AppWindow: {ex}");
+                throw;
+            }
         }
 
+        // ------------------------------------------------------------------------
+        // Настройка минимального размера окна
+        // ------------------------------------------------------------------------
+        public void SetupWindowMinSize(Window window)
+        {
+            try
+            {
+                win32WindowHelper = new Win32WindowHelper(window);
+                win32WindowHelper.SetWindowMinMaxSize(new Win32.POINT() { x = 800, y = 600 });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка при установке минимального размера окна: {ex}");
+            }
+        }
+
+        // ------------------------------------------------------------------------
+        // Обработчики строки заголовка
+        // ------------------------------------------------------------------------
         private void TitleBarGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            if (ExtendsContentIntoTitleBar == true)
+            try
             {
-                // Set the initial interactive regions.
-                SetRegionsForCustomTitleBar();
+                if (ExtendsContentIntoTitleBar == true)
+                {
+                    SetRegionsForCustomTitleBar();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка в TitleBarGrid_Loaded: {ex}");
             }
         }
 
         private void TitleBarGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (ExtendsContentIntoTitleBar == true)
+            try
             {
-                // Update interactive regions if the size of the window changes.
-                SetRegionsForCustomTitleBar();
+                if (ExtendsContentIntoTitleBar != true) return;
+
+                _resizeDebounceTimer?.Stop();
+                if (_resizeDebounceTimer == null)
+                {
+                    _resizeDebounceTimer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(100)
+                    };
+                    _resizeDebounceTimer.Tick += (s, args) =>
+                    {
+                        _resizeDebounceTimer.Stop();
+                        SetRegionsForCustomTitleBar();
+                    };
+                }
+                _resizeDebounceTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка в TitleBarGrid_SizeChanged: {ex}");
             }
         }
 
         private void SetRegionsForCustomTitleBar()
         {
-            // Убедитесь, что TitleBarGrid инициализирован
-            if (TitleBarGrid != null)
+            try
             {
-                // Убедитесь, что XamlRoot инициализирован
-                if (TitleBarGrid.XamlRoot != null)
+                if (TitleBarGrid == null || TitleBarGrid.XamlRoot == null || m_AppWindow == null)
+                    return;
+
+                double scaleAdjustment = TitleBarGrid.XamlRoot.RasterizationScale;
+                RightPaddingColumn.Width = new GridLength(m_AppWindow.TitleBar.RightInset / scaleAdjustment);
+                LeftPaddingColumn.Width = new GridLength(m_AppWindow.TitleBar.LeftInset / scaleAdjustment);
+
+                if (TabsView != null && StackPanelSettings != null)
                 {
-                    // Specify the interactive regions of the title bar.
-                    double scaleAdjustment = TitleBarGrid.XamlRoot.RasterizationScale;
+                    GeneralTransform transform = TabsView.TransformToVisual(null);
+                    Rect bounds = transform.TransformBounds(new Rect(0, 0, TabsView.ActualWidth, TabsView.ActualHeight));
+                    Windows.Graphics.RectInt32 searchBoxRect = GetRect(bounds, scaleAdjustment);
 
-                    // Убедитесь, что m_AppWindow инициализирован
-                    if (m_AppWindow != null)
-                    {
-                        RightPaddingColumn.Width = new GridLength(m_AppWindow.TitleBar.RightInset / scaleAdjustment);
-                        LeftPaddingColumn.Width = new GridLength(m_AppWindow.TitleBar.LeftInset / scaleAdjustment);
-                    }
-                    else
-                    {
-                        //Debug.WriteLine("m_AppWindow is null");
-                    }
+                    transform = StackPanelSettings.TransformToVisual(null);
+                    bounds = transform.TransformBounds(new Rect(0, 0, StackPanelSettings.ActualWidth, StackPanelSettings.ActualHeight));
+                    Windows.Graphics.RectInt32 personPicRect = GetRect(bounds, scaleAdjustment);
 
-                    // Убедитесь, что TitleBarTable и StackPanelSettings инициализированы
-                    if (TabsView != null && StackPanelSettings != null)
-                    {
-                        GeneralTransform transform = TabsView.TransformToVisual(null);
-                        Rect bounds = transform.TransformBounds(new Rect(0, 0, TabsView.ActualWidth,
-                            TabsView.ActualHeight));
-                        Windows.Graphics.RectInt32 SearchBoxRect = GetRect(bounds, scaleAdjustment);
-
-                        transform = StackPanelSettings.TransformToVisual(null);
-                        bounds = transform.TransformBounds(new Rect(0, 0, StackPanelSettings.ActualWidth,
-                            StackPanelSettings.ActualHeight));
-                        Windows.Graphics.RectInt32 PersonPicRect = GetRect(bounds, scaleAdjustment);
-
-                        var rectArray = new Windows.Graphics.RectInt32[] { SearchBoxRect, PersonPicRect };
-
-                        InputNonClientPointerSource nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(m_AppWindow.Id);
-                        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
-                    }
-                    else
-                    {
-                        if (TabsView == null)
-                        {
-                            Debug.WriteLine("TitleBarTable is null");
-                        }
-
-                        if (StackPanelSettings == null)
-                        {
-                            Debug.WriteLine("StackPanelSettings is null");
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.WriteLine("TitleBarGrid.XamlRoot is null");
+                    var rectArray = new[] { searchBoxRect, personPicRect };
+                    InputNonClientPointerSource nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(m_AppWindow.Id);
+                    nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Debug.WriteLine("TitleBarGrid is null");
+                Debug.WriteLine($"Ошибка при установке областей заголовка: {ex}");
             }
         }
 
         private Windows.Graphics.RectInt32 GetRect(Rect bounds, double scale)
         {
-            return new Windows.Graphics.RectInt32(
-                _X: (int)Math.Round(bounds.X * scale),
-                _Y: (int)Math.Round(bounds.Y * scale),
-                _Width: (int)Math.Round(bounds.Width * scale),
-                _Height: (int)Math.Round(bounds.Height * scale)
-            );
+            try
+            {
+                return new Windows.Graphics.RectInt32(
+                    _X: (int)Math.Round(bounds.X * scale),
+                    _Y: (int)Math.Round(bounds.Y * scale),
+                    _Width: (int)Math.Round(bounds.Width * scale),
+                    _Height: (int)Math.Round(bounds.Height * scale)
+                );
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка в GetRect: {ex}");
+                return new Windows.Graphics.RectInt32(0, 0, 0, 0);
+            }
         }
 
-        // Обработчики событий BackdropManager
+        // ------------------------------------------------------------------------
+        // BackdropManager
+        // ------------------------------------------------------------------------
         private void OnBackdropChanged(string backdropName)
         {
-            if (tbCurrentBackdrop != null)
+            try
             {
-                tbCurrentBackdrop.Text = backdropName;
+                if (tbCurrentBackdrop != null)
+                    tbCurrentBackdrop.Text = backdropName;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка в OnBackdropChanged: {ex}");
             }
         }
 
         private void OnBackdropChangeFailed(string errorMessage)
         {
-            if (tbChangeStatus != null)
+            try
             {
-                tbChangeStatus.Text = errorMessage;
+                if (tbChangeStatus != null)
+                    tbChangeStatus.Text = errorMessage;
+                Debug.WriteLine(errorMessage);
             }
-            Debug.WriteLine(errorMessage);
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка в OnBackdropChangeFailed: {ex}");
+            }
         }
 
-        // Метод для установки backdrop через BackdropManager
         public void SetBackdrop(BackdropManager.BackdropType type)
-        {
-            _backdropManager?.SetBackdrop(type);
-
-            // Уведомление для доступности
-            UIHelper.AnnounceActionForAccessibility(ButSetting,
-                $"Background changed to {_backdropManager?.CurrentBackdropType}",
-                "BackgroundChangedNotificationActivityId");
-        }
-
-        // Упрощенный метод загрузки темы
-        private void LoadSavedThemeWithBackdropManager()
         {
             try
             {
-                // Сначала пробуем загрузить кастомную тему
-                string savedCustomTheme = null;
+                _backdropManager?.SetBackdrop(type);
+                UIHelper.AnnounceActionForAccessibility(ButSetting,
+                    $"Background changed to {_backdropManager?.CurrentBackdropType}",
+                    "BackgroundChangedNotificationActivityId");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка при установке фона: {ex}");
+            }
+        }
 
-                if (App.SettingsManager != null)
-                {
-                    savedCustomTheme = App.SettingsManager.GetSetting<string>("SelectedCustomTheme");
-                }
+        // ------------------------------------------------------------------------
+        // Тема и настройки
+        // ------------------------------------------------------------------------
+        public void SetTheme(ElementTheme theme)
+        {
+            try
+            {
+                _backdropManager?.SetTheme(theme);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка при установке темы: {ex}");
+            }
+        }
 
-                if (string.IsNullOrEmpty(savedCustomTheme))
+        private async Task LoadSettingsAsync()
+        {
+            Task<string> loadBackdropTask = Task.Run(() => LoadBackdropSettings());
+            Task<(string custom, string standard)> loadThemeTask = Task.Run(() => LoadThemeSettings());
+
+            await Task.WhenAll(loadBackdropTask, loadThemeTask);
+
+            _loadedBackdropType = loadBackdropTask.Result;
+            (_loadedCustomTheme, _loadedStandardTheme) = loadThemeTask.Result;
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                ApplyLoadedBackdrop();
+                ApplyLoadedTheme();
+            });
+        }
+
+        private string LoadBackdropSettings()
+        {
+            try
+            {
+                return GetSettingWithFallback("BackdropType");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка загрузки настройки BackdropType: {ex}");
+                return null;
+            }
+        }
+
+        private (string customTheme, string standardTheme) LoadThemeSettings()
+        {
+            try
+            {
+                string custom = GetSettingWithFallback("SelectedCustomTheme");
+                string standard = GetSettingWithFallback("SelectedTheme");
+                return (custom, standard);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка загрузки настроек темы: {ex}");
+                return (null, null);
+            }
+        }
+
+        private string GetSettingWithFallback(string key)
+        {
+            lock (_settingsLock)
+            {
+                try
                 {
-                    var localSettings = ApplicationData.Current.LocalSettings.Values;
-                    if (localSettings?.ContainsKey("SelectedCustomTheme") == true)
+                    string value = null;
+                    if (App.SettingsManager != null)
                     {
-                        savedCustomTheme = localSettings["SelectedCustomTheme"]?.ToString();
+                        value = App.SettingsManager.GetSetting<string>(key);
                     }
-                }
 
-                if (!string.IsNullOrEmpty(savedCustomTheme))
-                {
-                    // Проверяем встроенные темы
-                    if (Enum.TryParse(savedCustomTheme, out CustomThemeManager.CustomThemeType customTheme))
+                    if (string.IsNullOrEmpty(value))
                     {
-                        CustomThemeManager.ApplyCustomTheme(customTheme);
-
-                        ElementTheme baseTheme = customTheme switch
+                        var localSettings = ApplicationData.Current.LocalSettings.Values;
+                        if (localSettings?.ContainsKey(key) == true)
                         {
-                            CustomThemeManager.CustomThemeType.Light => ElementTheme.Light,
-                            CustomThemeManager.CustomThemeType.Dark => ElementTheme.Dark,
-                            CustomThemeManager.CustomThemeType.DarkRed => ElementTheme.Dark,
-                            CustomThemeManager.CustomThemeType.Lemon => ElementTheme.Light,
-                            CustomThemeManager.CustomThemeType.DarkLemon => ElementTheme.Dark,
-                            CustomThemeManager.CustomThemeType.Gold => ElementTheme.Light,
-                            CustomThemeManager.CustomThemeType.DarkGold => ElementTheme.Dark,
-                            CustomThemeManager.CustomThemeType.Green => ElementTheme.Light,
-                            CustomThemeManager.CustomThemeType.DarkGreen => ElementTheme.Dark,
-                            CustomThemeManager.CustomThemeType.Blue => ElementTheme.Light,
-                            CustomThemeManager.CustomThemeType.DarkBlue => ElementTheme.Dark,
-                            _ => ElementTheme.Default
-                        };
-
-                        SetTheme(baseTheme);
-                        return;
+                            value = localSettings[key]?.ToString();
+                        }
                     }
-                    // Проверяем динамические темы
-                    else if (CustomThemeManager.DynamicThemeExists(savedCustomTheme))
+
+                    return value;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Ошибка чтения настройки {key}: {ex}");
+                    return null;
+                }
+            }
+        }
+
+        private void ApplyLoadedBackdrop()
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(_loadedBackdropType) &&
+                    Enum.TryParse(_loadedBackdropType, out BackdropManager.BackdropType type))
+                {
+                    _backdropManager.SetBackdrop(type);
+                }
+                else
+                {
+                    _backdropManager.LoadSavedBackdrop();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка применения фона: {ex}");
+            }
+        }
+
+        private void ApplyLoadedTheme()
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(_loadedCustomTheme) &&
+                    CustomThemeManager.DynamicThemeExists(_loadedCustomTheme))
+                {
+                    CustomThemeManager.ApplyDynamicTheme(_loadedCustomTheme);
+                    bool isDark = _loadedCustomTheme.Contains("Dark", StringComparison.OrdinalIgnoreCase);
+                    SetTheme(isDark ? ElementTheme.Dark : ElementTheme.Light);
+                    return;
+                }
+
+                if (Enum.TryParse(_loadedCustomTheme, out CustomThemeManager.CustomThemeType customType))
+                {
+                    CustomThemeManager.ApplyCustomTheme(customType);
+                    ElementTheme baseTheme = customType switch
                     {
-                        CustomThemeManager.ApplyDynamicTheme(savedCustomTheme);
-
-                        bool isDarkTheme = savedCustomTheme.Contains("Dark", StringComparison.OrdinalIgnoreCase);
-                        var baseTheme = isDarkTheme ? ElementTheme.Dark : ElementTheme.Light;
-                        SetTheme(baseTheme);
-                        return;
-                    }
+                        CustomThemeManager.CustomThemeType.Light => ElementTheme.Light,
+                        CustomThemeManager.CustomThemeType.Dark => ElementTheme.Dark,
+                        CustomThemeManager.CustomThemeType.DarkRed => ElementTheme.Dark,
+                        CustomThemeManager.CustomThemeType.Lemon => ElementTheme.Light,
+                        CustomThemeManager.CustomThemeType.DarkLemon => ElementTheme.Dark,
+                        CustomThemeManager.CustomThemeType.Gold => ElementTheme.Light,
+                        CustomThemeManager.CustomThemeType.DarkGold => ElementTheme.Dark,
+                        CustomThemeManager.CustomThemeType.Green => ElementTheme.Light,
+                        CustomThemeManager.CustomThemeType.DarkGreen => ElementTheme.Dark,
+                        CustomThemeManager.CustomThemeType.Blue => ElementTheme.Light,
+                        CustomThemeManager.CustomThemeType.DarkBlue => ElementTheme.Dark,
+                        _ => ElementTheme.Default
+                    };
+                    SetTheme(baseTheme);
+                    return;
                 }
 
-                // Если кастомной темы нет, загружаем стандартную тему
-                string savedTheme = null;
-
-                if (App.SettingsManager != null)
+                if (!string.IsNullOrEmpty(_loadedStandardTheme) &&
+                    Enum.TryParse(_loadedStandardTheme, out ElementTheme stdTheme))
                 {
-                    savedTheme = App.SettingsManager.GetSetting<string>("SelectedTheme");
-                }
-
-                if (string.IsNullOrEmpty(savedTheme))
-                {
-                    var localSettings = ApplicationData.Current.LocalSettings.Values;
-                    if (localSettings?.ContainsKey("SelectedTheme") == true)
-                    {
-                        savedTheme = localSettings["SelectedTheme"]?.ToString();
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(savedTheme) && Enum.TryParse(savedTheme, out ElementTheme theme))
-                {
-                    SetTheme(theme);
-
-                    CustomThemeManager.CustomThemeType customThemeType = theme switch
+                    SetTheme(stdTheme);
+                    CustomThemeManager.CustomThemeType fallbackType = stdTheme switch
                     {
                         ElementTheme.Light => CustomThemeManager.CustomThemeType.Light,
                         ElementTheme.Dark => CustomThemeManager.CustomThemeType.Dark,
                         _ => CustomThemeManager.CustomThemeType.Default
                     };
-                    CustomThemeManager.ApplyCustomTheme(customThemeType);
+                    CustomThemeManager.ApplyCustomTheme(fallbackType);
+                    return;
                 }
-                else
-                {
-                    SetTheme(ElementTheme.Default);
-                    CustomThemeManager.ApplyCustomTheme(CustomThemeManager.CustomThemeType.Default);
-                }
+
+                SetTheme(ElementTheme.Default);
+                CustomThemeManager.ApplyCustomTheme(CustomThemeManager.CustomThemeType.Default);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"LoadSavedTheme error: {ex}");
+                Debug.WriteLine($"Ошибка применения темы: {ex}");
                 SetTheme(ElementTheme.Default);
                 CustomThemeManager.ApplyCustomTheme(CustomThemeManager.CustomThemeType.Default);
             }
         }
 
-        // Метод для установки темы
-        public void SetTheme(ElementTheme theme)
+        // ------------------------------------------------------------------------
+        // Обработчики меню
+        // ------------------------------------------------------------------------
+        private void ButVisibleFirstToolBar_OnClick(object sender, RoutedEventArgs e)
         {
-            _backdropManager?.SetTheme(theme);
+            try
+            {
+                var toggleItem = (ToggleMenuFlyoutItem)sender;
+                bool newVisibility = !_menuFirstVisibilityToggler.IsCurrentlyVisible();
+                _menuFirstVisibilityToggler.SetVisibility(newVisibility ? Visibility.Visible : Visibility.Collapsed);
+                toggleItem.IsChecked = newVisibility;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка в ButVisibleFirstToolBar_OnClick: {ex}");
+            }
         }
 
-        // Очистка ресурсов при закрытии окна
+        private void ButVisibleSecondToolBar_OnClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var toggleItem = (ToggleMenuFlyoutItem)sender;
+                bool newVisibility = !_menuSecondVisibilityToggler.IsCurrentlyVisible();
+                _menuSecondVisibilityToggler.SetVisibility(newVisibility ? Visibility.Visible : Visibility.Collapsed);
+                toggleItem.IsChecked = newVisibility;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка в ButVisibleSecondToolBar_OnClick: {ex}");
+            }
+        }
+
+        // ------------------------------------------------------------------------
+        // Модальное окно настроек
+        // ------------------------------------------------------------------------
+        private void MenuFlyoutSettings_OnClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var newWindow = new SettingWindow(this);
+                newWindow.Activate();
+
+                var hWnd = WindowNative.GetWindowHandle(newWindow);
+                var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+                var appWindow = AppWindow.GetFromWindowId(windowId);
+                var presenter = (OverlappedPresenter)appWindow.Presenter;
+
+                var newWindowSize = new Windows.Graphics.SizeInt32(800, 600);
+                appWindow.Resize(newWindowSize);
+                presenter.IsResizable = false;
+                presenter.IsMinimizable = false;
+                presenter.IsMaximizable = false;
+
+                var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Primary);
+                var centerX = (displayArea.WorkArea.Width - newWindowSize.Width) / 2;
+                var centerY = (displayArea.WorkArea.Height - newWindowSize.Height) / 2;
+                appWindow.MoveAndResize(new Windows.Graphics.RectInt32(centerX, centerY, newWindowSize.Width, newWindowSize.Height));
+
+                DisableParentWindow();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка открытия окна настроек: {ex}");
+            }
+        }
+
+        private void DisableParentWindow()
+        {
+            try
+            {
+                var parentWindowHandle = WindowNative.GetWindowHandle(this);
+                EnableWindow(parentWindowHandle, false);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка блокировки родительского окна: {ex}");
+            }
+        }
+
+        internal void EnableParentWindow()
+        {
+            try
+            {
+                var parentWindowHandle = WindowNative.GetWindowHandle(this);
+                EnableWindow(parentWindowHandle, true);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка разблокировки родительского окна: {ex}");
+            }
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool EnableWindow(System.IntPtr hWnd, bool enable);
+
+        // ------------------------------------------------------------------------
+        // Закрытие окна и очистка ресурсов
+        // ------------------------------------------------------------------------
         private void MainWindow_Closed(object sender, WindowEventArgs args)
         {
             try
             {
+                TitleBarGrid.Loaded -= TitleBarGrid_Loaded;
+                TitleBarGrid.SizeChanged -= TitleBarGrid_SizeChanged;
+                this.Closed -= MainWindow_Closed;
+
+                _resizeDebounceTimer?.Stop();
+
+                if (_mainVM != null && _mainVMPropertyChangedHandler != null)
+                {
+                    _mainVM.PropertyChanged -= _mainVMPropertyChangedHandler;
+                }
+
                 if (_backdropManager != null)
                 {
                     _backdropManager.BackdropChanged -= OnBackdropChanged;
@@ -1197,86 +1217,8 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error disposing BackdropManager: {ex}");
+                Debug.WriteLine($"Ошибка при закрытии окна: {ex}");
             }
         }
-
-        #region Menu Group
-
-        private void ButVisibleFirstToolBar_OnClick(object sender, RoutedEventArgs e)
-        {
-            var toggleItem = (ToggleMenuFlyoutItem)sender;
-
-            // Инвертируем текущее состояние
-            bool newVisibility = !_menuFirstVisibilityToggler.IsCurrentlyVisible();
-
-            // Применяем изменения
-            _menuFirstVisibilityToggler.SetVisibility(newVisibility ? Visibility.Visible : Visibility.Collapsed);
-            toggleItem.IsChecked = newVisibility;
-        }
-
-        private void ButVisibleSecondToolBar_OnClick(object sender, RoutedEventArgs e)
-        {
-            var toggleItem = (ToggleMenuFlyoutItem)sender;
-
-            bool newVisibility = !_menuSecondVisibilityToggler.IsCurrentlyVisible();
-            _menuSecondVisibilityToggler.SetVisibility(newVisibility ? Visibility.Visible : Visibility.Collapsed);
-            toggleItem.IsChecked = newVisibility;
-        }
-
-        #endregion
-
-        #region Работа с модальным окном
-
-        private void MenuFlyoutSettings_OnClick(object sender, RoutedEventArgs e)
-        {
-            var newWindow = new SettingWindow(this);
-            newWindow.Activate();
-
-            var hWnd = WindowNative.GetWindowHandle(newWindow);
-            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            var appWindow = AppWindow.GetFromWindowId(windowId);
-
-            var presenter = (OverlappedPresenter)appWindow.Presenter;
-
-            // Установите размер окна
-            var newWindowSize = new Windows.Graphics.SizeInt32(800, 600);
-            appWindow.Resize(newWindowSize);
-
-            // Запретить изменение размера окна
-            presenter.IsResizable = false;
-
-            // Убрать системные кнопки свернуть и развернуть
-            presenter.IsMinimizable = false;
-            presenter.IsMaximizable = false;
-
-            // Получить размеры экрана
-            var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Primary);
-            var centerX = (displayArea.WorkArea.Width - newWindowSize.Width) / 2;
-            var centerY = (displayArea.WorkArea.Height - newWindowSize.Height) / 2;
-
-            // Переместить и изменить размер окна, чтобы оно было по центру
-            appWindow.MoveAndResize(new Windows.Graphics.RectInt32(centerX, centerY, newWindowSize.Width, newWindowSize.Height));
-
-            // Сделать окно модальным
-            DisableParentWindow();
-        }
-
-        private void DisableParentWindow()
-        {
-            var parentWindowHandle = WindowNative.GetWindowHandle(this);
-            EnableWindow(parentWindowHandle, false);
-        }
-
-        internal void EnableParentWindow()
-        {
-            var parentWindowHandle = WindowNative.GetWindowHandle(this);
-            EnableWindow(parentWindowHandle, true);
-        }
-
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool EnableWindow(System.IntPtr hWnd, bool enable);
-
-        #endregion
     }
 }
