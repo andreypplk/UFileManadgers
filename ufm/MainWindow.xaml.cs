@@ -1,4 +1,4 @@
-//using Core_FileManagement;
+п»ї//using Core_FileManagement;
 //using Core_Language;
 //using Microsoft.UI;
 //using Microsoft.UI.Input;
@@ -20,13 +20,13 @@
 //{
 //    public sealed partial class MainWindow : Window
 //    {
-//        // Поля окна
+//        // РџРѕР»СЏ РѕРєРЅР°
 //        public AppWindow m_AppWindow;
 //        private OverlappedPresenter _presenter;
 //        private IntPtr hWnd;
 //        private BackdropManager _backdropManager;
 //        public new AppWindow AppWindow { get; private set; }
-//        public TabViewManager TabViewManager { get; private set; }   // автосвойство
+//        public TabViewManager TabViewManager { get; private set; }   // Р°РІС‚РѕСЃРІРѕР№СЃС‚РІРѕ
 //        public TabView MainTabsView => TabsView;
 //        internal bool IsCreatedByDragAndDrop { get; set; } = false;
 
@@ -38,18 +38,18 @@
 //        private readonly VisibilityToggler _menuSecondVisibilityToggler;
 //        private StatusBarPerformanceMetricsUC _statusBar;
 
-//        // Для синхронизации доступа к настройкам
+//        // Р”Р»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё РґРѕСЃС‚СѓРїР° Рє РЅР°СЃС‚СЂРѕР№РєР°Рј
 //        private readonly object _settingsLock = new object();
 
-//        // Для дебаунсинга изменения размера
+//        // Р”Р»СЏ РґРµР±Р°СѓРЅСЃРёРЅРіР° РёР·РјРµРЅРµРЅРёСЏ СЂР°Р·РјРµСЂР°
 //        private DispatcherTimer _resizeDebounceTimer;
 
-//        // Загруженные значения настроек
+//        // Р—Р°РіСЂСѓР¶РµРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє
 //        private string _loadedBackdropType;
 //        private string _loadedCustomTheme;
 //        private string _loadedStandardTheme;
 
-//        // Обработчик изменения свойства ViewModel
+//        // РћР±СЂР°Р±РѕС‚С‡РёРє РёР·РјРµРЅРµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° ViewModel
 //        private PropertyChangedEventHandler _mainVMPropertyChangedHandler;
 
 //        public BackdropManager.BackdropType CurrentBackdropType =>
@@ -68,7 +68,7 @@
 
 //                CustomThemeManager.Initialize();
 
-//                // Статусбар
+//                // РЎС‚Р°С‚СѓСЃР±Р°СЂ
 //                _statusBar = new StatusBarPerformanceMetricsUC();
 //                _statusBar.ViewModel = _mainVM.CurrentExplorerItem;
 //                StatusBarContentRight.Content = _statusBar;
@@ -81,7 +81,7 @@
 //                };
 //                _mainVM.PropertyChanged += _mainVMPropertyChangedHandler;
 
-//                // Окно
+//                // РћРєРЅРѕ
 //                m_AppWindow = GetAppWindowForCurrentWindow();
 //                hWnd = WindowNative.GetWindowHandle(this);
 //                m_AppWindow.Resize(new Windows.Graphics.SizeInt32(1440, 900));
@@ -100,7 +100,7 @@
 //                // TabViewManager
 //                TabViewManager = new TabViewManager(TabsView, ContentFrame);
 
-//                // VisibilityTogglers – остаются в конструкторе
+//                // VisibilityTogglers вЂ“ РѕСЃС‚Р°СЋС‚СЃСЏ РІ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂРµ
 //                _menuFirstVisibilityToggler = new VisibilityToggler(
 //                    rootFrame: ContentFrame,
 //                    containerPageName: "rootPage",
@@ -114,25 +114,25 @@
 //                    targetPageName: "ViewPage",
 //                    elementName: "GridMenuSecond");
 
-//                // Подписки
+//                // РџРѕРґРїРёСЃРєРё
 //                TitleBarGrid.Loaded += TitleBarGrid_Loaded;
 //                TitleBarGrid.SizeChanged += TitleBarGrid_SizeChanged;
 //                this.Closed += MainWindow_Closed;
 
-//                // Асинхронная загрузка настроек
+//                // РђСЃРёРЅС…СЂРѕРЅРЅР°СЏ Р·Р°РіСЂСѓР·РєР° РЅР°СЃС‚СЂРѕРµРє
 //#pragma warning disable CS4014
 //                _ = LoadSettingsAsync();
 //#pragma warning restore CS4014
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка в конструкторе MainWindow: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РІ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂРµ MainWindow: {ex}");
 //                throw;
 //            }
 //        }
 
 //        // ------------------------------------------------------------------------
-//        // Получение AppWindow
+//        // РџРѕР»СѓС‡РµРЅРёРµ AppWindow
 //        // ------------------------------------------------------------------------
 //        private AppWindow GetAppWindowForCurrentWindow()
 //        {
@@ -144,13 +144,13 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка при получении AppWindow: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё РїРѕР»СѓС‡РµРЅРёРё AppWindow: {ex}");
 //                throw;
 //            }
 //        }
 
 //        // ------------------------------------------------------------------------
-//        // Настройка минимального размера окна
+//        // РќР°СЃС‚СЂРѕР№РєР° РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ СЂР°Р·РјРµСЂР° РѕРєРЅР°
 //        // ------------------------------------------------------------------------
 //        public void SetupWindowMinSize(Window window)
 //        {
@@ -161,12 +161,12 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка при установке минимального размера окна: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё СѓСЃС‚Р°РЅРѕРІРєРµ РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ СЂР°Р·РјРµСЂР° РѕРєРЅР°: {ex}");
 //            }
 //        }
 
 //        // ------------------------------------------------------------------------
-//        // Обработчики строки заголовка
+//        // РћР±СЂР°Р±РѕС‚С‡РёРєРё СЃС‚СЂРѕРєРё Р·Р°РіРѕР»РѕРІРєР°
 //        // ------------------------------------------------------------------------
 //        private void TitleBarGrid_Loaded(object sender, RoutedEventArgs e)
 //        {
@@ -179,7 +179,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка в TitleBarGrid_Loaded: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РІ TitleBarGrid_Loaded: {ex}");
 //            }
 //        }
 
@@ -189,7 +189,7 @@
 //            {
 //                if (ExtendsContentIntoTitleBar != true) return;
 
-//                // Дебаунсинг
+//                // Р”РµР±Р°СѓРЅСЃРёРЅРі
 //                _resizeDebounceTimer?.Stop();
 //                if (_resizeDebounceTimer == null)
 //                {
@@ -207,7 +207,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка в TitleBarGrid_SizeChanged: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РІ TitleBarGrid_SizeChanged: {ex}");
 //            }
 //        }
 
@@ -239,7 +239,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка при установке областей заголовка: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё СѓСЃС‚Р°РЅРѕРІРєРµ РѕР±Р»Р°СЃС‚РµР№ Р·Р°РіРѕР»РѕРІРєР°: {ex}");
 //            }
 //        }
 
@@ -256,7 +256,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка в GetRect: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РІ GetRect: {ex}");
 //                return new Windows.Graphics.RectInt32(0, 0, 0, 0);
 //            }
 //        }
@@ -273,7 +273,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка в OnBackdropChanged: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РІ OnBackdropChanged: {ex}");
 //            }
 //        }
 
@@ -287,7 +287,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка в OnBackdropChangeFailed: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РІ OnBackdropChangeFailed: {ex}");
 //            }
 //        }
 
@@ -302,12 +302,12 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка при установке фона: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё СѓСЃС‚Р°РЅРѕРІРєРµ С„РѕРЅР°: {ex}");
 //            }
 //        }
 
 //        // ------------------------------------------------------------------------
-//        // Тема и настройки
+//        // РўРµРјР° Рё РЅР°СЃС‚СЂРѕР№РєРё
 //        // ------------------------------------------------------------------------
 //        public void SetTheme(ElementTheme theme)
 //        {
@@ -317,7 +317,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка при установке темы: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё СѓСЃС‚Р°РЅРѕРІРєРµ С‚РµРјС‹: {ex}");
 //            }
 //        }
 
@@ -346,7 +346,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка загрузки настройки BackdropType: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РЅР°СЃС‚СЂРѕР№РєРё BackdropType: {ex}");
 //                return null;
 //            }
 //        }
@@ -361,7 +361,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка загрузки настроек темы: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РЅР°СЃС‚СЂРѕРµРє С‚РµРјС‹: {ex}");
 //                return (null, null);
 //            }
 //        }
@@ -391,7 +391,7 @@
 //                }
 //                catch (Exception ex)
 //                {
-//                    Debug.WriteLine($"Ошибка чтения настройки {key}: {ex}");
+//                    Debug.WriteLine($"РћС€РёР±РєР° С‡С‚РµРЅРёСЏ РЅР°СЃС‚СЂРѕР№РєРё {key}: {ex}");
 //                    return null;
 //                }
 //            }
@@ -413,7 +413,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка применения фона: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРёРјРµРЅРµРЅРёСЏ С„РѕРЅР°: {ex}");
 //            }
 //        }
 
@@ -471,14 +471,14 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка применения темы: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРёРјРµРЅРµРЅРёСЏ С‚РµРјС‹: {ex}");
 //                SetTheme(ElementTheme.Default);
 //                CustomThemeManager.ApplyCustomTheme(CustomThemeManager.CustomThemeType.Default);
 //            }
 //        }
 
 //        // ------------------------------------------------------------------------
-//        // Обработчики меню
+//        // РћР±СЂР°Р±РѕС‚С‡РёРєРё РјРµРЅСЋ
 //        // ------------------------------------------------------------------------
 //        private void ButVisibleFirstToolBar_OnClick(object sender, RoutedEventArgs e)
 //        {
@@ -491,7 +491,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка в ButVisibleFirstToolBar_OnClick: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РІ ButVisibleFirstToolBar_OnClick: {ex}");
 //            }
 //        }
 
@@ -506,12 +506,12 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка в ButVisibleSecondToolBar_OnClick: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РІ ButVisibleSecondToolBar_OnClick: {ex}");
 //            }
 //        }
 
 //        // ------------------------------------------------------------------------
-//        // Модальное окно настроек
+//        // РњРѕРґР°Р»СЊРЅРѕРµ РѕРєРЅРѕ РЅР°СЃС‚СЂРѕРµРє
 //        // ------------------------------------------------------------------------
 //        private void MenuFlyoutSettings_OnClick(object sender, RoutedEventArgs e)
 //        {
@@ -540,7 +540,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка открытия окна настроек: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ РѕРєРЅР° РЅР°СЃС‚СЂРѕРµРє: {ex}");
 //            }
 //        }
 
@@ -553,7 +553,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка блокировки родительского окна: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° Р±Р»РѕРєРёСЂРѕРІРєРё СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РѕРєРЅР°: {ex}");
 //            }
 //        }
 
@@ -566,7 +566,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка разблокировки родительского окна: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° СЂР°Р·Р±Р»РѕРєРёСЂРѕРІРєРё СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РѕРєРЅР°: {ex}");
 //            }
 //        }
 
@@ -574,7 +574,7 @@
 //        private static extern bool EnableWindow(System.IntPtr hWnd, bool enable);
 
 //        // ------------------------------------------------------------------------
-//        // Закрытие окна и очистка ресурсов
+//        // Р—Р°РєСЂС‹С‚РёРµ РѕРєРЅР° Рё РѕС‡РёСЃС‚РєР° СЂРµСЃСѓСЂСЃРѕРІ
 //        // ------------------------------------------------------------------------
 //        private void MainWindow_Closed(object sender, WindowEventArgs args)
 //        {
@@ -601,7 +601,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                Debug.WriteLine($"Ошибка при закрытии окна: {ex}");
+//                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё Р·Р°РєСЂС‹С‚РёРё РѕРєРЅР°: {ex}");
 //            }
 //        }
 //    }
@@ -630,7 +630,7 @@ namespace ufm
 {
     public sealed partial class MainWindow : Window
     {
-        // Поля окна
+        // РџРѕР»СЏ РѕРєРЅР°
         public AppWindow m_AppWindow;
         private OverlappedPresenter _presenter;
         private IntPtr hWnd;
@@ -647,29 +647,29 @@ namespace ufm
         private readonly VisibilityToggler _menuSecondVisibilityToggler;
         private StatusBarPerformanceMetricsUC _statusBar;
 
-        // Для синхронизации доступа к настройкам
+        // Р”Р»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё РґРѕСЃС‚СѓРїР° Рє РЅР°СЃС‚СЂРѕР№РєР°Рј
         private readonly object _settingsLock = new object();
 
-        // Для дебаунсинга изменения размера
+        // Р”Р»СЏ РґРµР±Р°СѓРЅСЃРёРЅРіР° РёР·РјРµРЅРµРЅРёСЏ СЂР°Р·РјРµСЂР°
         private DispatcherTimer _resizeDebounceTimer;
 
-        // Загруженные значения настроек
+        // Р—Р°РіСЂСѓР¶РµРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє
         private string _loadedBackdropType;
         private string _loadedCustomTheme;
         private string _loadedStandardTheme;
 
-        // Обработчик изменения свойства ViewModel
+        // РћР±СЂР°Р±РѕС‚С‡РёРє РёР·РјРµРЅРµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° ViewModel
         private PropertyChangedEventHandler _mainVMPropertyChangedHandler;
 
         public BackdropManager.BackdropType CurrentBackdropType =>
             _backdropManager?.CurrentBackdropType ?? BackdropManager.BackdropType.DefaultColor;
 
-        // Публичный конструктор для обычного запуска
+        // РџСѓР±Р»РёС‡РЅС‹Р№ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґР»СЏ РѕР±С‹С‡РЅРѕРіРѕ Р·Р°РїСѓСЃРєР°
         public MainWindow() : this(false)
         {
         }
 
-        // Внутренний конструктор для создания окна через перетаскивание
+        // Р’РЅСѓС‚СЂРµРЅРЅРёР№ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РѕРєРЅР° С‡РµСЂРµР· РїРµСЂРµС‚Р°СЃРєРёРІР°РЅРёРµ
         internal MainWindow(bool isCreatedByDragAndDrop)
         {
             IsCreatedByDragAndDrop = isCreatedByDragAndDrop;
@@ -685,7 +685,7 @@ namespace ufm
 
                 CustomThemeManager.Initialize();
 
-                // Статусбар
+                // РЎС‚Р°С‚СѓСЃР±Р°СЂ
                 _statusBar = new StatusBarPerformanceMetricsUC();
                 _statusBar.ViewModel = _mainVM.CurrentExplorerItem;
                 StatusBarContentRight.Content = _statusBar;
@@ -698,7 +698,7 @@ namespace ufm
                 };
                 _mainVM.PropertyChanged += _mainVMPropertyChangedHandler;
 
-                // Окно
+                // РћРєРЅРѕ
                 m_AppWindow = GetAppWindowForCurrentWindow();
                 hWnd = WindowNative.GetWindowHandle(this);
                 m_AppWindow.Resize(new Windows.Graphics.SizeInt32(1440, 900));
@@ -714,9 +714,9 @@ namespace ufm
                 _backdropManager.BackdropChanged += OnBackdropChanged;
                 _backdropManager.BackdropChangeFailed += OnBackdropChangeFailed;
 
-                // TabViewManager с флагом пропуска начальной вкладки
-                TabViewManager = new TabViewManager(TabsView, ContentFrame, isCreatedByDragAndDrop);
-
+                // TabViewManager СЃ С„Р»Р°РіРѕРј РїСЂРѕРїСѓСЃРєР° РЅР°С‡Р°Р»СЊРЅРѕР№ РІРєР»Р°РґРєРё
+                TabViewManager = new TabViewManager(TabsView, ContentFrame,this, isCreatedByDragAndDrop);
+                
                 // VisibilityTogglers
                 _menuFirstVisibilityToggler = new VisibilityToggler(
                     rootFrame: ContentFrame,
@@ -731,25 +731,28 @@ namespace ufm
                     targetPageName: "ViewPage",
                     elementName: "GridMenuSecond");
 
-                // Подписки
+                // РџРѕРґРїРёСЃРєРё
                 TitleBarGrid.Loaded += TitleBarGrid_Loaded;
                 TitleBarGrid.SizeChanged += TitleBarGrid_SizeChanged;
                 this.Closed += MainWindow_Closed;
 
-                // Асинхронная загрузка настроек
+                TabsView.TabTearOutWindowRequested += (s, e) =>
+                    Debug.WriteLine("рџ”Ґ TabTearOutWindowRequested FIRED!");
+
+                // РђСЃРёРЅС…СЂРѕРЅРЅР°СЏ Р·Р°РіСЂСѓР·РєР° РЅР°СЃС‚СЂРѕРµРє
 #pragma warning disable CS4014
                 _ = LoadSettingsAsync();
 #pragma warning restore CS4014
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка в конструкторе MainWindow: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РІ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂРµ MainWindow: {ex}");
                 throw;
             }
         }
 
         // ------------------------------------------------------------------------
-        // Получение AppWindow
+        // РџРѕР»СѓС‡РµРЅРёРµ AppWindow
         // ------------------------------------------------------------------------
         private AppWindow GetAppWindowForCurrentWindow()
         {
@@ -761,13 +764,13 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при получении AppWindow: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё РїРѕР»СѓС‡РµРЅРёРё AppWindow: {ex}");
                 throw;
             }
         }
 
         // ------------------------------------------------------------------------
-        // Настройка минимального размера окна
+        // РќР°СЃС‚СЂРѕР№РєР° РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ СЂР°Р·РјРµСЂР° РѕРєРЅР°
         // ------------------------------------------------------------------------
         public void SetupWindowMinSize(Window window)
         {
@@ -778,12 +781,12 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при установке минимального размера окна: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё СѓСЃС‚Р°РЅРѕРІРєРµ РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ СЂР°Р·РјРµСЂР° РѕРєРЅР°: {ex}");
             }
         }
 
         // ------------------------------------------------------------------------
-        // Обработчики строки заголовка
+        // РћР±СЂР°Р±РѕС‚С‡РёРєРё СЃС‚СЂРѕРєРё Р·Р°РіРѕР»РѕРІРєР°
         // ------------------------------------------------------------------------
         private void TitleBarGrid_Loaded(object sender, RoutedEventArgs e)
         {
@@ -796,7 +799,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка в TitleBarGrid_Loaded: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РІ TitleBarGrid_Loaded: {ex}");
             }
         }
 
@@ -823,7 +826,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка в TitleBarGrid_SizeChanged: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РІ TitleBarGrid_SizeChanged: {ex}");
             }
         }
 
@@ -855,7 +858,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при установке областей заголовка: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё СѓСЃС‚Р°РЅРѕРІРєРµ РѕР±Р»Р°СЃС‚РµР№ Р·Р°РіРѕР»РѕРІРєР°: {ex}");
             }
         }
 
@@ -872,7 +875,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка в GetRect: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РІ GetRect: {ex}");
                 return new Windows.Graphics.RectInt32(0, 0, 0, 0);
             }
         }
@@ -889,7 +892,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка в OnBackdropChanged: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РІ OnBackdropChanged: {ex}");
             }
         }
 
@@ -903,7 +906,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка в OnBackdropChangeFailed: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РІ OnBackdropChangeFailed: {ex}");
             }
         }
 
@@ -918,12 +921,12 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при установке фона: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё СѓСЃС‚Р°РЅРѕРІРєРµ С„РѕРЅР°: {ex}");
             }
         }
 
         // ------------------------------------------------------------------------
-        // Тема и настройки
+        // РўРµРјР° Рё РЅР°СЃС‚СЂРѕР№РєРё
         // ------------------------------------------------------------------------
         public void SetTheme(ElementTheme theme)
         {
@@ -933,7 +936,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при установке темы: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё СѓСЃС‚Р°РЅРѕРІРєРµ С‚РµРјС‹: {ex}");
             }
         }
 
@@ -962,7 +965,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка загрузки настройки BackdropType: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РЅР°СЃС‚СЂРѕР№РєРё BackdropType: {ex}");
                 return null;
             }
         }
@@ -977,7 +980,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка загрузки настроек темы: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РЅР°СЃС‚СЂРѕРµРє С‚РµРјС‹: {ex}");
                 return (null, null);
             }
         }
@@ -1007,7 +1010,7 @@ namespace ufm
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Ошибка чтения настройки {key}: {ex}");
+                    Debug.WriteLine($"РћС€РёР±РєР° С‡С‚РµРЅРёСЏ РЅР°СЃС‚СЂРѕР№РєРё {key}: {ex}");
                     return null;
                 }
             }
@@ -1029,7 +1032,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка применения фона: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРёРјРµРЅРµРЅРёСЏ С„РѕРЅР°: {ex}");
             }
         }
 
@@ -1087,14 +1090,14 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка применения темы: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРёРјРµРЅРµРЅРёСЏ С‚РµРјС‹: {ex}");
                 SetTheme(ElementTheme.Default);
                 CustomThemeManager.ApplyCustomTheme(CustomThemeManager.CustomThemeType.Default);
             }
         }
 
         // ------------------------------------------------------------------------
-        // Обработчики меню
+        // РћР±СЂР°Р±РѕС‚С‡РёРєРё РјРµРЅСЋ
         // ------------------------------------------------------------------------
         private void ButVisibleFirstToolBar_OnClick(object sender, RoutedEventArgs e)
         {
@@ -1107,7 +1110,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка в ButVisibleFirstToolBar_OnClick: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РІ ButVisibleFirstToolBar_OnClick: {ex}");
             }
         }
 
@@ -1122,12 +1125,12 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка в ButVisibleSecondToolBar_OnClick: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РІ ButVisibleSecondToolBar_OnClick: {ex}");
             }
         }
 
         // ------------------------------------------------------------------------
-        // Модальное окно настроек
+        // РњРѕРґР°Р»СЊРЅРѕРµ РѕРєРЅРѕ РЅР°СЃС‚СЂРѕРµРє
         // ------------------------------------------------------------------------
         private void MenuFlyoutSettings_OnClick(object sender, RoutedEventArgs e)
         {
@@ -1156,7 +1159,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка открытия окна настроек: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ РѕРєРЅР° РЅР°СЃС‚СЂРѕРµРє: {ex}");
             }
         }
 
@@ -1169,7 +1172,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка блокировки родительского окна: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° Р±Р»РѕРєРёСЂРѕРІРєРё СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РѕРєРЅР°: {ex}");
             }
         }
 
@@ -1182,7 +1185,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка разблокировки родительского окна: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° СЂР°Р·Р±Р»РѕРєРёСЂРѕРІРєРё СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РѕРєРЅР°: {ex}");
             }
         }
 
@@ -1190,7 +1193,7 @@ namespace ufm
         private static extern bool EnableWindow(System.IntPtr hWnd, bool enable);
 
         // ------------------------------------------------------------------------
-        // Закрытие окна и очистка ресурсов
+        // Р—Р°РєСЂС‹С‚РёРµ РѕРєРЅР° Рё РѕС‡РёСЃС‚РєР° СЂРµСЃСѓСЂСЃРѕРІ
         // ------------------------------------------------------------------------
         private void MainWindow_Closed(object sender, WindowEventArgs args)
         {
@@ -1217,7 +1220,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при закрытии окна: {ex}");
+                Debug.WriteLine($"РћС€РёР±РєР° РїСЂРё Р·Р°РєСЂС‹С‚РёРё РѕРєРЅР°: {ex}");
             }
         }
     }

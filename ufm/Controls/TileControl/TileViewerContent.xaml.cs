@@ -61,7 +61,6 @@ namespace ufm
                     _displayMode = value;
                     UpdateDisplayMode();
                     OnPropertyChanged();
-                    Debug.WriteLine($"[{PanelId}] DisplayMode changed to: {value}");
                 }
             }
         }
@@ -101,7 +100,7 @@ namespace ufm
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[{PanelId}] Error getting SingleClickOpen setting: {ex}");
+                    Debug.WriteLine($"[{PanelId}] Critical error getting SingleClickOpen setting: {ex}");
                     return false;
                 }
             }
@@ -335,7 +334,6 @@ namespace ufm
 
                 if (PanelManager.CurrentPath != _currentLoadedPath)
                 {
-                    Debug.WriteLine($"[{PanelId}] Navigation changed to: {PanelManager.CurrentPath}");
                     await LoadPathContents(PanelManager.CurrentPath);
                 }
             }
@@ -370,11 +368,10 @@ namespace ufm
                 }
                 _currentLoadedPath = "MyComputer";
                 OnNavigationChanged();
-                Debug.WriteLine($"[{PanelId}] MyComputer loaded, {Items.Count} items");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{PanelId}] Error loading MyComputer: {ex}");
+                Debug.WriteLine($"[{PanelId}] Critical error loading MyComputer: {ex}");
             }
         }
 
@@ -460,7 +457,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{PanelId}] ERROR loading drives: {ex}");
+                Debug.WriteLine($"[{PanelId}] Critical error loading drives: {ex}");
 
                 await this.DispatcherQueue.EnqueueAsync(() =>
                 {
@@ -503,15 +500,13 @@ namespace ufm
                     }
                     UpdateItemsControlLayout();
                 });
-
-                Debug.WriteLine($"[{PanelId}] Folder loaded: {folderPath}, {folderItems.Count} items");
             }
             catch (OperationCanceledException)
             {
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{PanelId}] Error loading folder {folderPath}: {ex}");
+                Debug.WriteLine($"[{PanelId}] Critical error loading folder {folderPath}: {ex}");
                 PanelManager?.GoBack();
             }
         }
@@ -569,12 +564,10 @@ namespace ufm
                 {
                     await Task.Run(() => LoadInitialContent());
                 }
-
-                Debug.WriteLine($"[{PanelId}] Refresh completed");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{PanelId}] Refresh error: {ex}");
+                Debug.WriteLine($"[{PanelId}] Critical refresh error: {ex}");
 
                 try
                 {
@@ -582,7 +575,7 @@ namespace ufm
                 }
                 catch (Exception fallbackEx)
                 {
-                    Debug.WriteLine($"[{PanelId}] Refresh fallback error: {fallbackEx}");
+                    Debug.WriteLine($"[{PanelId}] Critical refresh fallback error: {fallbackEx}");
                 }
             }
         }
@@ -684,8 +677,6 @@ namespace ufm
             UpdateItemsControlLayout();
             ItemsListView.UpdateLayout();
             ItemsGridView.UpdateLayout();
-
-            Debug.WriteLine($"[{PanelId}] Icon size set to: {size}");
         }
 
         private void CalculateItemDimensions()
@@ -1122,7 +1113,6 @@ namespace ufm
                 case VirtualKey.A when isCtrlPressed && !isShiftPressed:
                     _currentItemsControl.SelectAll();
                     e.Handled = true;
-                    Debug.WriteLine($"[{PanelId}] Ctrl+A: selected all");
                     break;
 
                 case VirtualKey.Space when isCtrlPressed:
@@ -1138,7 +1128,6 @@ namespace ufm
                     {
                         OpenSelectedItem();
                         e.Handled = true;
-                        Debug.WriteLine($"[{PanelId}] Enter: opened selected item");
                     }
                     break;
 
@@ -1155,7 +1144,6 @@ namespace ufm
                             _currentItemsControl.SelectedItems.Cast<ExplorerItemViewModel>(),
                             Items, _currentItemsControl);
                         e.Handled = true;
-                        Debug.WriteLine($"[{PanelId}] F2: started multi-rename for {_currentItemsControl.SelectedItems.Count} items");
                     }
                     else if (_currentItemsControl.SelectedItems.Count == 1)
                     {
@@ -1164,7 +1152,6 @@ namespace ufm
                             _renameService.StartSingleRename(selectedItem, _currentItemsControl);
                         }
                         e.Handled = true;
-                        Debug.WriteLine($"[{PanelId}] F2: rename single item");
                     }
                     break;
 
@@ -1173,7 +1160,6 @@ namespace ufm
                     {
                         DeleteSelectedItems();
                         e.Handled = true;
-                        Debug.WriteLine($"[{PanelId}] Delete: removing {_currentItemsControl.SelectedItems.Count} items");
                     }
                     break;
 
@@ -1404,7 +1390,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{PanelId}] Error opening item: {ex}");
+                Debug.WriteLine($"[{PanelId}] Critical error opening item: {ex}");
             }
         }
 
@@ -1468,9 +1454,10 @@ namespace ufm
             }
             else
             {
-                Debug.WriteLine($"[{PanelId}] Не удалось открыть элемент: {path} — не найден");
+                Debug.WriteLine($"[{PanelId}] Cannot open item: {path} - not found");
             }
         }
+
         /// <summary>
         /// Открывает файл с помощью ассоциированного приложения.
         /// </summary>
@@ -1478,28 +1465,23 @@ namespace ufm
         {
             try
             {
-                Debug.WriteLine($"[{PanelId}] Открытие файла: {filePath}");
-
-                // Запускаем в отдельном потоке, чтобы не блокировать UI
                 await Task.Run(() =>
                 {
                     using var process = new Process();
                     process.StartInfo = new ProcessStartInfo(filePath)
                     {
-                        UseShellExecute = true,  // ключевой параметр для открытия через оболочку
-                        Verb = "open"             // явно указываем действие "открыть"
+                        UseShellExecute = true,
+                        Verb = "open"
                     };
                     process.Start();
                 });
-
-                Debug.WriteLine($"[{PanelId}] Файл успешно открыт: {filePath}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{PanelId}] Ошибка открытия файла {filePath}: {ex.Message}");
-                // Здесь можно показать уведомление пользователю (например, через диалог)
+                Debug.WriteLine($"[{PanelId}] Critical error opening file {filePath}: {ex.Message}");
             }
         }
+
         private async void OpenSelectedItem()
         {
             if (_currentItemsControl.SelectedItem is ExplorerItemViewModel selectedItem)
@@ -1513,7 +1495,7 @@ namespace ufm
             var selectedItems = _currentItemsControl.SelectedItems.Cast<ExplorerItemViewModel>().ToList();
             if (selectedItems.Count > 0)
             {
-                Debug.WriteLine($"[{PanelId}] Deleting {selectedItems.Count} items");
+                // Реализация удаления
             }
         }
 

@@ -1,13 +1,1702 @@
-﻿using System;
+﻿//РАБОЧИЙ ВАРИАНТ НО ТРЕБУЕТСЯ ПРЕДВАРИТЕЛЬНОЕ ВЫДЕЛЕНИЕ ВКЛАДКИ
+//using System;
+//using System.Collections.Generic;
+//using System.Diagnostics;
+//using System.Threading.Tasks;
+//using Microsoft.UI.Xaml;
+//using Microsoft.UI.Xaml.Controls;
+//using Windows.ApplicationModel.DataTransfer;
+//using ufm.Pages;
+
+//namespace ufm
+//{
+//    public class TabViewManager
+//    {
+//        private TabView _tabsView;
+//        private Frame _contentFrame;
+//        private const string TabIdKey = "TabId";
+//        private readonly Dictionary<TabViewItem, UIElement> _tabContentMap = new();
+//        private readonly bool _skipInitialTab;
+//        private string _draggedTabId;
+
+//        public TabViewManager(TabView tabsView, Frame contentFrame)
+//            : this(tabsView, contentFrame, false)
+//        {
+//        }
+
+//        public TabViewManager(TabView tabsView, Frame contentFrame, bool skipInitialTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] Constructor START: tabsView={tabsView != null}, contentFrame={contentFrame != null}, skipInitialTab={skipInitialTab}");
+//            _tabsView = tabsView;
+//            _contentFrame = contentFrame;
+//            _skipInitialTab = skipInitialTab;
+//            Initialize();
+//            Debug.WriteLine($"[TabViewManager] Constructor END");
+//        }
+
+//        private void Initialize()
+//        {
+//            Debug.WriteLine($"[TabViewManager] Initialize START");
+//            _tabsView.Loaded += TabsView_Loaded;
+//            _tabsView.SelectionChanged += TabsView_SelectionChanged;
+//            _tabsView.AddTabButtonClick += TabsView_OnAddTabButtonClick;
+//            _tabsView.TabCloseRequested += TabsView_OnTabCloseRequested;
+//            _tabsView.TabDragStarting += TabsView_TabDragStarting;
+//            _tabsView.TabDroppedOutside += TabsView_TabDroppedOutside;
+//            _tabsView.TabStripDragOver += TabsView_TabStripDragOver;
+//            _tabsView.TabStripDrop += TabsView_TabStripDrop;
+//            Debug.WriteLine($"[TabViewManager] Initialize END, events subscribed");
+//        }
+
+//        private void TabsView_Loaded(object sender, RoutedEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_Loaded START, _skipInitialTab={_skipInitialTab}, TabItems.Count={_tabsView.TabItems.Count}");
+
+//            if (_skipInitialTab)
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: skipping initial tab creation (drag&drop window)");
+//                return;
+//            }
+
+//            if (_tabsView.TabItems.Count == 0)
+//            {
+//                var initialTab = CreateNewTab("Root Page");
+//                _tabsView.TabItems.Add(initialTab);
+//                _tabsView.SelectedIndex = 0;
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: initialTab added, TabItems.Count={_tabsView.TabItems.Count}");
+//            }
+//            else
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: TabItems already has {_tabsView.TabItems.Count} tabs, skipping creation");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_Loaded END");
+//        }
+
+//        public TabViewItem CreateNewTab(string header)
+//        {
+//            Debug.WriteLine($"[TabViewManager] CreateNewTab START: header='{header}'");
+//            var newTab = new TabViewItem
+//            {
+//                Header = header,
+//                IconSource = new SymbolIconSource { Symbol = Symbol.Placeholder },
+//                Tag = Guid.NewGuid().ToString()
+//            };
+//            Debug.WriteLine($"[TabViewManager] CreateNewTab END: newTab created, Header='{newTab.Header}', Tag='{newTab.Tag}'");
+//            return newTab;
+//        }
+
+//        private UIElement CreateTabContent(string dataContext = null)
+//        {
+//            Debug.WriteLine($"[TabViewManager] CreateTabContent START: dataContext='{dataContext}'");
+//            var frame = new Frame();
+//            frame.Navigate(typeof(rootPage), dataContext);
+//            Debug.WriteLine($"[TabViewManager] CreateTabContent END: Frame created, Content={frame.Content?.GetType().Name}");
+//            return frame;
+//        }
+
+//        private void TabsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged START");
+//            var selectedTab = _tabsView.SelectedItem as TabViewItem;
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: selectedTab={selectedTab != null}, Header='{selectedTab?.Header}'");
+
+//            if (selectedTab != null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: checking _tabContentMap.ContainsKey={_tabContentMap.ContainsKey(selectedTab)}");
+//                if (!_tabContentMap.ContainsKey(selectedTab))
+//                {
+//                    Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: creating new content for tab");
+//                    var content = CreateTabContent();
+//                    _tabContentMap[selectedTab] = content;
+//                    Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: content added to map, _tabContentMap.Count={_tabContentMap.Count}");
+//                }
+
+//                _contentFrame.Content = _tabContentMap[selectedTab];
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: _contentFrame.Content set to tab content");
+//            }
+//            else
+//            {
+//                _contentFrame.Content = null;
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: selectedTab is null, _contentFrame.Content set to null");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged END");
+//        }
+
+//        public void TabsView_OnAddTabButtonClick(TabView sender, object args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnAddTabButtonClick START: sender.TabItems.Count={sender.TabItems.Count}");
+//            var newTab = CreateNewTab("New Tab");
+//            _tabsView.TabItems.Add(newTab);
+//            _tabsView.SelectedItem = newTab;
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnAddTabButtonClick END: TabItems.Count={_tabsView.TabItems.Count}, SelectedIndex={_tabsView.SelectedIndex}");
+//        }
+
+//        public void TabsView_OnTabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested START: Tab.Header='{args.Tab.Header}', sender.TabItems.Count={sender.TabItems.Count}");
+
+//            if (_tabContentMap.ContainsKey(args.Tab))
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: removing content from map");
+//                _tabContentMap.Remove(args.Tab);
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: _tabContentMap.Count={_tabContentMap.Count}");
+//            }
+
+//            sender.TabItems.Remove(args.Tab);
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: after removal, TabItems.Count={sender.TabItems.Count}");
+
+//            if (sender.TabItems.Count == 0)
+//            {
+//                _contentFrame.Content = null;
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: no tabs left, _contentFrame.Content set to null");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested END");
+//        }
+
+//        // -----------------------------------------------------------------
+//        // Обработчики drag & drop (используют SelectedItem)
+//        // -----------------------------------------------------------------
+//        private void TabsView_TabDragStarting(TabView sender, TabViewTabDragStartingEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting START");
+
+//            // Используем текущую выбранную вкладку – это надёжно, т.к. пользователь обычно кликает на вкладку перед перетаскиванием
+//            var draggedTab = _tabsView.SelectedItem as TabViewItem;
+//            if (draggedTab == null)
+//            {
+//                Debug.WriteLine("[Drag] No selected tab, aborting drag.");
+//                args.Cancel = true;
+//                return;
+//            }
+
+//            string tabId = draggedTab.Tag?.ToString();
+//            if (!string.IsNullOrEmpty(tabId))
+//            {
+//                _draggedTabId = tabId;
+//                args.Data.Properties.Add(TabIdKey, tabId);
+//                Debug.WriteLine($"[Drag] Using SelectedItem: Header='{draggedTab.Header}', TabId={tabId}");
+//            }
+//            else
+//            {
+//                Debug.WriteLine("[Drag] WARNING: SelectedItem Tag is null, cannot identify tab uniquely!");
+//                args.Cancel = true;
+//                return;
+//            }
+//            args.Data.RequestedOperation = DataPackageOperation.Move;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting END");
+//        }
+
+//        private async void TabsView_TabDroppedOutside(TabView sender, TabViewTabDroppedOutsideEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside START");
+
+//            if (string.IsNullOrEmpty(_draggedTabId))
+//            {
+//                Debug.WriteLine($"[TabViewManager] _draggedTabId is empty, aborting");
+//                return;
+//            }
+
+//            string draggedTabId = _draggedTabId;
+//            _draggedTabId = null;
+//            Debug.WriteLine($"[TabViewManager] Retrieved draggedTabId = {draggedTabId}");
+
+//            TabViewItem sourceTab = null;
+//            foreach (TabViewItem tab in sender.TabItems)
+//            {
+//                if (tab.Tag?.ToString() == draggedTabId)
+//                {
+//                    sourceTab = tab;
+//                    break;
+//                }
+//            }
+
+//            if (sourceTab == null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] sourceTab not found by Tag, aborting");
+//                return;
+//            }
+
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: source Tab.Header='{sourceTab.Header}'");
+//            var sourceContent = _tabContentMap.ContainsKey(sourceTab) ? _tabContentMap[sourceTab] : null;
+//            int selectedIndex = _tabsView.SelectedIndex;
+//            var savedHeader = sourceTab.Header;
+//            var savedIconSource = sourceTab.IconSource;
+
+//            if (_tabContentMap.ContainsKey(sourceTab))
+//                _tabContentMap.Remove(sourceTab);
+//            sender.TabItems.Remove(sourceTab);
+
+//            if (sender.TabItems.Count > 0)
+//            {
+//                int newIndex = selectedIndex < sender.TabItems.Count ? selectedIndex : sender.TabItems.Count - 1;
+//                if (newIndex >= 0)
+//                    _tabsView.SelectedIndex = newIndex;
+//            }
+
+//            var newWindow = new MainWindow(true);
+//            newWindow.ExtendsContentIntoTitleBar = true;
+
+//            var newTab = newWindow.TabViewManager.CreateNewTab(savedHeader?.ToString() ?? "Tab");
+//            newTab.IconSource = savedIconSource;
+
+//            if (sourceContent != null)
+//                newWindow.TabViewManager.TransferContentWithUIElement(sourceContent, newTab);
+//            else
+//            {
+//                var frame = new Frame();
+//                frame.Navigate(typeof(rootPage), null);
+//                newWindow.TabViewManager.TransferContentWithUIElement(frame, newTab);
+//            }
+
+//            newWindow.MainTabsView.TabItems.Add(newTab);
+//            newWindow.TabViewManager._tabsView.SelectedItem = newTab;
+
+//            await Task.Delay(50);
+//            newWindow.Activate();
+
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside END");
+//        }
+
+//        public void TransferContentWithUIElement(UIElement content, TabViewItem targetTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TransferContentWithUIElement START: content={content != null}, targetTab.Header='{targetTab.Header}'");
+//            _tabContentMap[targetTab] = content;
+//            Debug.WriteLine($"[TabViewManager] TransferContentWithUIElement END: _tabContentMap.Count={_tabContentMap.Count}");
+//        }
+
+//        public int GetTabContentMapCount() => _tabContentMap.Count;
+
+//        private void TabsView_TabStripDragOver(object sender, DragEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver START");
+//            bool hasKey = e.DataView.Properties.ContainsKey(TabIdKey);
+//            if (hasKey)
+//                e.AcceptedOperation = DataPackageOperation.Move;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver END, Accepted={hasKey}");
+//        }
+
+//        private async void TabsView_TabStripDrop(object sender, DragEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop START");
+
+//            if (!e.DataView.Properties.TryGetValue(TabIdKey, out object idObj))
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabId not found in DataPackage, exiting");
+//                return;
+//            }
+//            string draggedTabId = idObj.ToString();
+//            Debug.WriteLine($"[TabViewManager] TabId={draggedTabId}");
+
+//            var destinationTabView = sender as TabView;
+//            if (destinationTabView == null) return;
+
+//            int insertIndex = -1;
+//            for (int i = 0; i < destinationTabView.TabItems.Count; i++)
+//            {
+//                var item = destinationTabView.ContainerFromIndex(i) as TabViewItem;
+//                if (item != null && e.GetPosition(item).X - item.ActualWidth < 0)
+//                {
+//                    insertIndex = i;
+//                    break;
+//                }
+//            }
+
+//            TabViewItem sourceTab = null;
+//            foreach (TabViewItem tab in destinationTabView.TabItems)
+//            {
+//                if (tab.Tag?.ToString() == draggedTabId)
+//                {
+//                    sourceTab = tab;
+//                    break;
+//                }
+//            }
+
+//            if (sourceTab == null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] sourceTab not found in current TabView, ignoring drop");
+//                return;
+//            }
+
+//            var header = sourceTab.Header;
+//            var iconSource = sourceTab.IconSource;
+//            var content = _tabContentMap.ContainsKey(sourceTab) ? _tabContentMap[sourceTab] : null;
+
+//            destinationTabView.TabItems.Remove(sourceTab);
+//            _tabContentMap.Remove(sourceTab);
+
+//            var newTab = new TabViewItem
+//            {
+//                Header = header,
+//                IconSource = iconSource,
+//                Tag = Guid.NewGuid().ToString()
+//            };
+
+//            if (insertIndex < 0)
+//                destinationTabView.TabItems.Add(newTab);
+//            else
+//                destinationTabView.TabItems.Insert(insertIndex, newTab);
+
+//            if (content != null)
+//                _tabContentMap[newTab] = content;
+
+//            destinationTabView.SelectedItem = newTab;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop END");
+//        }
+
+//        public void TransferContent(TabViewItem sourceTab, TabViewItem targetTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TransferContent START: sourceTab.Header='{sourceTab?.Header}', targetTab.Header='{targetTab?.Header}'");
+//            if (_tabContentMap.TryGetValue(sourceTab, out var content))
+//            {
+//                _tabContentMap[targetTab] = content;
+//                _tabContentMap.Remove(sourceTab);
+//                Debug.WriteLine($"[TabViewManager] TransferContent: content transferred");
+//            }
+//            else
+//            {
+//                Debug.WriteLine($"[TabViewManager] TransferContent: content NOT found for sourceTab");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TransferContent END");
+//        }
+//    }
+//}
+
+//using System;
+//using System.Collections.Generic;
+//using System.Diagnostics;
+//using System.Threading.Tasks;
+//using Microsoft.UI.Xaml;
+//using Microsoft.UI.Xaml.Controls;
+//using Microsoft.UI.Xaml.Input;
+//using Windows.ApplicationModel.DataTransfer;
+//using ufm.Pages;
+
+//namespace ufm
+//{
+//    public class TabViewManager
+//    {
+//        private TabView _tabsView;
+//        private Frame _contentFrame;
+//        private const string TabIdKey = "TabId";
+//        private readonly Dictionary<TabViewItem, UIElement> _tabContentMap = new();
+//        private readonly bool _skipInitialTab;
+//        private string _draggedTabId;
+
+//        // Храним последнюю вкладку, на которой было нажатие указателя
+//        private TabViewItem _lastPressedTab;
+
+//        public TabViewManager(TabView tabsView, Frame contentFrame)
+//            : this(tabsView, contentFrame, false)
+//        {
+//        }
+
+//        public TabViewManager(TabView tabsView, Frame contentFrame, bool skipInitialTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] Constructor START: tabsView={tabsView != null}, contentFrame={contentFrame != null}, skipInitialTab={skipInitialTab}");
+//            _tabsView = tabsView;
+//            _contentFrame = contentFrame;
+//            _skipInitialTab = skipInitialTab;
+//            Initialize();
+//            Debug.WriteLine($"[TabViewManager] Constructor END");
+//        }
+
+//        private void Initialize()
+//        {
+//            Debug.WriteLine($"[TabViewManager] Initialize START");
+
+//            _tabsView.Loaded += TabsView_Loaded;
+//            _tabsView.SelectionChanged += TabsView_SelectionChanged;
+//            _tabsView.AddTabButtonClick += TabsView_OnAddTabButtonClick;
+//            _tabsView.TabCloseRequested += TabsView_OnTabCloseRequested;
+//            _tabsView.TabDragStarting += TabsView_TabDragStarting;
+//            _tabsView.TabDroppedOutside += TabsView_TabDroppedOutside;
+//            _tabsView.TabStripDragOver += TabsView_TabStripDragOver;
+//            _tabsView.TabStripDrop += TabsView_TabStripDrop;
+
+//            Debug.WriteLine($"[TabViewManager] Initialize END, events subscribed");
+//        }
+
+//        private void TabsView_Loaded(object sender, RoutedEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_Loaded START, _skipInitialTab={_skipInitialTab}, TabItems.Count={_tabsView.TabItems.Count}");
+
+//            // Подписываемся на PointerPressed для всех уже существующих вкладок
+//            foreach (var item in _tabsView.TabItems)
+//            {
+//                var tab = item as TabViewItem;
+//                if (tab != null && !tab.IsInTabStripPointerPressedSubscribed())
+//                {
+//                    tab.PointerPressed += TabViewItem_PointerPressed;
+//                    tab.SetIsInTabStripPointerPressedSubscribed(true);
+//                }
+//            }
+
+//            if (_skipInitialTab)
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: skipping initial tab creation (drag&drop window)");
+//                return;
+//            }
+
+//            if (_tabsView.TabItems.Count == 0)
+//            {
+//                var initialTab = CreateNewTab("Root Page");
+//                _tabsView.TabItems.Add(initialTab);
+//                _tabsView.SelectedIndex = 0;
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: initialTab added, TabItems.Count={_tabsView.TabItems.Count}");
+//            }
+//            else
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: TabItems already has {_tabsView.TabItems.Count} tabs, skipping creation");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_Loaded END");
+//        }
+
+//        private void TabViewItem_PointerPressed(object sender, PointerRoutedEventArgs e)
+//        {
+//            var tab = sender as TabViewItem;
+//            if (tab != null)
+//            {
+//                _lastPressedTab = tab;
+//                Debug.WriteLine($"[PointerPressed] Last pressed tab: '{tab.Header}'");
+//            }
+//        }
+
+//        public TabViewItem CreateNewTab(string header)
+//        {
+//            Debug.WriteLine($"[TabViewManager] CreateNewTab START: header='{header}'");
+//            var newTab = new TabViewItem
+//            {
+//                Header = header,
+//                IconSource = new SymbolIconSource { Symbol = Symbol.Placeholder },
+//                Tag = Guid.NewGuid().ToString()
+//            };
+//            // Подписываемся на PointerPressed сразу при создании
+//            newTab.PointerPressed += TabViewItem_PointerPressed;
+//            newTab.SetIsInTabStripPointerPressedSubscribed(true);
+//            Debug.WriteLine($"[TabViewManager] CreateNewTab END: newTab created, Header='{newTab.Header}', Tag='{newTab.Tag}'");
+//            return newTab;
+//        }
+
+//        private UIElement CreateTabContent(string dataContext = null)
+//        {
+//            Debug.WriteLine($"[TabViewManager] CreateTabContent START: dataContext='{dataContext}'");
+//            var frame = new Frame();
+//            frame.Navigate(typeof(rootPage), dataContext);
+//            Debug.WriteLine($"[TabViewManager] CreateTabContent END: Frame created, Content={frame.Content?.GetType().Name}");
+//            return frame;
+//        }
+
+//        private void TabsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged START");
+//            var selectedTab = _tabsView.SelectedItem as TabViewItem;
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: selectedTab={selectedTab != null}, Header='{selectedTab?.Header}'");
+
+//            if (selectedTab != null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: checking _tabContentMap.ContainsKey={_tabContentMap.ContainsKey(selectedTab)}");
+//                if (!_tabContentMap.ContainsKey(selectedTab))
+//                {
+//                    Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: creating new content for tab");
+//                    var content = CreateTabContent();
+//                    _tabContentMap[selectedTab] = content;
+//                    Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: content added to map, _tabContentMap.Count={_tabContentMap.Count}");
+//                }
+
+//                _contentFrame.Content = _tabContentMap[selectedTab];
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: _contentFrame.Content set to tab content");
+//            }
+//            else
+//            {
+//                _contentFrame.Content = null;
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: selectedTab is null, _contentFrame.Content set to null");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged END");
+//        }
+
+//        public void TabsView_OnAddTabButtonClick(TabView sender, object args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnAddTabButtonClick START: sender.TabItems.Count={sender.TabItems.Count}");
+//            var newTab = CreateNewTab("New Tab");
+//            _tabsView.TabItems.Add(newTab);
+//            _tabsView.SelectedItem = newTab;
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnAddTabButtonClick END: TabItems.Count={_tabsView.TabItems.Count}, SelectedIndex={_tabsView.SelectedIndex}");
+//        }
+
+//        public void TabsView_OnTabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested START: Tab.Header='{args.Tab.Header}', sender.TabItems.Count={sender.TabItems.Count}");
+
+//            if (_tabContentMap.ContainsKey(args.Tab))
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: removing content from map");
+//                _tabContentMap.Remove(args.Tab);
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: _tabContentMap.Count={_tabContentMap.Count}");
+//            }
+
+//            sender.TabItems.Remove(args.Tab);
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: after removal, TabItems.Count={sender.TabItems.Count}");
+
+//            if (sender.TabItems.Count == 0)
+//            {
+//                _contentFrame.Content = null;
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: no tabs left, _contentFrame.Content set to null");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested END");
+//        }
+
+//        // -----------------------------------------------------------------
+//        // Drag & Drop с использованием _lastPressedTab
+//        // -----------------------------------------------------------------
+//        private void TabsView_TabDragStarting(TabView sender, TabViewTabDragStartingEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting START");
+
+//            // Используем последнюю нажатую вкладку, если она ещё существует в коллекции
+//            var draggedTab = _lastPressedTab;
+//            if (draggedTab == null || !sender.TabItems.Contains(draggedTab))
+//            {
+//                // Fallback на SelectedItem
+//                draggedTab = _tabsView.SelectedItem as TabViewItem;
+//                Debug.WriteLine("[Drag] Using SelectedItem as fallback");
+//            }
+
+//            if (draggedTab == null)
+//            {
+//                Debug.WriteLine("[Drag] No tab to drag, aborting.");
+//                args.Cancel = true;
+//                return;
+//            }
+
+//            string tabId = draggedTab.Tag?.ToString();
+//            if (!string.IsNullOrEmpty(tabId))
+//            {
+//                _draggedTabId = tabId;
+//                args.Data.Properties.Add(TabIdKey, tabId);
+//                Debug.WriteLine($"[Drag] Dragging tab: Header='{draggedTab.Header}', TabId={tabId}");
+//            }
+//            else
+//            {
+//                Debug.WriteLine("[Drag] Tab.Tag is null, aborting drag.");
+//                args.Cancel = true;
+//                return;
+//            }
+//            args.Data.RequestedOperation = DataPackageOperation.Move;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting END");
+//        }
+
+//        private async void TabsView_TabDroppedOutside(TabView sender, TabViewTabDroppedOutsideEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside START");
+
+//            if (string.IsNullOrEmpty(_draggedTabId))
+//            {
+//                Debug.WriteLine($"[TabViewManager] _draggedTabId is empty, aborting");
+//                return;
+//            }
+
+//            string draggedTabId = _draggedTabId;
+//            _draggedTabId = null;
+//            Debug.WriteLine($"[TabViewManager] Retrieved draggedTabId = {draggedTabId}");
+
+//            TabViewItem sourceTab = null;
+//            foreach (TabViewItem tab in sender.TabItems)
+//            {
+//                if (tab.Tag?.ToString() == draggedTabId)
+//                {
+//                    sourceTab = tab;
+//                    break;
+//                }
+//            }
+
+//            if (sourceTab == null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] sourceTab not found by Tag, aborting");
+//                return;
+//            }
+
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: source Tab.Header='{sourceTab.Header}'");
+//            var sourceContent = _tabContentMap.ContainsKey(sourceTab) ? _tabContentMap[sourceTab] : null;
+//            int selectedIndex = _tabsView.SelectedIndex;
+//            var savedHeader = sourceTab.Header;
+//            var savedIconSource = sourceTab.IconSource;
+
+//            if (_tabContentMap.ContainsKey(sourceTab))
+//                _tabContentMap.Remove(sourceTab);
+//            sender.TabItems.Remove(sourceTab);
+
+//            if (sender.TabItems.Count > 0)
+//            {
+//                int newIndex = selectedIndex < sender.TabItems.Count ? selectedIndex : sender.TabItems.Count - 1;
+//                if (newIndex >= 0)
+//                    _tabsView.SelectedIndex = newIndex;
+//            }
+
+//            var newWindow = new MainWindow(true);
+//            newWindow.ExtendsContentIntoTitleBar = true;
+
+//            var newTab = newWindow.TabViewManager.CreateNewTab(savedHeader?.ToString() ?? "Tab");
+//            newTab.IconSource = savedIconSource;
+
+//            if (sourceContent != null)
+//                newWindow.TabViewManager.TransferContentWithUIElement(sourceContent, newTab);
+//            else
+//            {
+//                var frame = new Frame();
+//                frame.Navigate(typeof(rootPage), null);
+//                newWindow.TabViewManager.TransferContentWithUIElement(frame, newTab);
+//            }
+
+//            newWindow.MainTabsView.TabItems.Add(newTab);
+//            newWindow.TabViewManager._tabsView.SelectedItem = newTab;
+
+//            await Task.Delay(50);
+//            newWindow.Activate();
+
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside END");
+//        }
+
+//        public void TransferContentWithUIElement(UIElement content, TabViewItem targetTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TransferContentWithUIElement START: content={content != null}, targetTab.Header='{targetTab.Header}'");
+//            _tabContentMap[targetTab] = content;
+//            Debug.WriteLine($"[TabViewManager] TransferContentWithUIElement END: _tabContentMap.Count={_tabContentMap.Count}");
+//        }
+
+//        public int GetTabContentMapCount() => _tabContentMap.Count;
+
+//        private void TabsView_TabStripDragOver(object sender, DragEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver START");
+//            bool hasKey = e.DataView.Properties.ContainsKey(TabIdKey);
+//            if (hasKey)
+//                e.AcceptedOperation = DataPackageOperation.Move;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver END, Accepted={hasKey}");
+//        }
+
+//        private async void TabsView_TabStripDrop(object sender, DragEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop START");
+
+//            if (!e.DataView.Properties.TryGetValue(TabIdKey, out object idObj))
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabId not found in DataPackage, exiting");
+//                return;
+//            }
+//            string draggedTabId = idObj.ToString();
+//            Debug.WriteLine($"[TabViewManager] TabId={draggedTabId}");
+
+//            var destinationTabView = sender as TabView;
+//            if (destinationTabView == null) return;
+
+//            int insertIndex = -1;
+//            for (int i = 0; i < destinationTabView.TabItems.Count; i++)
+//            {
+//                var item = destinationTabView.ContainerFromIndex(i) as TabViewItem;
+//                if (item != null && e.GetPosition(item).X - item.ActualWidth < 0)
+//                {
+//                    insertIndex = i;
+//                    break;
+//                }
+//            }
+
+//            TabViewItem sourceTab = null;
+//            foreach (TabViewItem tab in destinationTabView.TabItems)
+//            {
+//                if (tab.Tag?.ToString() == draggedTabId)
+//                {
+//                    sourceTab = tab;
+//                    break;
+//                }
+//            }
+
+//            if (sourceTab == null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] sourceTab not found in current TabView, ignoring drop");
+//                return;
+//            }
+
+//            var header = sourceTab.Header;
+//            var iconSource = sourceTab.IconSource;
+//            var content = _tabContentMap.ContainsKey(sourceTab) ? _tabContentMap[sourceTab] : null;
+
+//            destinationTabView.TabItems.Remove(sourceTab);
+//            _tabContentMap.Remove(sourceTab);
+
+//            var newTab = new TabViewItem
+//            {
+//                Header = header,
+//                IconSource = iconSource,
+//                Tag = Guid.NewGuid().ToString()
+//            };
+
+//            if (insertIndex < 0)
+//                destinationTabView.TabItems.Add(newTab);
+//            else
+//                destinationTabView.TabItems.Insert(insertIndex, newTab);
+
+//            if (content != null)
+//                _tabContentMap[newTab] = content;
+
+//            destinationTabView.SelectedItem = newTab;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop END");
+//        }
+
+//        public void TransferContent(TabViewItem sourceTab, TabViewItem targetTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TransferContent START: sourceTab.Header='{sourceTab?.Header}', targetTab.Header='{targetTab?.Header}'");
+//            if (_tabContentMap.TryGetValue(sourceTab, out var content))
+//            {
+//                _tabContentMap[targetTab] = content;
+//                _tabContentMap.Remove(sourceTab);
+//                Debug.WriteLine($"[TabViewManager] TransferContent: content transferred");
+//            }
+//            else
+//            {
+//                Debug.WriteLine($"[TabViewManager] TransferContent: content NOT found for sourceTab");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TransferContent END");
+//        }
+//    }
+
+//    // Вспомогательные методы расширения для хранения флага подписки
+//    public static class TabViewItemExtensions
+//    {
+//        private const string PointerPressedSubscribedKey = "IsPointerPressedSubscribed";
+//        private static DependencyProperty _isPointerPressedSubscribedProperty;
+
+//        private static DependencyProperty IsPointerPressedSubscribedProperty
+//        {
+//            get
+//            {
+//                if (_isPointerPressedSubscribedProperty == null)
+//                {
+//                    _isPointerPressedSubscribedProperty = DependencyProperty.RegisterAttached(
+//                        "IsPointerPressedSubscribed",
+//                        typeof(bool),
+//                        typeof(TabViewItemExtensions),
+//                        new PropertyMetadata(false));
+//                }
+//                return _isPointerPressedSubscribedProperty;
+//            }
+//        }
+
+//        public static bool IsInTabStripPointerPressedSubscribed(this TabViewItem tab)
+//        {
+//            return (bool)tab.GetValue(IsPointerPressedSubscribedProperty);
+//        }
+
+//        public static void SetIsInTabStripPointerPressedSubscribed(this TabViewItem tab, bool value)
+//        {
+//            tab.SetValue(IsPointerPressedSubscribedProperty, value);
+//        }
+//    }
+//}
+
+
+
+//using System;
+//using System.Collections.Generic;
+//using System.Diagnostics;
+//using System.Threading.Tasks;
+//using Microsoft.UI.Xaml;
+//using Microsoft.UI.Xaml.Controls;
+//using Microsoft.UI.Xaml.Input;
+//using Windows.ApplicationModel.DataTransfer;
+//using ufm.Pages;
+
+//namespace ufm
+//{
+//    public class TabViewManager
+//    {
+//        private TabView _tabsView;
+//        private Frame _contentFrame;
+//        private const string TabIdKey = "TabId";
+//        private readonly Dictionary<TabViewItem, UIElement> _tabContentMap = new();
+//        private readonly bool _skipInitialTab;
+//        private string _draggedTabId;
+
+//        // Храним последнюю вкладку, на которой было нажатие указателя
+//        private TabViewItem _lastPressedTab;
+
+//        public TabViewManager(TabView tabsView, Frame contentFrame)
+//            : this(tabsView, contentFrame, false)
+//        {
+//        }
+
+//        public TabViewManager(TabView tabsView, Frame contentFrame, bool skipInitialTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] Constructor START: tabsView={tabsView != null}, contentFrame={contentFrame != null}, skipInitialTab={skipInitialTab}");
+//            _tabsView = tabsView;
+//            _contentFrame = contentFrame;
+//            _skipInitialTab = skipInitialTab;
+//            Initialize();
+//            Debug.WriteLine($"[TabViewManager] Constructor END");
+//        }
+
+//        private void Initialize()
+//        {
+//            Debug.WriteLine($"[TabViewManager] Initialize START");
+
+//            _tabsView.Loaded += TabsView_Loaded;
+//            _tabsView.SelectionChanged += TabsView_SelectionChanged;
+//            _tabsView.AddTabButtonClick += TabsView_OnAddTabButtonClick;
+//            _tabsView.TabCloseRequested += TabsView_OnTabCloseRequested;
+//            _tabsView.TabDragStarting += TabsView_TabDragStarting;
+//            _tabsView.TabDroppedOutside += TabsView_TabDroppedOutside;
+//            _tabsView.TabStripDragOver += TabsView_TabStripDragOver;
+//            _tabsView.TabStripDrop += TabsView_TabStripDrop;
+
+//            Debug.WriteLine($"[TabViewManager] Initialize END, events subscribed");
+//        }
+
+//        private void TabsView_Loaded(object sender, RoutedEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_Loaded START, _skipInitialTab={_skipInitialTab}, TabItems.Count={_tabsView.TabItems.Count}");
+
+//            // Подписываемся на PointerPressed для всех уже существующих вкладок
+//            foreach (var item in _tabsView.TabItems)
+//            {
+//                var tab = item as TabViewItem;
+//                if (tab != null && !tab.IsInTabStripPointerPressedSubscribed())
+//                {
+//                    tab.PointerPressed += TabViewItem_PointerPressed;
+//                    tab.SetIsInTabStripPointerPressedSubscribed(true);
+//                }
+//            }
+
+//            if (_skipInitialTab)
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: skipping initial tab creation (drag&drop window)");
+//                return;
+//            }
+
+//            if (_tabsView.TabItems.Count == 0)
+//            {
+//                var initialTab = CreateNewTab("Root Page");
+//                _tabsView.TabItems.Add(initialTab);
+//                _tabsView.SelectedIndex = 0;
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: initialTab added, TabItems.Count={_tabsView.TabItems.Count}");
+//            }
+//            else
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: TabItems already has {_tabsView.TabItems.Count} tabs, skipping creation");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_Loaded END");
+//        }
+
+//        private void TabViewItem_PointerPressed(object sender, PointerRoutedEventArgs e)
+//        {
+//            var tab = sender as TabViewItem;
+//            if (tab != null)
+//            {
+//                _lastPressedTab = tab;
+//                Debug.WriteLine($"[PointerPressed] Last pressed tab: '{tab.Header}'");
+//            }
+//        }
+
+//        public TabViewItem CreateNewTab(string header)
+//        {
+//            Debug.WriteLine($"[TabViewManager] CreateNewTab START: header='{header}'");
+//            var newTab = new TabViewItem
+//            {
+//                Header = header,
+//                IconSource = new SymbolIconSource { Symbol = Symbol.Placeholder },
+//                Tag = Guid.NewGuid().ToString()
+//            };
+//            // Подписываемся на PointerPressed сразу при создании
+//            newTab.PointerPressed += TabViewItem_PointerPressed;
+//            newTab.SetIsInTabStripPointerPressedSubscribed(true);
+//            Debug.WriteLine($"[TabViewManager] CreateNewTab END: newTab created, Header='{newTab.Header}', Tag='{newTab.Tag}'");
+//            return newTab;
+//        }
+
+//        private UIElement CreateTabContent(string dataContext = null)
+//        {
+//            Debug.WriteLine($"[TabViewManager] CreateTabContent START: dataContext='{dataContext}'");
+//            var frame = new Frame();
+//            frame.Navigate(typeof(rootPage), dataContext);
+//            Debug.WriteLine($"[TabViewManager] CreateTabContent END: Frame created, Content={frame.Content?.GetType().Name}");
+//            return frame;
+//        }
+
+//        private void TabsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged START");
+//            var selectedTab = _tabsView.SelectedItem as TabViewItem;
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: selectedTab={selectedTab != null}, Header='{selectedTab?.Header}'");
+
+//            if (selectedTab != null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: checking _tabContentMap.ContainsKey={_tabContentMap.ContainsKey(selectedTab)}");
+//                if (!_tabContentMap.ContainsKey(selectedTab))
+//                {
+//                    Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: creating new content for tab");
+//                    var content = CreateTabContent();
+//                    _tabContentMap[selectedTab] = content;
+//                    Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: content added to map, _tabContentMap.Count={_tabContentMap.Count}");
+//                }
+
+//                _contentFrame.Content = _tabContentMap[selectedTab];
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: _contentFrame.Content set to tab content");
+//            }
+//            else
+//            {
+//                _contentFrame.Content = null;
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: selectedTab is null, _contentFrame.Content set to null");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged END");
+//        }
+
+//        public void TabsView_OnAddTabButtonClick(TabView sender, object args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnAddTabButtonClick START: sender.TabItems.Count={sender.TabItems.Count}");
+//            var newTab = CreateNewTab("New Tab");
+//            _tabsView.TabItems.Add(newTab);
+//            _tabsView.SelectedItem = newTab;
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnAddTabButtonClick END: TabItems.Count={_tabsView.TabItems.Count}, SelectedIndex={_tabsView.SelectedIndex}");
+//        }
+
+//        public void TabsView_OnTabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested START: Tab.Header='{args.Tab.Header}', sender.TabItems.Count={sender.TabItems.Count}");
+
+//            if (_tabContentMap.ContainsKey(args.Tab))
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: removing content from map");
+//                _tabContentMap.Remove(args.Tab);
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: _tabContentMap.Count={_tabContentMap.Count}");
+//            }
+
+//            sender.TabItems.Remove(args.Tab);
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: after removal, TabItems.Count={sender.TabItems.Count}");
+
+//            if (sender.TabItems.Count == 0)
+//            {
+//                _contentFrame.Content = null;
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: no tabs left, _contentFrame.Content set to null");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested END");
+//        }
+
+//        // -----------------------------------------------------------------
+//        // Drag & Drop с приоритетом: args.Tab → _lastPressedTab → SelectedItem
+//        // -----------------------------------------------------------------
+//        private void TabsView_TabDragStarting(TabView sender, TabViewTabDragStartingEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting START");
+
+//            // 1. Пробуем взять вкладку из аргументов события (та, за которую тянут)
+//            var draggedTab = args.Tab;
+
+//            // 2. Если args.Tab не дал результат, используем последнюю нажатую вкладку
+//            if (draggedTab == null || !sender.TabItems.Contains(draggedTab))
+//            {
+//                draggedTab = _lastPressedTab;
+//                if (draggedTab != null)
+//                    Debug.WriteLine("[Drag] Using _lastPressedTab");
+//            }
+
+//            // 3. Если и это не помогло, берём выделенную вкладку
+//            if (draggedTab == null || !sender.TabItems.Contains(draggedTab))
+//            {
+//                draggedTab = sender.SelectedItem as TabViewItem;
+//                if (draggedTab != null)
+//                    Debug.WriteLine("[Drag] Using SelectedItem as fallback");
+//            }
+
+//            if (draggedTab == null)
+//            {
+//                Debug.WriteLine("[Drag] No tab to drag, aborting.");
+//                args.Cancel = true;
+//                return;
+//            }
+
+//            string tabId = draggedTab.Tag?.ToString();
+//            if (!string.IsNullOrEmpty(tabId))
+//            {
+//                _draggedTabId = tabId;
+//                args.Data.Properties.Add(TabIdKey, tabId);
+//                Debug.WriteLine($"[Drag] Dragging tab: Header='{draggedTab.Header}', TabId={tabId}");
+//            }
+//            else
+//            {
+//                Debug.WriteLine("[Drag] Tab.Tag is null, aborting drag.");
+//                args.Cancel = true;
+//                return;
+//            }
+
+//            args.Data.RequestedOperation = DataPackageOperation.Move;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting END");
+//        }
+
+//        private async void TabsView_TabDroppedOutside(TabView sender, TabViewTabDroppedOutsideEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside START");
+
+//            if (string.IsNullOrEmpty(_draggedTabId))
+//            {
+//                Debug.WriteLine($"[TabViewManager] _draggedTabId is empty, aborting");
+//                return;
+//            }
+
+//            string draggedTabId = _draggedTabId;
+//            _draggedTabId = null;
+//            Debug.WriteLine($"[TabViewManager] Retrieved draggedTabId = {draggedTabId}");
+
+//            TabViewItem sourceTab = null;
+//            foreach (TabViewItem tab in sender.TabItems)
+//            {
+//                if (tab.Tag?.ToString() == draggedTabId)
+//                {
+//                    sourceTab = tab;
+//                    break;
+//                }
+//            }
+
+//            if (sourceTab == null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] sourceTab not found by Tag, aborting");
+//                return;
+//            }
+
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: source Tab.Header='{sourceTab.Header}'");
+//            var sourceContent = _tabContentMap.ContainsKey(sourceTab) ? _tabContentMap[sourceTab] : null;
+//            int selectedIndex = _tabsView.SelectedIndex;
+//            var savedHeader = sourceTab.Header;
+//            var savedIconSource = sourceTab.IconSource;
+
+//            if (_tabContentMap.ContainsKey(sourceTab))
+//                _tabContentMap.Remove(sourceTab);
+//            sender.TabItems.Remove(sourceTab);
+
+//            if (sender.TabItems.Count > 0)
+//            {
+//                int newIndex = selectedIndex < sender.TabItems.Count ? selectedIndex : sender.TabItems.Count - 1;
+//                if (newIndex >= 0)
+//                    _tabsView.SelectedIndex = newIndex;
+//            }
+
+//            var newWindow = new MainWindow(true);
+//            newWindow.ExtendsContentIntoTitleBar = true;
+
+//            var newTab = newWindow.TabViewManager.CreateNewTab(savedHeader?.ToString() ?? "Tab");
+//            newTab.IconSource = savedIconSource;
+
+//            if (sourceContent != null)
+//                newWindow.TabViewManager.TransferContentWithUIElement(sourceContent, newTab);
+//            else
+//            {
+//                var frame = new Frame();
+//                frame.Navigate(typeof(rootPage), null);
+//                newWindow.TabViewManager.TransferContentWithUIElement(frame, newTab);
+//            }
+
+//            newWindow.MainTabsView.TabItems.Add(newTab);
+//            newWindow.TabViewManager._tabsView.SelectedItem = newTab;
+
+//            await Task.Delay(50);
+//            newWindow.Activate();
+
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside END");
+//        }
+
+//        public void TransferContentWithUIElement(UIElement content, TabViewItem targetTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TransferContentWithUIElement START: content={content != null}, targetTab.Header='{targetTab.Header}'");
+//            _tabContentMap[targetTab] = content;
+//            Debug.WriteLine($"[TabViewManager] TransferContentWithUIElement END: _tabContentMap.Count={_tabContentMap.Count}");
+//        }
+
+//        public int GetTabContentMapCount() => _tabContentMap.Count;
+
+//        private void TabsView_TabStripDragOver(object sender, DragEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver START");
+//            bool hasKey = e.DataView.Properties.ContainsKey(TabIdKey);
+//            if (hasKey)
+//                e.AcceptedOperation = DataPackageOperation.Move;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver END, Accepted={hasKey}");
+//        }
+
+//        private async void TabsView_TabStripDrop(object sender, DragEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop START");
+
+//            if (!e.DataView.Properties.TryGetValue(TabIdKey, out object idObj))
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabId not found in DataPackage, exiting");
+//                return;
+//            }
+//            string draggedTabId = idObj.ToString();
+//            Debug.WriteLine($"[TabViewManager] TabId={draggedTabId}");
+
+//            var destinationTabView = sender as TabView;
+//            if (destinationTabView == null) return;
+
+//            int insertIndex = -1;
+//            for (int i = 0; i < destinationTabView.TabItems.Count; i++)
+//            {
+//                var item = destinationTabView.ContainerFromIndex(i) as TabViewItem;
+//                if (item != null && e.GetPosition(item).X - item.ActualWidth < 0)
+//                {
+//                    insertIndex = i;
+//                    break;
+//                }
+//            }
+
+//            TabViewItem sourceTab = null;
+//            foreach (TabViewItem tab in destinationTabView.TabItems)
+//            {
+//                if (tab.Tag?.ToString() == draggedTabId)
+//                {
+//                    sourceTab = tab;
+//                    break;
+//                }
+//            }
+
+//            if (sourceTab == null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] sourceTab not found in current TabView, ignoring drop");
+//                return;
+//            }
+
+//            var header = sourceTab.Header;
+//            var iconSource = sourceTab.IconSource;
+//            var content = _tabContentMap.ContainsKey(sourceTab) ? _tabContentMap[sourceTab] : null;
+
+//            destinationTabView.TabItems.Remove(sourceTab);
+//            _tabContentMap.Remove(sourceTab);
+
+//            var newTab = new TabViewItem
+//            {
+//                Header = header,
+//                IconSource = iconSource,
+//                Tag = Guid.NewGuid().ToString()
+//            };
+
+//            if (insertIndex < 0)
+//                destinationTabView.TabItems.Add(newTab);
+//            else
+//                destinationTabView.TabItems.Insert(insertIndex, newTab);
+
+//            if (content != null)
+//                _tabContentMap[newTab] = content;
+
+//            destinationTabView.SelectedItem = newTab;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop END");
+//        }
+
+//        public void TransferContent(TabViewItem sourceTab, TabViewItem targetTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TransferContent START: sourceTab.Header='{sourceTab?.Header}', targetTab.Header='{targetTab?.Header}'");
+//            if (_tabContentMap.TryGetValue(sourceTab, out var content))
+//            {
+//                _tabContentMap[targetTab] = content;
+//                _tabContentMap.Remove(sourceTab);
+//                Debug.WriteLine($"[TabViewManager] TransferContent: content transferred");
+//            }
+//            else
+//            {
+//                Debug.WriteLine($"[TabViewManager] TransferContent: content NOT found for sourceTab");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TransferContent END");
+//        }
+//    }
+
+//    // Вспомогательные методы расширения для хранения флага подписки
+//    public static class TabViewItemExtensions
+//    {
+//        private static DependencyProperty _isPointerPressedSubscribedProperty;
+
+//        private static DependencyProperty IsPointerPressedSubscribedProperty
+//        {
+//            get
+//            {
+//                if (_isPointerPressedSubscribedProperty == null)
+//                {
+//                    _isPointerPressedSubscribedProperty = DependencyProperty.RegisterAttached(
+//                        "IsPointerPressedSubscribed",
+//                        typeof(bool),
+//                        typeof(TabViewItemExtensions),
+//                        new PropertyMetadata(false));
+//                }
+//                return _isPointerPressedSubscribedProperty;
+//            }
+//        }
+
+//        public static bool IsInTabStripPointerPressedSubscribed(this TabViewItem tab)
+//        {
+//            return (bool)tab.GetValue(IsPointerPressedSubscribedProperty);
+//        }
+
+//        public static void SetIsInTabStripPointerPressedSubscribed(this TabViewItem tab, bool value)
+//        {
+//            tab.SetValue(IsPointerPressedSubscribedProperty, value);
+//        }
+//    }
+//}
+
+
+
+//using System;
+//using System.Collections.Generic;
+//using System.Diagnostics;
+//using System.Runtime.InteropServices;
+//using System.Threading.Tasks;
+//using Microsoft.UI.Xaml;
+//using Microsoft.UI.Xaml.Controls;
+//using Microsoft.UI.Xaml.Media;
+//using Windows.ApplicationModel.DataTransfer;
+//using Windows.Foundation;
+//using WinRT.Interop;
+//using ufm.Pages;
+
+//namespace ufm
+//{
+//    public class TabViewManager
+//    {
+//        private TabView _tabsView;
+//        private Frame _contentFrame;
+//        private Window _mainWindow; // <-- Добавлено для получения HWND
+//        private const string TabIdKey = "TabId";
+//        private readonly Dictionary<TabViewItem, UIElement> _tabContentMap = new();
+//        private readonly bool _skipInitialTab;
+//        private string _draggedTabId;
+
+//        // P/Invoke для получения позиции курсора
+//        [DllImport("user32.dll")]
+//        private static extern bool GetCursorPos(out POINT lpPoint);
+
+//        [DllImport("user32.dll")]
+//        private static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
+
+//        [StructLayout(LayoutKind.Sequential)]
+//        private struct POINT
+//        {
+//            public int X;
+//            public int Y;
+//        }
+
+//        public TabViewManager(TabView tabsView, Frame contentFrame, Window mainWindow)
+//            : this(tabsView, contentFrame, mainWindow, false)
+//        {
+//        }
+
+//        public TabViewManager(TabView tabsView, Frame contentFrame, Window mainWindow, bool skipInitialTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] Constructor START: tabsView={tabsView != null}, contentFrame={contentFrame != null}, skipInitialTab={skipInitialTab}");
+//            _tabsView = tabsView;
+//            _contentFrame = contentFrame;
+//            _mainWindow = mainWindow; // <-- Сохраняем ссылку на окно
+//            _skipInitialTab = skipInitialTab;
+//            Initialize();
+//            Debug.WriteLine($"[TabViewManager] Constructor END");
+//        }
+
+//        private void Initialize()
+//        {
+//            Debug.WriteLine($"[TabViewManager] Initialize START");
+
+//            _tabsView.Loaded += TabsView_Loaded;
+//            _tabsView.SelectionChanged += TabsView_SelectionChanged;
+//            _tabsView.AddTabButtonClick += TabsView_OnAddTabButtonClick;
+//            _tabsView.TabCloseRequested += TabsView_OnTabCloseRequested;
+//            _tabsView.TabDragStarting += TabsView_TabDragStarting;
+//            _tabsView.TabDroppedOutside += TabsView_TabDroppedOutside;
+//            _tabsView.TabStripDragOver += TabsView_TabStripDragOver;
+//            _tabsView.TabStripDrop += TabsView_TabStripDrop;
+
+//            Debug.WriteLine($"[TabViewManager] Initialize END, events subscribed");
+//        }
+
+//        private void TabsView_Loaded(object sender, RoutedEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_Loaded START, _skipInitialTab={_skipInitialTab}, TabItems.Count={_tabsView.TabItems.Count}");
+
+//            if (_skipInitialTab)
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: skipping initial tab creation (drag&drop window)");
+//                return;
+//            }
+
+//            if (_tabsView.TabItems.Count == 0)
+//            {
+//                var initialTab = CreateNewTab("Root Page");
+//                _tabsView.TabItems.Add(initialTab);
+//                _tabsView.SelectedIndex = 0;
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: initialTab added, TabItems.Count={_tabsView.TabItems.Count}");
+//            }
+//            else
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_Loaded: TabItems already has {_tabsView.TabItems.Count} tabs, skipping creation");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_Loaded END");
+//        }
+
+//        public TabViewItem CreateNewTab(string header)
+//        {
+//            Debug.WriteLine($"[TabViewManager] CreateNewTab START: header='{header}'");
+//            var newTab = new TabViewItem
+//            {
+//                Header = header,
+//                IconSource = new SymbolIconSource { Symbol = Symbol.Placeholder },
+//                Tag = Guid.NewGuid().ToString()
+//            };
+//            Debug.WriteLine($"[TabViewManager] CreateNewTab END: newTab created, Header='{newTab.Header}', Tag='{newTab.Tag}'");
+//            return newTab;
+//        }
+
+//        private UIElement CreateTabContent(string dataContext = null)
+//        {
+//            Debug.WriteLine($"[TabViewManager] CreateTabContent START: dataContext='{dataContext}'");
+//            var frame = new Frame();
+//            frame.Navigate(typeof(rootPage), dataContext);
+//            Debug.WriteLine($"[TabViewManager] CreateTabContent END: Frame created, Content={frame.Content?.GetType().Name}");
+//            return frame;
+//        }
+
+//        private void TabsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged START");
+//            var selectedTab = _tabsView.SelectedItem as TabViewItem;
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: selectedTab={selectedTab != null}, Header='{selectedTab?.Header}'");
+
+//            if (selectedTab != null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: checking _tabContentMap.ContainsKey={_tabContentMap.ContainsKey(selectedTab)}");
+//                if (!_tabContentMap.ContainsKey(selectedTab))
+//                {
+//                    Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: creating new content for tab");
+//                    var content = CreateTabContent();
+//                    _tabContentMap[selectedTab] = content;
+//                    Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: content added to map, _tabContentMap.Count={_tabContentMap.Count}");
+//                }
+
+//                _contentFrame.Content = _tabContentMap[selectedTab];
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: _contentFrame.Content set to tab content");
+//            }
+//            else
+//            {
+//                _contentFrame.Content = null;
+//                Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged: selectedTab is null, _contentFrame.Content set to null");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_SelectionChanged END");
+//        }
+
+//        public void TabsView_OnAddTabButtonClick(TabView sender, object args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnAddTabButtonClick START: sender.TabItems.Count={sender.TabItems.Count}");
+//            var newTab = CreateNewTab("New Tab");
+//            _tabsView.TabItems.Add(newTab);
+//            _tabsView.SelectedItem = newTab;
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnAddTabButtonClick END: TabItems.Count={_tabsView.TabItems.Count}, SelectedIndex={_tabsView.SelectedIndex}");
+//        }
+
+//        public void TabsView_OnTabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested START: Tab.Header='{args.Tab.Header}', sender.TabItems.Count={sender.TabItems.Count}");
+
+//            if (_tabContentMap.ContainsKey(args.Tab))
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: removing content from map");
+//                _tabContentMap.Remove(args.Tab);
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: _tabContentMap.Count={_tabContentMap.Count}");
+//            }
+
+//            sender.TabItems.Remove(args.Tab);
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: after removal, TabItems.Count={sender.TabItems.Count}");
+
+//            if (sender.TabItems.Count == 0)
+//            {
+//                _contentFrame.Content = null;
+//                Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested: no tabs left, _contentFrame.Content set to null");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested END");
+//        }
+
+//        // -----------------------------------------------------------------
+//        // Drag & Drop с hit-test через HWND окна (гарантированно работает)
+//        // -----------------------------------------------------------------
+//        private void TabsView_TabDragStarting(TabView sender, TabViewTabDragStartingEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting START");
+
+//            TabViewItem draggedTab = null;
+
+//            try
+//            {
+//                // 1. Получаем глобальную позицию курсора
+//                GetCursorPos(out POINT screenPoint);
+
+//                // 2. Получаем HWND главного окна
+//                var windowHandle = WindowNative.GetWindowHandle(_mainWindow);
+
+//                // 3. Преобразуем в координаты клиентской области окна
+//                ScreenToClient(windowHandle, ref screenPoint);
+
+//                // 4. Корректируем Y-координату (заголовок окна обычно 32-40 пикселей)
+//                int titleBarOffset = _mainWindow.ExtendsContentIntoTitleBar ? 0 : 32;
+//                var localPoint = new Point(screenPoint.X, screenPoint.Y - titleBarOffset);
+
+//                // 5. Получаем корневой элемент окна
+//                var rootElement = _mainWindow.Content;
+//                if (rootElement != null)
+//                {
+//                    // 6. Преобразуем координаты в пространство корневого элемента
+//                    var transform = rootElement.TransformToVisual(null);
+//                    var rootScreenPoint = transform.TransformPoint(new Point(0, 0));
+//                    var finalPoint = new Point(localPoint.X - rootScreenPoint.X, localPoint.Y - rootScreenPoint.Y);
+
+//                    // 7. Ищем элементы под курсором
+//                    var elements = VisualTreeHelper.FindElementsInHostCoordinates(finalPoint, rootElement);
+//                    foreach (var element in elements)
+//                    {
+//                        // Поднимаемся по визуальному дереву в поисках TabViewItem
+//                        var tab = FindParentTabViewItem(element);
+//                        if (tab != null)
+//                        {
+//                            draggedTab = tab;
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//            catch (Exception ex)
+//            {
+//                Debug.WriteLine($"[Drag] Hit-test error: {ex.Message}");
+//            }
+
+//            // Fallback на SelectedItem, если визуальный поиск не дал результата
+//            if (draggedTab == null)
+//            {
+//                draggedTab = sender.SelectedItem as TabViewItem;
+//                Debug.WriteLine("[Drag] Using SelectedItem as fallback");
+//            }
+
+//            if (draggedTab == null)
+//            {
+//                Debug.WriteLine("[Drag] No tab to drag, aborting.");
+//                args.Cancel = true;
+//                return;
+//            }
+
+//            string tabId = draggedTab.Tag?.ToString();
+//            if (!string.IsNullOrEmpty(tabId))
+//            {
+//                _draggedTabId = tabId;
+//                args.Data.Properties.Add(TabIdKey, tabId);
+//                Debug.WriteLine($"[Drag] Dragging tab: Header='{draggedTab.Header}', TabId={tabId}");
+//            }
+//            else
+//            {
+//                Debug.WriteLine("[Drag] Tab.Tag is null, aborting drag.");
+//                args.Cancel = true;
+//                return;
+//            }
+
+//            args.Data.RequestedOperation = DataPackageOperation.Move;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting END");
+//        }
+
+//        // Вспомогательный метод поиска TabViewItem в визуальных родителях
+//        private TabViewItem FindParentTabViewItem(DependencyObject child)
+//        {
+//            while (child != null)
+//            {
+//                if (child is TabViewItem tabItem)
+//                    return tabItem;
+//                child = VisualTreeHelper.GetParent(child);
+//            }
+//            return null;
+//        }
+
+//        private async void TabsView_TabDroppedOutside(TabView sender, TabViewTabDroppedOutsideEventArgs args)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside START");
+
+//            if (string.IsNullOrEmpty(_draggedTabId))
+//            {
+//                Debug.WriteLine($"[TabViewManager] _draggedTabId is empty, aborting");
+//                return;
+//            }
+
+//            string draggedTabId = _draggedTabId;
+//            _draggedTabId = null;
+//            Debug.WriteLine($"[TabViewManager] Retrieved draggedTabId = {draggedTabId}");
+
+//            TabViewItem sourceTab = null;
+//            foreach (TabViewItem tab in sender.TabItems)
+//            {
+//                if (tab.Tag?.ToString() == draggedTabId)
+//                {
+//                    sourceTab = tab;
+//                    break;
+//                }
+//            }
+
+//            if (sourceTab == null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] sourceTab not found by Tag, aborting");
+//                return;
+//            }
+
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: source Tab.Header='{sourceTab.Header}'");
+//            var sourceContent = _tabContentMap.ContainsKey(sourceTab) ? _tabContentMap[sourceTab] : null;
+//            int selectedIndex = _tabsView.SelectedIndex;
+//            var savedHeader = sourceTab.Header;
+//            var savedIconSource = sourceTab.IconSource;
+
+//            if (_tabContentMap.ContainsKey(sourceTab))
+//                _tabContentMap.Remove(sourceTab);
+//            sender.TabItems.Remove(sourceTab);
+
+//            if (sender.TabItems.Count > 0)
+//            {
+//                int newIndex = selectedIndex < sender.TabItems.Count ? selectedIndex : sender.TabItems.Count - 1;
+//                if (newIndex >= 0)
+//                    _tabsView.SelectedIndex = newIndex;
+//            }
+
+//            var newWindow = new MainWindow(true);
+//            newWindow.ExtendsContentIntoTitleBar = true;
+
+//            var newTab = newWindow.TabViewManager.CreateNewTab(savedHeader?.ToString() ?? "Tab");
+//            newTab.IconSource = savedIconSource;
+
+//            if (sourceContent != null)
+//                newWindow.TabViewManager.TransferContentWithUIElement(sourceContent, newTab);
+//            else
+//            {
+//                var frame = new Frame();
+//                frame.Navigate(typeof(rootPage), null);
+//                newWindow.TabViewManager.TransferContentWithUIElement(frame, newTab);
+//            }
+
+//            newWindow.MainTabsView.TabItems.Add(newTab);
+//            newWindow.TabViewManager._tabsView.SelectedItem = newTab;
+
+//            await Task.Delay(50);
+//            newWindow.Activate();
+
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside END");
+//        }
+
+//        public void TransferContentWithUIElement(UIElement content, TabViewItem targetTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TransferContentWithUIElement START: content={content != null}, targetTab.Header='{targetTab.Header}'");
+//            _tabContentMap[targetTab] = content;
+//            Debug.WriteLine($"[TabViewManager] TransferContentWithUIElement END: _tabContentMap.Count={_tabContentMap.Count}");
+//        }
+
+//        public int GetTabContentMapCount() => _tabContentMap.Count;
+
+//        private void TabsView_TabStripDragOver(object sender, DragEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver START");
+//            bool hasKey = e.DataView.Properties.ContainsKey(TabIdKey);
+//            if (hasKey)
+//                e.AcceptedOperation = DataPackageOperation.Move;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver END, Accepted={hasKey}");
+//        }
+
+//        private async void TabsView_TabStripDrop(object sender, DragEventArgs e)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop START");
+
+//            if (!e.DataView.Properties.TryGetValue(TabIdKey, out object idObj))
+//            {
+//                Debug.WriteLine($"[TabViewManager] TabId not found in DataPackage, exiting");
+//                return;
+//            }
+//            string draggedTabId = idObj.ToString();
+//            Debug.WriteLine($"[TabViewManager] TabId={draggedTabId}");
+
+//            var destinationTabView = sender as TabView;
+//            if (destinationTabView == null) return;
+
+//            int insertIndex = -1;
+//            for (int i = 0; i < destinationTabView.TabItems.Count; i++)
+//            {
+//                var item = destinationTabView.ContainerFromIndex(i) as TabViewItem;
+//                if (item != null && e.GetPosition(item).X - item.ActualWidth < 0)
+//                {
+//                    insertIndex = i;
+//                    break;
+//                }
+//            }
+
+//            TabViewItem sourceTab = null;
+//            foreach (TabViewItem tab in destinationTabView.TabItems)
+//            {
+//                if (tab.Tag?.ToString() == draggedTabId)
+//                {
+//                    sourceTab = tab;
+//                    break;
+//                }
+//            }
+
+//            if (sourceTab == null)
+//            {
+//                Debug.WriteLine($"[TabViewManager] sourceTab not found in current TabView, ignoring drop");
+//                return;
+//            }
+
+//            var header = sourceTab.Header;
+//            var iconSource = sourceTab.IconSource;
+//            var content = _tabContentMap.ContainsKey(sourceTab) ? _tabContentMap[sourceTab] : null;
+
+//            destinationTabView.TabItems.Remove(sourceTab);
+//            _tabContentMap.Remove(sourceTab);
+
+//            var newTab = new TabViewItem
+//            {
+//                Header = header,
+//                IconSource = iconSource,
+//                Tag = Guid.NewGuid().ToString()
+//            };
+
+//            if (insertIndex < 0)
+//                destinationTabView.TabItems.Add(newTab);
+//            else
+//                destinationTabView.TabItems.Insert(insertIndex, newTab);
+
+//            if (content != null)
+//                _tabContentMap[newTab] = content;
+
+//            destinationTabView.SelectedItem = newTab;
+//            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop END");
+//        }
+
+//        public void TransferContent(TabViewItem sourceTab, TabViewItem targetTab)
+//        {
+//            Debug.WriteLine($"[TabViewManager] TransferContent START: sourceTab.Header='{sourceTab?.Header}', targetTab.Header='{targetTab?.Header}'");
+//            if (_tabContentMap.TryGetValue(sourceTab, out var content))
+//            {
+//                _tabContentMap[targetTab] = content;
+//                _tabContentMap.Remove(sourceTab);
+//                Debug.WriteLine($"[TabViewManager] TransferContent: content transferred");
+//            }
+//            else
+//            {
+//                Debug.WriteLine($"[TabViewManager] TransferContent: content NOT found for sourceTab");
+//            }
+//            Debug.WriteLine($"[TabViewManager] TransferContent END");
+//        }
+//    }
+//}
+
+
+
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.System;
 using ufm.Pages;
 
 namespace ufm
@@ -16,20 +1705,23 @@ namespace ufm
     {
         private TabView _tabsView;
         private Frame _contentFrame;
-        private const string DataIdentifier = "MyTabItem";
-        private readonly Dictionary<TabViewItem, UIElement> _tabContentMap = new Dictionary<TabViewItem, UIElement>();
+        private Window _mainWindow;
+        private const string TabIdKey = "TabId";
+        private readonly Dictionary<TabViewItem, UIElement> _tabContentMap = new();
         private readonly bool _skipInitialTab;
+        private string _draggedTabId;
 
-        public TabViewManager(TabView tabsView, Frame contentFrame)
-            : this(tabsView, contentFrame, false)
+        public TabViewManager(TabView tabsView, Frame contentFrame, Window mainWindow)
+            : this(tabsView, contentFrame, mainWindow, false)
         {
         }
 
-        public TabViewManager(TabView tabsView, Frame contentFrame, bool skipInitialTab)
+        public TabViewManager(TabView tabsView, Frame contentFrame, Window mainWindow, bool skipInitialTab)
         {
             Debug.WriteLine($"[TabViewManager] Constructor START: tabsView={tabsView != null}, contentFrame={contentFrame != null}, skipInitialTab={skipInitialTab}");
             _tabsView = tabsView;
             _contentFrame = contentFrame;
+            _mainWindow = mainWindow;
             _skipInitialTab = skipInitialTab;
             Initialize();
             Debug.WriteLine($"[TabViewManager] Constructor END");
@@ -38,6 +1730,7 @@ namespace ufm
         private void Initialize()
         {
             Debug.WriteLine($"[TabViewManager] Initialize START");
+
             _tabsView.Loaded += TabsView_Loaded;
             _tabsView.SelectionChanged += TabsView_SelectionChanged;
             _tabsView.AddTabButtonClick += TabsView_OnAddTabButtonClick;
@@ -46,6 +1739,7 @@ namespace ufm
             _tabsView.TabDroppedOutside += TabsView_TabDroppedOutside;
             _tabsView.TabStripDragOver += TabsView_TabStripDragOver;
             _tabsView.TabStripDrop += TabsView_TabStripDrop;
+
             Debug.WriteLine($"[TabViewManager] Initialize END, events subscribed");
         }
 
@@ -79,9 +1773,10 @@ namespace ufm
             var newTab = new TabViewItem
             {
                 Header = header,
-                IconSource = new SymbolIconSource { Symbol = Symbol.Placeholder }
+                IconSource = new SymbolIconSource { Symbol = Symbol.Placeholder },
+                Tag = Guid.NewGuid().ToString()
             };
-            Debug.WriteLine($"[TabViewManager] CreateNewTab END: newTab created, Header='{newTab.Header}'");
+            Debug.WriteLine($"[TabViewManager] CreateNewTab END: newTab created, Header='{newTab.Header}', Tag='{newTab.Tag}'");
             return newTab;
         }
 
@@ -153,122 +1848,102 @@ namespace ufm
             Debug.WriteLine($"[TabViewManager] TabsView_OnTabCloseRequested END");
         }
 
+        // -----------------------------------------------------------------
+        // Исправленный Drag & Drop: используем args.Tab вместо hit‑test
+        // -----------------------------------------------------------------
         private void TabsView_TabDragStarting(TabView sender, TabViewTabDragStartingEventArgs args)
         {
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting START: Tab.Header='{args.Tab.Header}'");
-            int index = sender.TabItems.IndexOf(args.Tab);
-            Debug.WriteLine($"[Drag] Index={index}, Header='{args.Tab.Header}'");
-            args.Data.Properties.Add(DataIdentifier, args.Tab);
+            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting START");
+
+            var draggedTab = args.Tab;
+            if (draggedTab == null)
+            {
+                Debug.WriteLine("[Drag] args.Tab is null, aborting.");
+                args.Cancel = true;
+                return;
+            }
+
+            string tabId = draggedTab.Tag?.ToString();
+            if (string.IsNullOrEmpty(tabId))
+            {
+                Debug.WriteLine("[Drag] Tab.Tag is null, aborting.");
+                args.Cancel = true;
+                return;
+            }
+
+            _draggedTabId = tabId;
+            args.Data.Properties.Add(TabIdKey, tabId);
             args.Data.RequestedOperation = DataPackageOperation.Move;
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting END: DataIdentifier added, RequestedOperation=Move");
+            Debug.WriteLine($"[Drag] Dragging tab: Header='{draggedTab.Header}', TabId={tabId}");
+            Debug.WriteLine($"[TabViewManager] TabsView_TabDragStarting END");
         }
 
         private async void TabsView_TabDroppedOutside(TabView sender, TabViewTabDroppedOutsideEventArgs args)
         {
             Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside START");
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: source Tab.Header='{args.Tab.Header}'");
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: source sender.TabItems.Count={sender.TabItems.Count}");
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: _tabContentMap.Count={_tabContentMap.Count}");
 
-            var sourceTab = args.Tab;
-            var sourceHeader = sourceTab.Header?.ToString() ?? "Tab";
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: sourceHeader='{sourceHeader}'");
+            if (string.IsNullOrEmpty(_draggedTabId))
+            {
+                Debug.WriteLine($"[TabViewManager] _draggedTabId is empty, aborting");
+                return;
+            }
 
+            string draggedTabId = _draggedTabId;
+            _draggedTabId = null;
+            Debug.WriteLine($"[TabViewManager] Retrieved draggedTabId = {draggedTabId}");
+
+            TabViewItem sourceTab = null;
+            foreach (TabViewItem tab in sender.TabItems)
+            {
+                if (tab.Tag?.ToString() == draggedTabId)
+                {
+                    sourceTab = tab;
+                    break;
+                }
+            }
+
+            if (sourceTab == null)
+            {
+                Debug.WriteLine($"[TabViewManager] sourceTab not found by Tag, aborting");
+                return;
+            }
+
+            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: source Tab.Header='{sourceTab.Header}'");
             var sourceContent = _tabContentMap.ContainsKey(sourceTab) ? _tabContentMap[sourceTab] : null;
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: sourceContent exists={sourceContent != null}");
-
             int selectedIndex = _tabsView.SelectedIndex;
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: current selected index={selectedIndex}");
-
-            // Сохраняем заголовок и иконку
             var savedHeader = sourceTab.Header;
             var savedIconSource = sourceTab.IconSource;
 
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: savedHeader='{savedHeader}', savedIconSource={savedIconSource != null}");
-
-            // Проверяем, содержится ли вкладка в TabItems
-            bool containsBefore = sender.TabItems.Contains(sourceTab);
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: Before removal - TabItems contains sourceTab? {containsBefore}");
-
-            // Удаляем содержимое из словаря исходного окна
             if (_tabContentMap.ContainsKey(sourceTab))
-            {
-                Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: removing sourceTab from _tabContentMap");
                 _tabContentMap.Remove(sourceTab);
-                Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: _tabContentMap.Count={_tabContentMap.Count}");
-            }
-
-            // Удаляем вкладку из исходного TabView
             sender.TabItems.Remove(sourceTab);
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: after removal, source sender.TabItems.Count={sender.TabItems.Count}");
 
-            bool containsAfter = sender.TabItems.Contains(sourceTab);
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: After removal - TabItems contains sourceTab? {containsAfter}");
-
-            // Выводим оставшиеся вкладки
-            for (int i = 0; i < sender.TabItems.Count; i++)
-            {
-                var tab = sender.TabItems[i] as TabViewItem;
-                Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: Remaining tab {i}: Header='{tab?.Header}'");
-            }
-
-            // Восстанавливаем выделение в исходном окне
             if (sender.TabItems.Count > 0)
             {
                 int newIndex = selectedIndex < sender.TabItems.Count ? selectedIndex : sender.TabItems.Count - 1;
                 if (newIndex >= 0)
-                {
                     _tabsView.SelectedIndex = newIndex;
-                    Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: restored selection to index {newIndex}");
-                }
             }
 
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: creating new MainWindow with skipInitialTab=true");
             var newWindow = new MainWindow(true);
             newWindow.ExtendsContentIntoTitleBar = true;
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: newWindow created");
 
-            // Создаём новую вкладку в новом окне
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: creating new tab in new window");
-            var newTab = newWindow.TabViewManager.CreateNewTab(sourceHeader);
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: newTab created, Header='{newTab.Header}'");
-
-            // Копируем иконку
+            var newTab = newWindow.TabViewManager.CreateNewTab(savedHeader?.ToString() ?? "Tab");
             newTab.IconSource = savedIconSource;
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: copied icon source to new tab");
 
-            // Передаём содержимое
             if (sourceContent != null)
-            {
-                Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: transferring existing content to new window");
                 newWindow.TabViewManager.TransferContentWithUIElement(sourceContent, newTab);
-                Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: content transferred");
-            }
             else
             {
-                Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: sourceContent is null, creating new Frame");
                 var frame = new Frame();
                 frame.Navigate(typeof(rootPage), null);
                 newWindow.TabViewManager.TransferContentWithUIElement(frame, newTab);
-                Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: new Frame created and transferred");
             }
 
-            // Добавляем вкладку в новое окно
             newWindow.MainTabsView.TabItems.Add(newTab);
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: newTab added to new window, TabItems.Count={newWindow.MainTabsView.TabItems.Count}");
-
-            // Выводим вкладки нового окна
-            for (int i = 0; i < newWindow.MainTabsView.TabItems.Count; i++)
-            {
-                var tab = newWindow.MainTabsView.TabItems[i] as TabViewItem;
-                Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: New window tab {i}: Header='{tab?.Header}'");
-            }
-
             newWindow.TabViewManager._tabsView.SelectedItem = newTab;
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: newTab selected in new window");
 
             await Task.Delay(50);
-            Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside: activating new window");
             newWindow.Activate();
 
             Debug.WriteLine($"[TabViewManager] TabsView_TabDroppedOutside END");
@@ -281,117 +1956,93 @@ namespace ufm
             Debug.WriteLine($"[TabViewManager] TransferContentWithUIElement END: _tabContentMap.Count={_tabContentMap.Count}");
         }
 
-        public int GetTabContentMapCount()
-        {
-            return _tabContentMap.Count;
-        }
+        public int GetTabContentMapCount() => _tabContentMap.Count;
 
         private void TabsView_TabStripDragOver(object sender, DragEventArgs e)
         {
             Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver START");
-            bool hasKey = e.DataView.Properties.ContainsKey(DataIdentifier);
-            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver: DataIdentifier exists={hasKey}");
+            bool hasKey = e.DataView.Properties.ContainsKey(TabIdKey);
             if (hasKey)
-            {
                 e.AcceptedOperation = DataPackageOperation.Move;
-                Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver: AcceptedOperation set to Move");
-            }
-            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver END");
+            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDragOver END, Accepted={hasKey}");
         }
 
         private async void TabsView_TabStripDrop(object sender, DragEventArgs e)
         {
             Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop START");
 
-            if (!e.DataView.Properties.TryGetValue(DataIdentifier, out object obj))
+            if (!e.DataView.Properties.TryGetValue(TabIdKey, out object idObj))
             {
-                Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: DataIdentifier not found, exiting");
+                Debug.WriteLine($"[TabViewManager] TabId not found in DataPackage, exiting");
                 return;
             }
-            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: DataIdentifier found, obj={obj != null}");
+            string draggedTabId = idObj.ToString();
+            Debug.WriteLine($"[TabViewManager] TabId={draggedTabId}");
 
             var destinationTabView = sender as TabView;
-            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: destinationTabView={destinationTabView != null}");
+            if (destinationTabView == null) return;
 
-            var index = -1;
+            int insertIndex = -1;
             for (int i = 0; i < destinationTabView.TabItems.Count; i++)
             {
                 var item = destinationTabView.ContainerFromIndex(i) as TabViewItem;
                 if (item != null && e.GetPosition(item).X - item.ActualWidth < 0)
                 {
-                    index = i;
-                    Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: index found at {i}");
+                    insertIndex = i;
                     break;
                 }
             }
-            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: final index={index}");
 
-            object header = null;
             TabViewItem sourceTab = null;
-            var element = (obj as UIElement);
-            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: element={element != null}");
-
-            var tcs = new TaskCompletionSource();
-
-            element.DispatcherQueue.TryEnqueue(() =>
+            foreach (TabViewItem tab in destinationTabView.TabItems)
             {
-                Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: DispatcherQueue executing");
-                sourceTab = obj as TabViewItem;
-                Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: sourceTab={sourceTab != null}, Header='{sourceTab?.Header}'");
+                if (tab.Tag?.ToString() == draggedTabId)
+                {
+                    sourceTab = tab;
+                    break;
+                }
+            }
 
-                (sourceTab.Parent as TabViewListView)?.Items.Remove(obj);
-                Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: sourceTab removed from parent");
+            if (sourceTab == null)
+            {
+                Debug.WriteLine($"[TabViewManager] sourceTab not found in current TabView, ignoring drop");
+                return;
+            }
 
-                header = sourceTab.Header;
-                Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: header='{header}'");
+            var header = sourceTab.Header;
+            var iconSource = sourceTab.IconSource;
+            var content = _tabContentMap.ContainsKey(sourceTab) ? _tabContentMap[sourceTab] : null;
 
-                tcs.SetResult();
-            });
-            await tcs.Task;
-            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: after DispatcherQueue");
+            destinationTabView.TabItems.Remove(sourceTab);
+            _tabContentMap.Remove(sourceTab);
 
             var newTab = new TabViewItem
             {
-                Header = header?.ToString(),
-                IconSource = new SymbolIconSource { Symbol = Symbol.Placeholder }
+                Header = header,
+                IconSource = iconSource,
+                Tag = Guid.NewGuid().ToString()
             };
-            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: newTab created, Header='{newTab.Header}'");
 
-            if (index < 0)
-            {
+            if (insertIndex < 0)
                 destinationTabView.TabItems.Add(newTab);
-                Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: newTab added at end");
-            }
             else
-            {
-                destinationTabView.TabItems.Insert(index, newTab);
-                Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: newTab inserted at index {index}");
-            }
+                destinationTabView.TabItems.Insert(insertIndex, newTab);
 
-            if (sourceTab != null)
-            {
-                Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: calling TransferContent");
-                TransferContent(sourceTab, newTab);
-                Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: TransferContent completed");
-            }
+            if (content != null)
+                _tabContentMap[newTab] = content;
 
             destinationTabView.SelectedItem = newTab;
-            Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop: newTab selected");
-
             Debug.WriteLine($"[TabViewManager] TabsView_TabStripDrop END");
         }
 
         public void TransferContent(TabViewItem sourceTab, TabViewItem targetTab)
         {
             Debug.WriteLine($"[TabViewManager] TransferContent START: sourceTab.Header='{sourceTab?.Header}', targetTab.Header='{targetTab?.Header}'");
-            Debug.WriteLine($"[TabViewManager] TransferContent: _tabContentMap.ContainsKey(sourceTab)={_tabContentMap.ContainsKey(sourceTab)}");
-
             if (_tabContentMap.TryGetValue(sourceTab, out var content))
             {
-                Debug.WriteLine($"[TabViewManager] TransferContent: content found, transferring");
                 _tabContentMap[targetTab] = content;
                 _tabContentMap.Remove(sourceTab);
-                Debug.WriteLine($"[TabViewManager] TransferContent: content transferred, _tabContentMap.Count={_tabContentMap.Count}");
+                Debug.WriteLine($"[TabViewManager] TransferContent: content transferred");
             }
             else
             {

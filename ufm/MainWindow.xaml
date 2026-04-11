@@ -131,14 +131,30 @@
 				</Button>
 			</StackPanel>
 
-			<TabView
+			<!--<TabView
                 x:Name="TabsView"
                 Grid.Column="4"
                 VerticalAlignment="Stretch"
                 AllowDropTabs="True"
                 CanDragTabs="True"
+				CanTearOutTabs="true"
                 CanReorderTabs="True"
                 TabWidthMode="SizeToContent">
+				<TabView.TabStripHeader>
+					<Grid x:Name="ShellTitleBarInset" Background="Transparent" />
+				</TabView.TabStripHeader>
+				<TabView.TabStripFooter>
+					<Grid x:Name="CustomDragRegion" Background="Transparent" />
+				</TabView.TabStripFooter>
+			</TabView>-->
+			<TabView
+    x:Name="TabsView"
+    Grid.Column="4"
+    VerticalAlignment="Stretch"
+    AllowDropTabs="True"
+    CanDragTabs="True"
+    CanReorderTabs="True"
+    TabWidthMode="SizeToContent">
 				<TabView.TabStripHeader>
 					<Grid x:Name="ShellTitleBarInset" Background="Transparent" />
 				</TabView.TabStripHeader>

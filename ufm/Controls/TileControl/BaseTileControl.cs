@@ -6,7 +6,6 @@ using Microsoft.UI.Xaml.Media;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Windows.Storage;
 using Windows.System;
 
 namespace ufm
@@ -186,8 +185,6 @@ namespace ufm
         // Метод обработки изменения состояния редактирования (ИСПРАВЛЕНО)
         protected void HandleIsEditingChanged(bool oldValue, bool newValue)
         {
-            Debug.WriteLine($"[BaseTileControl] HandleIsEditingChanged: {oldValue} -> {newValue}");
-
             // Получаем ViewModel из DataContext, если _viewModel уже null
             var viewModel = _viewModel ?? this.DataContext as ExplorerItemViewModel;
 
@@ -232,11 +229,8 @@ namespace ufm
         {
             try
             {
-                Debug.WriteLine($"[BaseTileControl] StartEditing called in {GetType().Name}");
-
                 if (IsEditing)
                 {
-                    Debug.WriteLine($"[BaseTileControl] Already in edit mode (IsEditing=true), skipping");
                     return;
                 }
 
@@ -244,20 +238,16 @@ namespace ufm
                 _viewModel = this.DataContext as ExplorerItemViewModel;
                 if (_viewModel == null)
                 {
-                    Debug.WriteLine($"[BaseTileControl] ViewModel is null");
                     return;
                 }
 
                 // Если ViewModel уже в режиме редактирования, но контрол нет - синхронизируем
                 if (_viewModel.IsEditing)
                 {
-                    Debug.WriteLine($"[BaseTileControl] ViewModel.IsEditing=true but control not, synchronizing");
                     _viewModel.IsEditing = false;
                 }
 
                 _originalText = _viewModel.Name;
-
-                Debug.WriteLine($"[BaseTileControl] Starting edit for: {_originalText}");
 
                 // Инициализируем временное свойство в ViewModel
                 _viewModel.NewNameForEdit = _originalText;
@@ -292,13 +282,12 @@ namespace ufm
                     {
                         editBox.Focus(FocusState.Programmatic);
                         editBox.SelectAll();
-                        Debug.WriteLine($"[BaseTileControl] Focus set to edit box");
                     }
                 });
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[BaseTileControl] Error in StartEditing: {ex.Message}");
+                Debug.WriteLine($"[BaseTileControl] Critical error in StartEditing: {ex.Message}");
                 IsEditing = false;
             }
         }
@@ -307,26 +296,22 @@ namespace ufm
         {
             try
             {
-                Debug.WriteLine($"[BaseTileControl] StopEditing called in {GetType().Name}");
-
                 if (!IsEditing) return;
 
                 string newText = GetCurrentEditBox()?.Text?.Trim() ?? "";
 
                 if (!string.IsNullOrEmpty(newText) && newText != _originalText)
                 {
-                    Debug.WriteLine($"[BaseTileControl] Saving changes: {_originalText} -> {newText}");
                     SaveChanges(newText);
                 }
                 else
                 {
-                    Debug.WriteLine($"[BaseTileControl] No changes to save");
                     FinishEditing(EditResult.Saved); // Передаем результат Saved, хотя изменений не было
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[BaseTileControl] Error in StopEditing: {ex.Message}");
+                Debug.WriteLine($"[BaseTileControl] Critical error in StopEditing: {ex.Message}");
                 FinishEditing(EditResult.Error);
             }
         }
@@ -335,11 +320,7 @@ namespace ufm
         {
             try
             {
-                Debug.WriteLine($"[BaseTileControl] CancelEditing called in {GetType().Name}");
-
                 if (!IsEditing) return;
-
-                Debug.WriteLine($"[BaseTileControl] Cancelling changes, restoring: {_originalText}");
 
                 if (_viewModel != null)
                 {
@@ -356,7 +337,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[BaseTileControl] Error in CancelEditing: {ex.Message}");
+                Debug.WriteLine($"[BaseTileControl] Critical error in CancelEditing: {ex.Message}");
                 FinishEditing(EditResult.Error);
             }
         }
@@ -385,21 +366,15 @@ namespace ufm
             {
                 if (_viewModel != null)
                 {
-                    Debug.WriteLine($"[BaseTileControl] SaveChanges called with: '{newText}'");
-
                     // Устанавливаем новое имя во временное свойство ViewModel
                     _viewModel.NewNameForEdit = newText;
 
                     // Вызываем метод для сохранения изменений
                     OnSaveChanges(newText);
 
-                    Debug.WriteLine($"[BaseTileControl] NewNameForEdit set to: '{_viewModel.NewNameForEdit}'");
-                    Debug.WriteLine($"[BaseTileControl] CanSaveEdit: {_viewModel.SaveEditCommand?.CanExecute(null)}");
-
                     // Вызываем команду сохранения
                     if (_viewModel.SaveEditCommand?.CanExecute(null) == true)
                     {
-                        Debug.WriteLine($"[BaseTileControl] SaveEditCommand can execute, calling Execute");
                         _viewModel.SaveEditCommand.Execute(null);
                         _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, async () =>
                         {
@@ -409,19 +384,17 @@ namespace ufm
                     }
                     else
                     {
-                        Debug.WriteLine($"[BaseTileControl] SaveEditCommand cannot execute.");
                         FinishEditing(EditResult.Error);
                     }
                 }
                 else
                 {
-                    Debug.WriteLine($"[BaseTileControl] ViewModel is null, cannot save changes");
                     FinishEditing(EditResult.Error);
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[BaseTileControl] Error in SaveChanges: {ex.Message}");
+                Debug.WriteLine($"[BaseTileControl] Critical error in SaveChanges: {ex.Message}");
                 FinishEditing(EditResult.Error);
             }
         }
@@ -431,8 +404,6 @@ namespace ufm
         {
             try
             {
-                Debug.WriteLine($"[BaseTileControl] FinishEditing called with result: {result}");
-
                 // Показываем обычные текстовые блоки
                 GetHorizontalTextBlock().Visibility = Visibility.Visible;
                 GetVerticalTextBlock().Visibility = Visibility.Visible;
@@ -469,7 +440,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[BaseTileControl] Error in FinishEditing: {ex.Message}");
+                Debug.WriteLine($"[BaseTileControl] Critical error in FinishEditing: {ex.Message}");
                 IsEditing = false;
                 EditCompleted?.Invoke(this, EditResult.Error);
             }
@@ -539,7 +510,6 @@ namespace ufm
         {
             if (IsEditing)
             {
-                Debug.WriteLine($"[BaseTileControl] EditTextBox_LostFocus - saving changes");
                 StopEditing();
             }
         }
@@ -548,13 +518,10 @@ namespace ufm
         {
             if (!IsEditing) return;
 
-            Debug.WriteLine($"[BaseTileControl] EditTextBox_KeyDown: {e.Key}");
-
             switch (e.Key)
             {
                 case VirtualKey.Enter:
                     e.Handled = true;
-                    Debug.WriteLine($"[BaseTileControl] Enter pressed - saving");
 
                     // Обновляем NewNameForEdit перед сохранением
                     TextBox textBox = sender as TextBox;
@@ -568,13 +535,11 @@ namespace ufm
 
                 case VirtualKey.Escape:
                     e.Handled = true;
-                    Debug.WriteLine($"[BaseTileControl] Escape pressed - cancelling");
                     CancelEditing();
                     break;
 
                 case VirtualKey.Tab:
                     e.Handled = true;
-                    Debug.WriteLine($"[BaseTileControl] Tab pressed - saving");
 
                     // Аналогично для Tab
                     TextBox tabTextBox = sender as TextBox;
@@ -596,7 +561,6 @@ namespace ufm
                 if (textBox != null)
                 {
                     _viewModel.NewNameForEdit = textBox.Text;
-                    Debug.WriteLine($"[BaseTileControl] TextChanged: NewNameForEdit = '{textBox.Text}'");
                 }
             }
         }
