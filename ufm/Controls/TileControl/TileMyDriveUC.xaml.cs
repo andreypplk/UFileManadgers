@@ -169,7 +169,7 @@ namespace ufm
                     break;
                 default:
                     // Обработка неизвестного размера
-                    Debug.WriteLine($"[TileMyDriveUc] Неизвестный размер: {Size}");
+                    //Debug.WriteLine($"[TileMyDriveUc] Неизвестный размер: {Size}");
                     break;
             }
         }

@@ -100,7 +100,7 @@ namespace ufm
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[{PanelId}] Critical error getting SingleClickOpen setting: {ex}");
+                    //Debug.WriteLine($"[{PanelId}] Critical error getting SingleClickOpen setting: {ex}");
                     return false;
                 }
             }
@@ -371,7 +371,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{PanelId}] Critical error loading MyComputer: {ex}");
+                //Debug.WriteLine($"[{PanelId}] Critical error loading MyComputer: {ex}");
             }
         }
 
@@ -457,7 +457,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{PanelId}] Critical error loading drives: {ex}");
+                //Debug.WriteLine($"[{PanelId}] Critical error loading drives: {ex}");
 
                 await this.DispatcherQueue.EnqueueAsync(() =>
                 {
@@ -506,7 +506,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{PanelId}] Critical error loading folder {folderPath}: {ex}");
+                //Debug.WriteLine($"[{PanelId}] Critical error loading folder {folderPath}: {ex}");
                 PanelManager?.GoBack();
             }
         }
@@ -567,7 +567,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{PanelId}] Critical refresh error: {ex}");
+                //Debug.WriteLine($"[{PanelId}] Critical refresh error: {ex}");
 
                 try
                 {
@@ -575,7 +575,7 @@ namespace ufm
                 }
                 catch (Exception fallbackEx)
                 {
-                    Debug.WriteLine($"[{PanelId}] Critical refresh fallback error: {fallbackEx}");
+                    //Debug.WriteLine($"[{PanelId}] Critical refresh fallback error: {fallbackEx}");
                 }
             }
         }
@@ -1454,7 +1454,7 @@ namespace ufm
             }
             else
             {
-                Debug.WriteLine($"[{PanelId}] Cannot open item: {path} - not found");
+                //Debug.WriteLine($"[{PanelId}] Cannot open item: {path} - not found");
             }
         }
 
@@ -1478,7 +1478,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[{PanelId}] Critical error opening file {filePath}: {ex.Message}");
+                //Debug.WriteLine($"[{PanelId}] Critical error opening file {filePath}: {ex.Message}");
             }
         }
 

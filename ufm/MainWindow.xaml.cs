@@ -715,7 +715,7 @@ namespace ufm
                 _backdropManager.BackdropChangeFailed += OnBackdropChangeFailed;
 
                 // TabViewManager с флагом пропуска начальной вкладки
-                TabViewManager = new TabViewManager(TabsView, ContentFrame,this, isCreatedByDragAndDrop);
+                TabViewManager = new TabViewManager(TabsView, ContentFrame, isCreatedByDragAndDrop);
                 
                 // VisibilityTogglers
                 _menuFirstVisibilityToggler = new VisibilityToggler(

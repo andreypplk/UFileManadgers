@@ -89,7 +89,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[TileMyFoldersUc] Ошибка в OnDisplayModeChanged: {ex.Message}");
+                //Debug.WriteLine($"[TileMyFoldersUc] Ошибка в OnDisplayModeChanged: {ex.Message}");
             }
         }
 
@@ -174,7 +174,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[TileMyFoldersUc] Ошибка в SetElementsVisibility: {ex.Message}");
+                //Debug.WriteLine($"[TileMyFoldersUc] Ошибка в SetElementsVisibility: {ex.Message}");
             }
         }
 

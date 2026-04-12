@@ -287,7 +287,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[BaseTileControl] Critical error in StartEditing: {ex.Message}");
+                //Debug.WriteLine($"[BaseTileControl] Critical error in StartEditing: {ex.Message}");
                 IsEditing = false;
             }
         }
@@ -311,7 +311,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[BaseTileControl] Critical error in StopEditing: {ex.Message}");
+                //Debug.WriteLine($"[BaseTileControl] Critical error in StopEditing: {ex.Message}");
                 FinishEditing(EditResult.Error);
             }
         }
@@ -337,7 +337,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[BaseTileControl] Critical error in CancelEditing: {ex.Message}");
+                //Debug.WriteLine($"[BaseTileControl] Critical error in CancelEditing: {ex.Message}");
                 FinishEditing(EditResult.Error);
             }
         }
@@ -394,7 +394,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[BaseTileControl] Critical error in SaveChanges: {ex.Message}");
+                //Debug.WriteLine($"[BaseTileControl] Critical error in SaveChanges: {ex.Message}");
                 FinishEditing(EditResult.Error);
             }
         }
@@ -440,7 +440,7 @@ namespace ufm
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[BaseTileControl] Critical error in FinishEditing: {ex.Message}");
+                //Debug.WriteLine($"[BaseTileControl] Critical error in FinishEditing: {ex.Message}");
                 IsEditing = false;
                 EditCompleted?.Invoke(this, EditResult.Error);
             }
