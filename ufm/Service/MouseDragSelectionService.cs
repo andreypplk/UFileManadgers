@@ -43,8 +43,6 @@ namespace ufm
             _dragStartPoint = new Vector2((float)startPoint.X, (float)startPoint.Y);
             _isLeftMouseButtonPressed = true;
             _isMouseMovingWithButton = false;
-
-            Debug.WriteLine("[MouseDrag] Drag started");
         }
 
         public void UpdateDrag(Point currentPoint, ListViewBase itemsControl, bool isCtrlPressed)
@@ -70,8 +68,6 @@ namespace ufm
                     itemsControl.SelectedItems.Clear();
                     itemsControl.SelectedItem = null;
                 }
-
-                Debug.WriteLine("[MouseDrag] Drag selection activated");
             }
         }
 
@@ -82,8 +78,6 @@ namespace ufm
             _isDragSelecting = false;
 
             RemoveSelectionRectangle();
-
-            Debug.WriteLine("[MouseDrag] Drag ended");
         }
 
         public void CreateSelectionRectangle(Canvas parentCanvas)

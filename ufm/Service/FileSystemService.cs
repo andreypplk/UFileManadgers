@@ -2,7 +2,6 @@
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -31,9 +30,8 @@ namespace ufm
                 {
                     return App.SettingsManager?.GetSetting<bool>("ShowNavigationBackItem", true) ?? true;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"Error getting navigation setting: {ex}");
                     return true;
                 }
             }
@@ -115,9 +113,8 @@ namespace ufm
                     if (driveItem != null)
                         items.Add(driveItem);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"Error loading drive {logicalDrive}: {ex.Message}");
                     items.Add(new ExplorerItemViewModel(history)
                     {
                         Name = logicalDrive,
@@ -181,9 +178,8 @@ namespace ufm
 
                     items.Add(fileSystemItem);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"Ошибка загрузки диска {logicalDrive}: {ex.Message}");
                     items.Add(new ExplorerItemViewModel(history)
                     {
                         Name = logicalDrive,
@@ -232,9 +228,8 @@ namespace ufm
                 var results = await Task.WhenAll(tasks);
                 items.AddRange(results);
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Ошибка загрузки подпапок: {ex.Message}");
             }
 
             return items;
@@ -267,15 +262,13 @@ namespace ufm
                             IsTreeViewNode = true
                         });
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Debug.WriteLine($"Error loading folder {folder}: {ex.Message}");
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error loading folders for tree view: {ex.Message}");
             }
 
             return items;
@@ -353,9 +346,8 @@ namespace ufm
                         IsSpecialFolderNode = true
                     });
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"Error loading system folder {folder.Name}: {ex.Message}");
                     items.Add(new ExplorerItemViewModel(history)
                     {
                         Name = folder.Name,
@@ -404,9 +396,8 @@ namespace ufm
                         IsTreeViewNode = true
                     });
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"Error loading folder {folder}: {ex.Message}");
                 }
             }
         }
@@ -433,9 +424,8 @@ namespace ufm
                         IsTreeViewNode = true
                     });
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"Error loading file {file}: {ex.Message}");
                 }
             }
         }
@@ -514,7 +504,6 @@ namespace ufm
                     item?.Dispose();
                 }
                 _panelCaches.Remove(panelId);
-                Debug.WriteLine($"Cleared cache for panel: {panelId}");
             }
         }
 
@@ -528,7 +517,6 @@ namespace ufm
                 }
             }
             _panelCaches.Clear();
-            Debug.WriteLine("Cleared all panel caches");
         }
 
         public void RefreshNavigationSettings()
@@ -539,9 +527,8 @@ namespace ufm
                 ClearAllCaches();
                 NavigationSettingsMediator.NotifySettingsChanged(showBackNavigation);
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"RefreshNavigationSettings error: {ex}");
             }
         }
 

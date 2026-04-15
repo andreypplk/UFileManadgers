@@ -98,9 +98,8 @@ namespace ufm
                 {
                     return App.SettingsManager?.GetSetting<bool>("SingleClickOpen", false) ?? false;
                 }
-                catch (Exception ex)
+                catch (Exception _)
                 {
-                    //Debug.WriteLine($"[{PanelId}] Critical error getting SingleClickOpen setting: {ex}");
                     return false;
                 }
             }
@@ -369,9 +368,8 @@ namespace ufm
                 _currentLoadedPath = "MyComputer";
                 OnNavigationChanged();
             }
-            catch (Exception ex)
+            catch (Exception _)
             {
-                //Debug.WriteLine($"[{PanelId}] Critical error loading MyComputer: {ex}");
             }
         }
 
@@ -455,10 +453,8 @@ namespace ufm
                     UpdateItemsControlLayout();
                 });
             }
-            catch (Exception ex)
+            catch (Exception _)
             {
-                //Debug.WriteLine($"[{PanelId}] Critical error loading drives: {ex}");
-
                 await this.DispatcherQueue.EnqueueAsync(() =>
                 {
                     Items.Clear();
@@ -504,9 +500,8 @@ namespace ufm
             catch (OperationCanceledException)
             {
             }
-            catch (Exception ex)
+            catch (Exception _)
             {
-                //Debug.WriteLine($"[{PanelId}] Critical error loading folder {folderPath}: {ex}");
                 PanelManager?.GoBack();
             }
         }
@@ -565,7 +560,7 @@ namespace ufm
                     await Task.Run(() => LoadInitialContent());
                 }
             }
-            catch (Exception ex)
+            catch (Exception _)
             {
                 //Debug.WriteLine($"[{PanelId}] Critical refresh error: {ex}");
 
@@ -1454,7 +1449,6 @@ namespace ufm
             }
             else
             {
-                //Debug.WriteLine($"[{PanelId}] Cannot open item: {path} - not found");
             }
         }
 
@@ -1476,9 +1470,8 @@ namespace ufm
                     process.Start();
                 });
             }
-            catch (Exception ex)
+            catch (Exception _)
             {
-                //Debug.WriteLine($"[{PanelId}] Critical error opening file {filePath}: {ex.Message}");
             }
         }
 

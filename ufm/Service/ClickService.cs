@@ -173,7 +173,6 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace ufm
@@ -249,7 +248,6 @@ namespace ufm
                 else
                 {
                     keyboardSelection.SetSingleSelection(clickedItem, itemsControl);
-                    Debug.WriteLine($"[ClickService] Single-click: {clickedItem.Name}");
 
                     // Просто уведомляем, что нужно открыть элемент
                     // Индекс уже передан через параметр clickedIndex в вызывающем методе
@@ -280,7 +278,6 @@ namespace ufm
 
                     if (isDoubleClick)
                     {
-                        Debug.WriteLine($"[ClickService] Double-click: {clickedItem.Name}");
                         _lastClickedItem = null;
                         _lastClickTime = DateTime.MinValue;
 
@@ -293,7 +290,7 @@ namespace ufm
                         _lastClickedItem = clickedItem;
                         _lastClickTime = now;
 
-                        _ = Task.Delay(500).ContinueWith(_ =>
+                        _ = Task.Delay(300).ContinueWith(_ =>
                         {
                             _dispatcherQueue.TryEnqueue(() =>
                             {

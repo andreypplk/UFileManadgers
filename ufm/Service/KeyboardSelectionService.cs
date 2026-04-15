@@ -2,8 +2,6 @@
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
 
 namespace ufm
 {
@@ -40,7 +38,6 @@ namespace ufm
             }
 
             itemsControl.ScrollIntoView(items[endIndex]);
-            Debug.WriteLine($"[KeyboardSelection] Selected range {minIndex}-{maxIndex}");
         }
 
         public void ToggleSelection(ExplorerItemViewModel item, ListViewBase itemsControl)
@@ -48,12 +45,10 @@ namespace ufm
             if (itemsControl.SelectedItems.Contains(item))
             {
                 itemsControl.SelectedItems.Remove(item);
-                Debug.WriteLine($"[KeyboardSelection] Removed: {item.Name}");
             }
             else
             {
                 itemsControl.SelectedItems.Add(item);
-                Debug.WriteLine($"[KeyboardSelection] Added: {item.Name}");
             }
         }
 
