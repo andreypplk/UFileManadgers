@@ -299,7 +299,6 @@
 //    }
 //}
 
-
 using Core_FileManagement;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -369,7 +368,7 @@ namespace ufm
                     var tile = GetContentTemplateRootFromContainer(container) as BaseTileControl;
                     if (tile != null && tile.CanEdit)
                     {
-                        tile.IsInMultiRenameMode = false; // явно сбрасываем
+                        tile.IsInMultiRenameMode = false;
                         tile.StartEditing();
                         Debug.WriteLine($"[RenameService] Rename started for: {item.Name}");
                         RenameStarted?.Invoke(this, item);
@@ -442,23 +441,32 @@ namespace ufm
                 return;
             }
 
-            if (result == EditResult.Saved)
+            switch (result)
             {
-                Debug.WriteLine($"[RenameService] {MultiRenameLogPrefix} Item saved, moving to next");
-                _multiRenamePaths.RemoveAt(_multiRenameCurrentIndex);
-                BeginRenameForCurrentMultiItem();
-            }
-            else if (result == EditResult.Cancelled)
-            {
-                // ✅ В мультирежиме Escape пропускает текущий элемент
-                Debug.WriteLine($"[RenameService] {MultiRenameLogPrefix} Item skipped by Escape, moving to next");
-                _multiRenameCurrentIndex++;
-                BeginRenameForCurrentMultiItem();
-            }
-            else // Error
-            {
-                Debug.WriteLine($"[RenameService] {MultiRenameLogPrefix} Error, finishing sequence");
-                FinishMultiRename();
+                case EditResult.Saved:
+                    Debug.WriteLine($"[RenameService] {MultiRenameLogPrefix} Item saved, moving to next");
+                    _multiRenamePaths.RemoveAt(_multiRenameCurrentIndex);
+                    BeginRenameForCurrentMultiItem();
+                    break;
+
+                case EditResult.Cancelled:
+                    // Короткое нажатие Escape - пропускаем текущий элемент
+                    Debug.WriteLine($"[RenameService] {MultiRenameLogPrefix} Item skipped by Escape, moving to next");
+                    _multiRenameCurrentIndex++;
+                    BeginRenameForCurrentMultiItem();
+                    break;
+
+                case EditResult.CancelAll:
+                    // Длительное удержание Escape - полная отмена всей последовательности
+                    Debug.WriteLine($"[RenameService] {MultiRenameLogPrefix} Multi-rename cancelled by long Escape");
+                    FinishMultiRename();
+                    break;
+
+                case EditResult.Error:
+                default:
+                    Debug.WriteLine($"[RenameService] {MultiRenameLogPrefix} Error, finishing sequence");
+                    FinishMultiRename();
+                    break;
             }
         }
 
@@ -488,7 +496,7 @@ namespace ufm
 
             if (_multiRenameCurrentIndex >= _multiRenamePaths.Count)
             {
-                Debug.WriteLine($"[RenameService] {MultiRenameLogPrefix} Completed all {_multiRenamePaths.Count} items");
+                Debug.WriteLine($"[RenameService] {MultiRenameLogPrefix} Completed all items");
                 FinishMultiRename();
                 return;
             }
@@ -514,7 +522,7 @@ namespace ufm
                 var tile = GetContentTemplateRootFromContainer(container) as BaseTileControl;
                 if (tile != null)
                 {
-                    tile.IsInMultiRenameMode = true;   // ✅ Устанавливаем флаг мультирежима
+                    tile.IsInMultiRenameMode = true;
                     Debug.WriteLine($"[RenameService] {MultiRenameLogPrefix} Starting rename for [{_multiRenameCurrentIndex}]: {item.Name}");
                     tile.StartEditing();
                     RenameStarted?.Invoke(this, item);

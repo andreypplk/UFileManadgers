@@ -1134,7 +1134,6 @@
 //    }
 //}
 
-
 using Core_FileManagement;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -1148,7 +1147,13 @@ using Windows.System;
 namespace ufm
 {
     // Результат редактирования для множественного переименования
-    public enum EditResult { Saved, Cancelled, Error }
+    public enum EditResult
+    {
+        Saved,
+        Cancelled,
+        Error,
+        CancelAll      // новое значение: полная отмена мультипереименования
+    }
 
     public abstract partial class BaseTileControl : UserControl
     {
@@ -1218,7 +1223,7 @@ namespace ufm
         // Событие для уведомления о начале/окончании редактирования
         public event EventHandler<bool> EditStateChanged;
 
-        // НОВОЕ: Событие для уведомления о результате редактирования (для множественного переименования)
+        // Событие для уведомления о результате редактирования (для множественного переименования)
         public event EventHandler<EditResult> EditCompleted;
 
         // Поля для редактирования
@@ -1226,7 +1231,11 @@ namespace ufm
         private ExplorerItemViewModel _viewModel;
         private bool _isInEditMode = false;
 
-        // ✅ Новое свойство для отслеживания мультирежима
+        // Таймер и флаг для обработки длительного нажатия Escape
+        private DispatcherTimer _escapeHoldTimer;
+        private bool _escapeKeyPressed = false;
+
+        // Свойство для определения, что плитка участвует в мультипереименовании
         public bool IsInMultiRenameMode { get; set; } = false;
 
         // Свойство Size
@@ -1322,7 +1331,7 @@ namespace ufm
             }
         }
 
-        // Метод обработки изменения состояния редактирования (ИСПРАВЛЕНО)
+        // Метод обработки изменения состояния редактирования
         protected void HandleIsEditingChanged(bool oldValue, bool newValue)
         {
             // Получаем ViewModel из DataContext, если _viewModel уже null
@@ -1482,6 +1491,21 @@ namespace ufm
             }
         }
 
+        // Полная отмена мультипереименования (вызывается при длительном удержании Escape)
+        public void CancelAllMultiRename()
+        {
+            if (!IsEditing) return;
+
+            if (_viewModel != null)
+            {
+                _viewModel.Name = _originalText;
+                _viewModel.NewNameForEdit = _originalText;
+                _viewModel.CancelEdit();
+            }
+
+            FinishEditing(EditResult.CancelAll);
+        }
+
         public virtual bool CanEdit => false;
 
         // Получение текущего TextBox в зависимости от DisplayMode
@@ -1539,7 +1563,7 @@ namespace ufm
             }
         }
 
-        // ИСПРАВЛЕННЫЙ МЕТОД FinishEditing с параметром результата
+        // Метод завершения редактирования с указанием результата
         private void FinishEditing(EditResult result)
         {
             try
@@ -1636,6 +1660,22 @@ namespace ufm
         {
             this.DefaultStyleKey = typeof(BaseTileControl);
             UpdateSize(); // Инициализация размеров при создании
+
+            // Инициализация таймера для длительного нажатия Escape
+            _escapeHoldTimer = new DispatcherTimer();
+            _escapeHoldTimer.Interval = TimeSpan.FromSeconds(2);
+            _escapeHoldTimer.Tick += EscapeHoldTimer_Tick;
+        }
+
+        private void EscapeHoldTimer_Tick(object sender, object e)
+        {
+            _escapeHoldTimer.Stop();
+            _escapeKeyPressed = false;
+
+            if (IsEditing && IsInMultiRenameMode)
+            {
+                CancelAllMultiRename();
+            }
         }
 
         // Переопределение метода применения шаблона
@@ -1645,11 +1685,7 @@ namespace ufm
             UpdateSize(); // Гарантируем обновление после применения шаблона
         }
 
-        // ИСПРАВЛЕНО: УДАЛЕН обработчик LostFocus, который завершал редактирование при потере фокуса.
-        // Теперь редактирование не прерывается при клике вне поля, нажатии Tab или стрелок.
-        // (Метод EditTextBox_LostFocus удалён полностью)
-
-        // ИСПРАВЛЕНО: Модифицирован обработчик KeyDown – убрана обработка Tab, стрелки блокируют всплытие.
+        // Обработчик KeyDown для TextBox
         protected void EditTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (!IsEditing) return;
@@ -1659,7 +1695,6 @@ namespace ufm
                 case VirtualKey.Enter:
                     e.Handled = true;
 
-                    // Обновляем NewNameForEdit перед сохранением
                     TextBox textBox = sender as TextBox;
                     if (textBox != null && _viewModel != null)
                     {
@@ -1671,7 +1706,17 @@ namespace ufm
 
                 case VirtualKey.Escape:
                     e.Handled = true;
-                    CancelEditing();
+
+                    if (IsInMultiRenameMode)
+                    {
+                        // Запускаем таймер для определения длительного удержания
+                        _escapeKeyPressed = true;
+                        _escapeHoldTimer.Start();
+                    }
+                    else
+                    {
+                        CancelEditing();
+                    }
                     break;
 
                 // Блокируем всплытие стрелок, чтобы родительский ItemsControl не перехватывал навигацию
@@ -1681,15 +1726,26 @@ namespace ufm
                 case VirtualKey.Right:
                     e.Handled = true;
                     break;
-
-                    // Tab больше не обрабатывается – оставляем без e.Handled, если нужен переход фокуса,
-                    // но в текущей реализации фокус не уходит из-за отсутствия обработчика LostFocus.
             }
         }
 
-        // ИСПРАВЛЕНО: Метод EditTextBox_LostFocus удалён. Если он был подключён в наследниках,
-        // необходимо убрать подписку в XAML или коде наследников.
-        // Теперь потеря фокуса не вызывает завершения редактирования.
+        // Обработчик KeyUp для TextBox (необходимо подписать в наследниках)
+        protected void EditTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (!IsEditing) return;
+
+            if (e.Key == VirtualKey.Escape && _escapeKeyPressed)
+            {
+                _escapeHoldTimer.Stop();
+                _escapeKeyPressed = false;
+
+                // Если таймер не успел сработать — обычное короткое нажатие
+                if (IsInMultiRenameMode)
+                {
+                    CancelEditing(); // пропуск текущего элемента
+                }
+            }
+        }
 
         protected void EditTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
