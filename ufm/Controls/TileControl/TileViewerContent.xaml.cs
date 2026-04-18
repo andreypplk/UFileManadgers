@@ -98,7 +98,7 @@ namespace ufm
                 {
                     return App.SettingsManager?.GetSetting<bool>("SingleClickOpen", false) ?? false;
                 }
-                catch (Exception _)
+                catch 
                 {
                     return false;
                 }
@@ -368,7 +368,7 @@ namespace ufm
                 _currentLoadedPath = "MyComputer";
                 OnNavigationChanged();
             }
-            catch (Exception _)
+            catch
             {
             }
         }
@@ -453,7 +453,7 @@ namespace ufm
                     UpdateItemsControlLayout();
                 });
             }
-            catch (Exception _)
+            catch 
             {
                 await this.DispatcherQueue.EnqueueAsync(() =>
                 {
@@ -500,7 +500,7 @@ namespace ufm
             catch (OperationCanceledException)
             {
             }
-            catch (Exception _)
+            catch
             {
                 PanelManager?.GoBack();
             }
@@ -560,7 +560,7 @@ namespace ufm
                     await Task.Run(() => LoadInitialContent());
                 }
             }
-            catch (Exception _)
+            catch 
             {
                 //Debug.WriteLine($"[{PanelId}] Critical refresh error: {ex}");
 
@@ -568,7 +568,7 @@ namespace ufm
                 {
                     await DispatcherQueue.EnqueueAsync(() => LoadInitialContent());
                 }
-                catch (Exception fallbackEx)
+                catch 
                 {
                     //Debug.WriteLine($"[{PanelId}] Critical refresh fallback error: {fallbackEx}");
                 }
@@ -1470,7 +1470,7 @@ namespace ufm
                     process.Start();
                 });
             }
-            catch (Exception _)
+            catch
             {
             }
         }

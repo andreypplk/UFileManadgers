@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -42,14 +41,12 @@ namespace ufm
 
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"[VisibilityToggler] Ошибка: {ex}");
                 return false;
             }
         }
 
-        // Добавляем в класс VisibilityToggler
         public bool SetVisibility(Visibility visibility)
         {
             try
@@ -60,9 +57,8 @@ namespace ufm
                 element.Visibility = visibility;
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"[SetVisibility] Ошибка: {ex}");
                 return false;
             }
         }
@@ -79,51 +75,40 @@ namespace ufm
             {
                 return FindTargetElement()?.Visibility;
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"[VisibilityToggler] Ошибка: {ex}");
                 return null;
             }
         }
 
         private UIElement FindTargetElement()
         {
-            // 1. Проверяем контейнерную страницу
             if (_rootFrame.Content?.GetType().Name != _containerPageName)
             {
-                Debug.WriteLine($"[VisibilityToggler] Ожидалась страница '{_containerPageName}', получена '{_rootFrame.Content?.GetType().Name}'");
                 return null;
             }
 
             if (!(_rootFrame.Content is FrameworkElement containerPage))
                 return null;
 
-            // 2. Ищем Frame (комбинированный поиск)
             var frame = containerPage.FindName(_frameName) as Frame
                        ?? FindVisualChild<Frame>(containerPage, _frameName);
 
             if (frame == null)
             {
-                Debug.WriteLine($"[VisibilityToggler] Фрейм '{_frameName}' не найден");
                 return null;
             }
 
-            // 3. Проверяем целевую страницу
             if (frame.Content?.GetType().Name != _targetPageName)
             {
-                Debug.WriteLine($"[VisibilityToggler] Ожидалась страница '{_targetPageName}', получена '{frame.Content?.GetType().Name}'");
                 return null;
             }
 
             if (!(frame.Content is FrameworkElement targetPage))
                 return null;
 
-            // 4. Ищем целевой элемент (комбинированный поиск)
             var element = targetPage.FindName(_elementName) as UIElement
                          ?? FindVisualChild<UIElement>(targetPage, _elementName);
-
-            if (element == null)
-                Debug.WriteLine($"[VisibilityToggler] Элемент '{_elementName}' не найден");
 
             return element;
         }

@@ -2,7 +2,6 @@
 using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -58,19 +57,15 @@ namespace ufm
             if (string.IsNullOrEmpty(targetPanelId) || !_panelHistories.ContainsKey(targetPanelId))
                 return;
 
-            // ПРОВЕРКА НА ДУБЛИКАТ - не добавляем тот же путь
             var currentPath = _panelHistories[targetPanelId].Current.DirectoryPath;
             if (currentPath == path)
             {
-                Debug.WriteLine($"NavigationManager.NavigateTo: путь не изменился ({path}), пропускаем");
                 return;
             }
 
-            // Получаем отображаемое имя
             string displayName = GetDisplayName(path);
 
             _panelHistories[targetPanelId].Add(path, displayName);
-            // НЕ вызываем OnNavigationChanged здесь - он вызовется автоматически через HistoryChanged
         }
 
         public bool CanGoBack(string panelId)
@@ -98,11 +93,6 @@ namespace ufm
             if (_panelHistories[targetPanelId].CanMoveBack)
             {
                 _panelHistories[targetPanelId].MoveBack();
-                // OnNavigationChanged вызовется автоматически через HistoryChanged
-            }
-            else
-            {
-                Debug.WriteLine($"NavigationManager.GoBack: невозможно вернуться назад для панели {targetPanelId}");
             }
         }
 
@@ -115,11 +105,6 @@ namespace ufm
             if (_panelHistories[targetPanelId].CanMoveForward)
             {
                 _panelHistories[targetPanelId].MoveForward();
-                // OnNavigationChanged вызовется автоматически через HistoryChanged
-            }
-            else
-            {
-                Debug.WriteLine($"NavigationManager.GoForward: невозможно перейти вперед для панели {targetPanelId}");
             }
         }
 
@@ -150,16 +135,12 @@ namespace ufm
             if (string.IsNullOrEmpty(targetPanelId) || !_panelHistories.ContainsKey(targetPanelId))
                 return;
 
-            // Сохраняем текущий путь перед очисткой
             var currentPath = _panelHistories[targetPanelId].Current.DirectoryPath;
             var currentName = _panelHistories[targetPanelId].Current.DirectoryPathName;
 
-            // Создаем новую историю с текущим путем
             _panelHistories[targetPanelId].Dispose();
             _panelHistories[targetPanelId] = new DirectoryHistory(currentPath, currentName);
             _panelHistories[targetPanelId].HistoryChanged += (s, e) => OnHistoryChanged(targetPanelId);
-
-            Debug.WriteLine($"NavigationManager.ClearHistory: история очищена для панели {targetPanelId}");
         }
 
         private string GetDisplayName(string path)
@@ -167,18 +148,15 @@ namespace ufm
             if (string.IsNullOrEmpty(path))
                 return "Неизвестный путь";
 
-            // Специальные пути
             if (path == "MyComputer")
                 return "Мой Компьютер";
 
             if (path == "SpecialFolders")
                 return "Специальные папки";
 
-            // Диски (C:\, D:\ и т.д.)
             if (path.Length == 3 && path.EndsWith(":\\") && char.IsLetter(path[0]))
                 return path;
 
-            // Папки и файлы
             try
             {
                 if (Directory.Exists(path))
@@ -196,9 +174,8 @@ namespace ufm
                     return Path.GetFileName(path) ?? path;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"NavigationManager.GetDisplayName: ошибка получения имени для {path}: {ex.Message}");
                 return Path.GetFileName(path) ?? path;
             }
         }
@@ -218,8 +195,6 @@ namespace ufm
             {
                 try
                 {
-                    Debug.WriteLine($"NavigationManager.OnNavigationChanged: Panel={panelId}, Path={path}, Action={action}");
-
                     NavigationChanged?.Invoke(this, new NavigationEventArgs
                     {
                         PanelId = panelId,
@@ -227,9 +202,8 @@ namespace ufm
                         Action = action
                     });
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"NavigationManager.OnNavigationChanged: ошибка вызова события: {ex.Message}");
                 }
             });
         }
@@ -244,7 +218,6 @@ namespace ufm
             {
                 if (disposing)
                 {
-                    // Освобождаем управляемые ресурсы
                     foreach (var history in _panelHistories.Values)
                     {
                         history?.Dispose();

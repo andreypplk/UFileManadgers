@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -42,15 +41,12 @@ namespace ufm
 
         public static void Initialize()
         {
-            // Загружаем динамические темы
             LoadDynamicThemesAsync().ConfigureAwait(false);
 
-            // Пробуем получить из SettingsManager
             if (App.SettingsManager?.GetSetting<string>(SelectedCustomThemeKey) is string savedTheme)
             {
                 ApplySavedTheme(savedTheme);
             }
-            // Fallback на LocalSettings
             else if (ApplicationData.Current.LocalSettings.Values.TryGetValue(SelectedCustomThemeKey, out var localTheme))
             {
                 ApplySavedTheme(localTheme.ToString());
@@ -61,13 +57,11 @@ namespace ufm
         {
             if (string.IsNullOrEmpty(themeStr)) return;
 
-            // Сначала проверяем встроенные темы
             if (Enum.TryParse(themeStr, out CustomThemeType theme))
             {
                 CurrentCustomTheme = theme;
                 ApplyCustomTheme(theme);
             }
-            // Затем проверяем динамические темы
             else if (_dynamicThemes.ContainsKey(themeStr))
             {
                 ApplyDynamicTheme(themeStr);
@@ -94,23 +88,16 @@ namespace ufm
                             string displayName = await GetThemeDisplayNameAsync(filePath);
                             _dynamicThemes[themeName] = displayName;
 
-                            // Загружаем ResourceDictionary
                             await LoadThemeDictionaryAsync(themeName, filePath);
-
-                            Debug.WriteLine($"Found dynamic theme: {themeName} -> {displayName}");
                         }
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Debug.WriteLine($"Error processing theme file {filePath}: {ex}");
                     }
                 }
-
-                Debug.WriteLine($"Loaded {_dynamicThemes.Count} dynamic themes");
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error loading dynamic themes: {ex}");
             }
         }
 
@@ -118,29 +105,19 @@ namespace ufm
         {
             try
             {
-                // Читаем XAML содержимое
                 var xamlContent = await File.ReadAllTextAsync(filePath);
 
-                // Используем улучшенный парсинг
                 var themeDictionary = ParseXamlToResourceDictionary(xamlContent);
 
                 if (themeDictionary != null)
                 {
                     _loadedThemeDictionaries[themeName] = themeDictionary;
 
-                    // Добавляем в ThemeDictionaries приложения
                     Application.Current.Resources.ThemeDictionaries[themeName] = themeDictionary;
-
-                    Debug.WriteLine($"Successfully loaded theme dictionary for: {themeName} with {themeDictionary.Count} resources");
-                }
-                else
-                {
-                    Debug.WriteLine($"Failed to load theme dictionary for: {themeName}");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error loading theme dictionary {themeName}: {ex}");
             }
         }
 
@@ -150,25 +127,20 @@ namespace ufm
             {
                 var dictionary = new ResourceDictionary();
 
-                // Удаляем комментарии из XAML
                 xamlContent = RemoveComments(xamlContent);
 
-                // Парсим все элементы, а не только цвета и строки
                 ParseAllResourcesFromXaml(dictionary, xamlContent);
 
-                Debug.WriteLine($"Parsed {dictionary.Count} resources from XAML");
                 return dictionary;
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error parsing XAML: {ex}");
                 return null;
             }
         }
 
         private static string RemoveComments(string xamlContent)
         {
-            // Удаляем XML комментарии <!-- -->
             return Regex.Replace(xamlContent, @"<!--.*?-->", "", RegexOptions.Singleline);
         }
 
@@ -176,7 +148,6 @@ namespace ufm
         {
             try
             {
-                // Упрощенный парсинг - ищем все элементы между тегами ResourceDictionary
                 int startIndex = xamlContent.IndexOf("<ResourceDictionary");
                 if (startIndex == -1) return;
 
@@ -187,21 +158,13 @@ namespace ufm
 
                 string content = xamlContent.Substring(startIndex, endIndex - startIndex);
 
-                // Парсим цвета
                 ParseColorsFromXaml(dictionary, content);
-
-                // Парсим SolidColorBrush
                 ParseBrushesFromXaml(dictionary, content);
-
-                // Парсим строки
                 ParseStringsFromXaml(dictionary, content);
-
-                // Парсим другие типы ресурсов
                 ParseOtherResourcesFromXaml(dictionary, content);
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error in ParseAllResourcesFromXaml: {ex}");
             }
         }
 
@@ -209,7 +172,6 @@ namespace ufm
         {
             try
             {
-                // Паттерн для SolidColorBrush с атрибутом Color
                 var pattern = @"<SolidColorBrush\s+x:Key=""([^""]+)""\s+Color=""([^""]+)""\s*/>";
                 var matches = Regex.Matches(xamlContent, pattern);
 
@@ -223,12 +185,10 @@ namespace ufm
                         if (TryParseColor(colorValue, out Color color))
                         {
                             dictionary[key] = new SolidColorBrush(color);
-                            Debug.WriteLine($"Added SolidColorBrush: {key} = {colorValue}");
                         }
                     }
                 }
 
-                // Паттерн для SolidColorBrush с содержимым Color
                 pattern = @"<SolidColorBrush\s+x:Key=""([^""]+)"">\s*<SolidColorBrush\.Color>\s*<Color>([^<]+)</Color>\s*</SolidColorBrush\.Color>\s*</SolidColorBrush>";
                 matches = Regex.Matches(xamlContent, pattern, RegexOptions.Singleline);
 
@@ -242,14 +202,12 @@ namespace ufm
                         if (TryParseColor(colorValue, out Color color))
                         {
                             dictionary[key] = new SolidColorBrush(color);
-                            Debug.WriteLine($"Added SolidColorBrush (nested): {key} = {colorValue}");
                         }
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error parsing brushes: {ex}");
             }
         }
 
@@ -257,7 +215,6 @@ namespace ufm
         {
             try
             {
-                // Ищем элементы Color с разными пространствами имен
                 var colorPatterns = new[]
                 {
                     @"<ui:Color\s+x:Key=""([^""]+)"">([^<]+)</ui:Color>",
@@ -281,15 +238,13 @@ namespace ufm
                             if (TryParseColor(colorValue, out Color color))
                             {
                                 dictionary[key] = color;
-                                Debug.WriteLine($"Added color: {key} = {colorValue}");
                             }
                         }
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error parsing colors: {ex}");
             }
         }
 
@@ -307,13 +262,11 @@ namespace ufm
                         string key = match.Groups[1].Value;
                         string value = match.Groups[2].Value.Trim();
                         dictionary[key] = value;
-                        Debug.WriteLine($"Added string: {key} = {value}");
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error parsing strings: {ex}");
             }
         }
 
@@ -321,7 +274,6 @@ namespace ufm
         {
             try
             {
-                // Парсим Thickness
                 var thicknessPattern = @"<Thickness\s+x:Key=""([^""]+)"">([^<]+)</Thickness>";
                 var matches = Regex.Matches(xamlContent, thicknessPattern);
 
@@ -336,16 +288,13 @@ namespace ufm
                         {
                             var thickness = ParseThickness(value);
                             dictionary[key] = thickness;
-                            Debug.WriteLine($"Added Thickness: {key} = {value}");
                         }
-                        catch (Exception ex)
+                        catch
                         {
-                            Debug.WriteLine($"Error parsing Thickness {value}: {ex}");
                         }
                     }
                 }
 
-                // Парсим CornerRadius
                 var cornerRadiusPattern = @"<CornerRadius\s+x:Key=""([^""]+)"">([^<]+)</CornerRadius>";
                 matches = Regex.Matches(xamlContent, cornerRadiusPattern);
 
@@ -360,18 +309,15 @@ namespace ufm
                         {
                             var cornerRadius = ParseCornerRadius(value);
                             dictionary[key] = cornerRadius;
-                            Debug.WriteLine($"Added CornerRadius: {key} = {value}");
                         }
-                        catch (Exception ex)
+                        catch
                         {
-                            Debug.WriteLine($"Error parsing CornerRadius {value}: {ex}");
                         }
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error parsing other resources: {ex}");
             }
         }
 
@@ -408,7 +354,6 @@ namespace ufm
 
                 colorString = colorString.Trim();
 
-                // Если цвет в формате "#AARRGGBB" или "#RRGGBB"
                 if (colorString.StartsWith("#"))
                 {
                     colorString = colorString.Replace("#", "");
@@ -429,7 +374,6 @@ namespace ufm
                         return true;
                     }
                 }
-                // Если цвет по имени
                 else
                 {
                     var colorProperty = typeof(Colors).GetProperty(colorString);
@@ -451,7 +395,6 @@ namespace ufm
 
             try
             {
-                // Способ 1: Ищем в папке исполняемого файла
                 string exeDir = AppContext.BaseDirectory;
                 string themesPath = Path.Combine(exeDir, "Themes");
 
@@ -459,19 +402,12 @@ namespace ufm
                 {
                     var files = Directory.GetFiles(themesPath, "*.xaml");
                     themeFiles.AddRange(files);
-                    Debug.WriteLine($"Found {files.Length} theme files in: {themesPath}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Themes directory not found: {themesPath}");
                 }
 
-                // Способ 2: Ищем в корне проекта (для разработки)
                 if (themeFiles.Count == 0)
                 {
                     try
                     {
-                        // Поднимаемся на несколько уровней вверх для поиска в корне проекта
                         var dir = new DirectoryInfo(exeDir);
                         for (int i = 0; i < 3; i++)
                         {
@@ -483,20 +419,17 @@ namespace ufm
                             {
                                 var files = Directory.GetFiles(themesPath, "*.xaml");
                                 themeFiles.AddRange(files);
-                                Debug.WriteLine($"Found {files.Length} theme files in project: {themesPath}");
                                 break;
                             }
                         }
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Debug.WriteLine($"Error searching in project root: {ex}");
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error in GetThemeFilesAsync: {ex}");
             }
 
             return Task.FromResult(themeFiles);
@@ -513,11 +446,9 @@ namespace ufm
 
             string fileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
 
-            // Проверяем, является ли файл встроенной темой
             bool isBuiltInTheme = builtInThemes.Any(theme =>
                 fileNameWithoutExt.Equals(theme, StringComparison.OrdinalIgnoreCase));
 
-            // Исключаем файлы ресурсов (содержащие "Resources" в названии)
             bool isResourceFile = fileNameWithoutExt.Contains("Resources", StringComparison.OrdinalIgnoreCase);
 
             return isBuiltInTheme || isResourceFile;
@@ -527,28 +458,13 @@ namespace ufm
         {
             try
             {
-                Debug.WriteLine($"=== Reading theme file: {filePath} ===");
-
-                // Проверяем существует ли файл
                 if (!File.Exists(filePath))
                 {
-                    Debug.WriteLine($"File does not exist: {filePath}");
                     return GetFallbackName(filePath);
                 }
 
                 var content = await File.ReadAllTextAsync(filePath);
-                Debug.WriteLine($"File content length: {content.Length} chars");
 
-                // Логируем первые 200 символов для отладки
-                if (content.Length > 0)
-                {
-                    string preview = content.Length > 200 ? content.Substring(0, 300) + "..." : content;
-                    Debug.WriteLine($"File preview: {preview}");
-                }
-
-                // Ищем ThemeDisplayName разными способами
-
-                // Способ 1: Регулярное выражение
                 var pattern = @"<x:String\s+x:Key=""ThemeDisplayName""[^>]*>(.*?)</x:String>";
                 var match = Regex.Match(content, pattern, RegexOptions.Singleline);
 
@@ -557,57 +473,36 @@ namespace ufm
                     string displayName = match.Groups[1].Value.Trim();
                     if (!string.IsNullOrEmpty(displayName))
                     {
-                        Debug.WriteLine($"✓ Found ThemeDisplayName via regex: '{displayName}'");
                         return displayName;
                     }
-                    else
-                    {
-                        Debug.WriteLine("✗ ThemeDisplayName found but empty");
-                    }
-                }
-                else
-                {
-                    Debug.WriteLine("✗ ThemeDisplayName not found via regex");
                 }
 
-                // Способ 2: Простой поиск подстроки
                 if (content.Contains("ThemeDisplayName"))
                 {
-                    Debug.WriteLine("✓ Found 'ThemeDisplayName' string in content");
-
-                    // Пытаемся извлечь значение вручную
                     int keyIndex = content.IndexOf("ThemeDisplayName", StringComparison.Ordinal);
                     if (keyIndex >= 0)
                     {
-                        // Ищем следующий символ '>'
                         int valueStart = content.IndexOf('>', keyIndex);
                         if (valueStart > 0)
                         {
-                            valueStart++; // Переходим после '>'
+                            valueStart++;
                             int valueEnd = content.IndexOf('<', valueStart);
                             if (valueEnd > valueStart)
                             {
                                 string displayName = content.Substring(valueStart, valueEnd - valueStart).Trim();
                                 if (!string.IsNullOrEmpty(displayName))
                                 {
-                                    Debug.WriteLine($"✓ Found ThemeDisplayName via manual: '{displayName}'");
                                     return displayName;
                                 }
                             }
                         }
                     }
                 }
-                else
-                {
-                    Debug.WriteLine("✗ 'ThemeDisplayName' string not found in content");
-                }
 
-                // Если ничего не нашли
                 return GetFallbackName(filePath);
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"!!! Error reading theme file {filePath}: {ex}");
                 return GetFallbackName(filePath);
             }
         }
@@ -619,7 +514,6 @@ namespace ufm
             {
                 fileName = fileName.Substring(0, fileName.Length - 5);
             }
-            Debug.WriteLine($"Using fallback name: '{fileName}'");
             return fileName;
         }
 
@@ -634,23 +528,19 @@ namespace ufm
         {
             if (!_dynamicThemes.ContainsKey(themeName))
             {
-                Debug.WriteLine($"Dynamic theme not found: {themeName}");
                 return;
             }
 
             SaveThemeSetting(themeName);
             UpdateApplicationResources(themeName);
-            Debug.WriteLine($"Applied dynamic theme: {themeName}");
         }
-        
+
         private static void UpdateApplicationResources(CustomThemeType themeType)
         {
             if (Application.Current.Resources is not ResourceDictionary resources) return;
 
-            // Получаем текущую тему для сравнения
             bool wasDarkTheme = ThemeHelper.IsDarkTheme();
 
-            // Принудительно обновляем базовую тему (ВСЕГДА делаем это)
             string baseThemeKey = wasDarkTheme ? "Light" : "Dark";
             if (resources.ThemeDictionaries[baseThemeKey] is ResourceDictionary baseThemeDict)
             {
@@ -663,7 +553,6 @@ namespace ufm
                 }
             }
 
-            // Теперь применяем выбранную тему
             string themeKey = themeType switch
             {
                 CustomThemeType.Light => "Light",
@@ -678,11 +567,12 @@ namespace ufm
                 CustomThemeType.DarkGreen => "DarkGreen",
                 CustomThemeType.Blue => "Blue",
                 CustomThemeType.DarkBlue => "DarkBlue",
-                _ => Application.Current.RequestedTheme == ApplicationTheme.Dark ? "Dark" : "Light" // Для Default используем системную тему
+                _ => Application.Current.RequestedTheme == ApplicationTheme.Dark ? "Dark" : "Light"
             };
 
             ApplyThemeDictionary(resources, themeKey);
         }
+
         private static void UpdateApplicationResources(string themeName)
         {
             if (Application.Current.Resources is not ResourceDictionary resources) return;
@@ -693,35 +583,20 @@ namespace ufm
         {
             try
             {
-                Debug.WriteLine($"Applying theme: {themeKey}");
-
                 if (resources.ThemeDictionaries[themeKey] is ResourceDictionary themeDictionary)
                 {
-                    Debug.WriteLine($"Found theme dictionary with {themeDictionary.Count} resources");
-
-                    // ВАЖНО: Копируем ВСЕ ресурсы из темы в основной словарь
                     foreach (var key in themeDictionary.Keys)
                     {
                         try
                         {
                             resources[key] = themeDictionary[key];
-                            Debug.WriteLine($"Applied resource: {key} = {themeDictionary[key]}");
                         }
-                        catch (Exception ex)
+                        catch
                         {
-                            Debug.WriteLine($"Error applying resource {key}: {ex}");
                         }
                     }
-
-                    Debug.WriteLine($"Successfully applied {themeDictionary.Count} resources from {themeKey}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Theme dictionary not found for key: {themeKey}");
-                    Debug.WriteLine($"Available theme dictionaries: {string.Join(", ", resources.ThemeDictionaries.Keys)}");
                 }
 
-                // Принудительно обновляем все окна
                 foreach (var window in WindowHelper.ActiveWindows)
                 {
                     if (window.Content is FrameworkElement rootElement)
@@ -731,13 +606,12 @@ namespace ufm
                         rootElement.RequestedTheme = currentTheme;
                     }
                 }
-                //ThemeHelper.ForceThemeUpdate();
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error in ApplyThemeDictionary: {ex}");
             }
         }
+
         private static void SaveThemeSetting(string value)
         {
             bool saved = false;
@@ -748,7 +622,7 @@ namespace ufm
                     App.SettingsManager.SaveSetting(SelectedCustomThemeKey, value);
                     saved = true;
                 }
-                catch { /* Ignore if fails */ }
+                catch { }
             }
 
             if (!saved)
@@ -757,25 +631,21 @@ namespace ufm
             }
         }
 
-        // Простой метод для получения количества динамических тем
         public static int GetDynamicThemeCount()
         {
             return _dynamicThemes.Count;
         }
 
-        // Простой метод для получения имени динамической темы по индексу
         public static string GetDynamicThemeName(int index)
         {
             return _dynamicThemes.Keys.ElementAtOrDefault(index);
         }
 
-        // Простой метод для получения отображаемого имени динамической темы
         public static string GetDynamicThemeDisplayName(string themeName)
         {
             return _dynamicThemes.TryGetValue(themeName, out string displayName) ? displayName : themeName;
         }
 
-        // Метод для проверки существования динамической темы
         public static bool DynamicThemeExists(string themeName)
         {
             return _dynamicThemes.ContainsKey(themeName);

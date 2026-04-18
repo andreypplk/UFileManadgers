@@ -172,72 +172,58 @@ namespace ufm
         {
             try
             {
-                Debug.WriteLine("Applying splitter sizes...");
-
                 // Применяем размеры ко всем видимым Grid'ам
                 if (viewPage.VerticalViewGrid.Visibility == Visibility.Visible)
                 {
-                    Debug.WriteLine("Applying to VerticalViewGrid");
                     ApplyVerticalSplitterSizes(viewPage, sizes);
                 }
 
                 if (viewPage.HorizontalViewGrid.Visibility == Visibility.Visible)
                 {
-                    Debug.WriteLine("Applying to HorizontalViewGrid");
                     ApplyHorizontalSplitterSizes(viewPage, sizes);
                 }
 
                 if (viewPage.TripleVerticalViewGrid.Visibility == Visibility.Visible)
                 {
-                    Debug.WriteLine("Applying to TripleVerticalViewGrid");
                     ApplyTripleVerticalSplitterSizes(viewPage, sizes);
                 }
 
                 if (viewPage.TripleHorizontalViewGrid.Visibility == Visibility.Visible)
                 {
-                    Debug.WriteLine("Applying to TripleHorizontalViewGrid");
                     ApplyTripleHorizontalSplitterSizes(viewPage, sizes);
                 }
 
                 if (viewPage.TripleTopBottomViewGrid.Visibility == Visibility.Visible)
                 {
-                    Debug.WriteLine("Applying to TripleTopBottomViewGrid");
                     ApplyTripleTopBottomSplitterSizes(viewPage, sizes);
                 }
 
                 if (viewPage.TripleBottomTopViewGrid.Visibility == Visibility.Visible)
                 {
-                    Debug.WriteLine("Applying to TripleBottomTopViewGrid");
                     ApplyTripleBottomTopSplitterSizes(viewPage, sizes);
                 }
 
                 if (viewPage.TripleLeftRightViewGrid.Visibility == Visibility.Visible)
                 {
-                    Debug.WriteLine("Applying to TripleLeftRightViewGrid");
                     ApplyTripleLeftRightSplitterSizes(viewPage, sizes);
                 }
 
                 if (viewPage.TripleRightLeftViewGrid.Visibility == Visibility.Visible)
                 {
-                    Debug.WriteLine("Applying to TripleRightLeftViewGrid");
                     ApplyTripleRightLeftSplitterSizes(viewPage, sizes);
                 }
 
                 if (viewPage.QuadViewGrid.Visibility == Visibility.Visible)
                 {
-                    Debug.WriteLine("Applying to QuadViewGrid");
                     ApplyQuadSplitterSizes(viewPage, sizes);
                 }
 
                 // Принудительное обновление layout
                 viewPage.InvalidateArrange();
                 viewPage.UpdateLayout();
-
-                Debug.WriteLine("Splitter sizes applied successfully");
             }
-            catch (Exception ex)
+            catch 
             {
-                Debug.WriteLine($"Error applying splitter sizes: {ex.Message}");
             }
         }
 

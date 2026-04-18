@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,9 +8,7 @@ using Core_FileManagement;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using CommunityToolkit.WinUI;
 
 namespace ufm
 {
@@ -43,9 +40,8 @@ namespace ufm
                 {
                     return App.SettingsManager?.GetSetting<bool>("ExpandedTreeSelected", true) ?? true;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"Error getting ExpandedTreeSelected setting: {ex}");
                     return true;
                 }
             }
@@ -59,9 +55,8 @@ namespace ufm
                 {
                     return App.SettingsManager?.GetSetting<bool>("ExpanderNodesSFStarts", true) ?? true;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"Error getting ExpanderNodesSFStarts setting: {ex}");
                     return true;
                 }
             }
@@ -75,9 +70,8 @@ namespace ufm
                 {
                     return App.SettingsManager?.GetSetting<bool>("ExpanderNodesMyPcStarts", true) ?? true;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"Error getting ExpanderNodesMyPcStarts setting: {ex}");
                     return true;
                 }
             }
@@ -137,9 +131,8 @@ namespace ufm
                         _savedExpandedPaths.Add("MyComputer");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"LoadDefaultExpandedState error: {ex.Message}");
                 if (ExpanderNodesMyPcStartsSetting)
                     _savedExpandedPaths.Add("MyComputer");
             }
@@ -157,9 +150,8 @@ namespace ufm
                 var pathsList = _savedExpandedPaths.ToList();
                 App.SettingsManager?.SaveSetting("TreePanelExpandedPaths", pathsList);
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Unloaded save error: {ex.Message}");
             }
         }
 
@@ -197,9 +189,8 @@ namespace ufm
                     _history?.Dispose();
                     _historySpF?.Dispose();
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"Error in Dispose: {ex.Message}");
                 }
                 finally
                 {
@@ -336,9 +327,8 @@ namespace ufm
                         App.SettingsManager.SaveSetting("SelectedSizeIconTreeView", _selectedSize);
                         saved = true;
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Debug.WriteLine($"SettingsManager error: {ex.Message}");
                     }
                 }
 
@@ -349,9 +339,8 @@ namespace ufm
                         var localSettings = ApplicationData.Current.LocalSettings.Values;
                         localSettings["SelectedSizeIconTreeView"] = _selectedSize;
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Debug.WriteLine($"LocalSettings error: {ex.Message}");
                     }
                 }
 
@@ -420,38 +409,11 @@ namespace ufm
                             driveNode.Children.Add(node);
                         }
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Debug.WriteLine($"Preload error for {driveItem.FilePath}: {ex.Message}");
                     }
                 }
             }
-        }
-
-        private void ExpandMyComputerNode(TreeViewNode myComputerNode)
-        {
-            try
-            {
-                if (myComputerNode.HasUnrealizedChildren || myComputerNode.Children.Count == 0)
-                {
-                    myComputerNode.HasUnrealizedChildren = false;
-                    LoadDrivesSync(myComputerNode);
-
-                    if (ExpanderNodesMyPcStartsSetting)
-                    {
-                        myComputerNode.IsExpanded = true;
-                    }
-                    else
-                    {
-                        myComputerNode.IsExpanded = false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"ExpandMyComputerNode error: {ex.Message}");
-            }
-            UpdateTileSize(myComputerNode);
         }
 
         private async void TreeView_OnExpanding(TreeView sender, TreeViewExpandingEventArgs args)
@@ -474,9 +436,8 @@ namespace ufm
                     UpdateAllTiles();
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"TreeView_OnExpanding error: {ex.Message}");
             }
         }
 
@@ -559,37 +520,10 @@ namespace ufm
                             UpdateTileSizeSpF(node);
                         }
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Debug.WriteLine($"PreloadForSpF error for {folderItem.FilePath}: {ex.Message}");
                     }
                 }
-            }
-        }
-
-        private void ExpandSpecialFoldersNode(TreeViewNode specialFoldersNode)
-        {
-            try
-            {
-                if (specialFoldersNode.HasUnrealizedChildren || specialFoldersNode.Children.Count == 0)
-                {
-                    specialFoldersNode.HasUnrealizedChildren = false;
-
-                    if (ExpanderNodesSFStartsSetting)
-                    {
-                        specialFoldersNode.IsExpanded = true;
-                    }
-                    else
-                    {
-                        specialFoldersNode.IsExpanded = false;
-                    }
-
-                    UpdateAllTiles();
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"ExpandSpecialFoldersNode error: {ex.Message}");
             }
         }
 
@@ -615,9 +549,8 @@ namespace ufm
                     UpdateAllTiles();
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"TreeViewSpF_OnExpanding error: {ex.Message}");
             }
             finally
             {
@@ -645,9 +578,8 @@ namespace ufm
                     UpdateTileSizeSpF(node);
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"LoadHomeContentsAsync error: {ex.Message}");
             }
         }
 
@@ -692,9 +624,8 @@ namespace ufm
                     parentNode.Children.Add(driveNode);
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"LoadDrivesSync error: {ex.Message}");
             }
         }
 
@@ -715,9 +646,8 @@ namespace ufm
                     UpdateTileSize(node);
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"LoadSubfoldersAsync error: {ex.Message}");
             }
         }
 
@@ -738,9 +668,8 @@ namespace ufm
                     UpdateTileSizeSpF(node);
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"LoadSubfoldersForSpFAsync error: {ex.Message}");
             }
         }
 
@@ -812,9 +741,8 @@ namespace ufm
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"UpdateTreeViewSelection error: {ex.Message}");
             }
             finally
             {
@@ -919,9 +847,8 @@ namespace ufm
 
                 await Task.Delay(20);
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"ExpandNode error for {path}: {ex.Message}");
             }
         }
 
@@ -963,9 +890,8 @@ namespace ufm
 
                 return result.ToArray();
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"SplitPath error for '{path}': {ex.Message}");
                 return new[] { path };
             }
         }
@@ -1110,9 +1036,8 @@ namespace ufm
                     ForwardButton.IsEnabled = activeHistory?.CanMoveForward ?? false;
                     UpButton.IsEnabled = upButtonEnabled;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"UpdateNavigationButtons error: {ex.Message}");
                 }
             });
         }
@@ -1177,9 +1102,8 @@ namespace ufm
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"UpButton_Click error: {ex.Message}");
             }
         }
 

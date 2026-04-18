@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ufm
 {
@@ -18,7 +15,6 @@ namespace ufm
             {
                 _panels.Add(new WeakReference<IRefreshablePanel>(panel));
                 CleanupDeadReferences();
-                Debug.WriteLine($"[Mediator] Panel registered: {panel.PanelId}, total: {_panels.Count}");
             }
         }
 
@@ -29,14 +25,11 @@ namespace ufm
                 _panels.RemoveAll(wr =>
                     wr.TryGetTarget(out var target) && target == panel);
                 CleanupDeadReferences();
-                Debug.WriteLine($"[Mediator] Panel unregistered: {panel.PanelId}, total: {_panels.Count}");
             }
         }
 
         public static void NotifySettingsChanged(bool showBackNavigation)
         {
-            Debug.WriteLine($"[Mediator] Notifying {_panels.Count} panels about settings change: {showBackNavigation}");
-
             lock (_lock)
             {
                 foreach (var weakRef in _panels.ToList())
@@ -46,11 +39,9 @@ namespace ufm
                         try
                         {
                             panel.RefreshNavigation();
-                            Debug.WriteLine($"[Mediator] Notified panel: {panel.PanelId}");
                         }
-                        catch (Exception ex)
+                        catch
                         {
-                            Debug.WriteLine($"[Mediator] Error refreshing panel {panel.PanelId}: {ex}");
                         }
                     }
                 }

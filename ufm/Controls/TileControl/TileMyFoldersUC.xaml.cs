@@ -87,7 +87,7 @@ namespace ufm
                     ListLayout.Visibility = Visibility.Collapsed;
                 }
             }
-            catch (Exception ex)
+            catch 
             {
                 //Debug.WriteLine($"[TileMyFoldersUc] Ошибка в OnDisplayModeChanged: {ex.Message}");
             }
@@ -172,7 +172,7 @@ namespace ufm
                     AttributesText.Visibility = showAttributes ? visibility : Visibility.Collapsed;
                 }
             }
-            catch (Exception ex)
+            catch  
             {
                 //Debug.WriteLine($"[TileMyFoldersUc] Ошибка в SetElementsVisibility: {ex.Message}");
             }

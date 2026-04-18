@@ -24,8 +24,7 @@ namespace ufm
         {
             if (d is StatusBarPerformanceMetricsUC control)
             {
-                control.DataContext = e.NewValue;
-                Debug.WriteLine($"StatusBar ViewModel updated to {e.NewValue != null}");
+                control.DataContext = e.NewValue;                                                                                         
             }
         }
 
@@ -36,8 +35,7 @@ namespace ufm
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            Debug.WriteLine($"StatusBar loaded with ViewModel: {ViewModel?.GetType().Name}");
+        {                                                                                                                                                                                 
         }
     }
 }

@@ -1,10 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Storage;
 
 namespace ufm
@@ -54,7 +49,6 @@ namespace ufm
                     }
                 }
 
-                // Сохраняем в SettingsManager
                 bool saved = false;
                 if (App.SettingsManager != null)
                 {
@@ -63,16 +57,14 @@ namespace ufm
                         App.SettingsManager.SaveSetting(SelectedAppThemeKey, value.ToString());
                         saved = true;
                     }
-                    catch { /* Ignore if fails */ }
+                    catch { }
                 }
 
-                // Fallback на LocalSettings
                 if (!saved && NativeHelper.IsAppPackaged)
                 {
                     ApplicationData.Current.LocalSettings.Values[SelectedAppThemeKey] = value.ToString();
                 }
 
-                // При изменении темы обновляем пользовательские темы
                 if (CustomThemeManager.CurrentCustomTheme != CustomThemeManager.CustomThemeType.Default)
                 {
                     CustomThemeManager.ApplyCustomTheme(CustomThemeManager.CurrentCustomTheme);
@@ -82,7 +74,6 @@ namespace ufm
 
         public static void Initialize()
         {
-            // Пробуем получить из SettingsManager
             string savedTheme = null;
             if (App.SettingsManager != null)
             {
@@ -90,10 +81,9 @@ namespace ufm
                 {
                     savedTheme = App.SettingsManager.GetSetting<string>(SelectedAppThemeKey);
                 }
-                catch { /* Ignore if fails */ }
+                catch { }
             }
 
-            // Если не получили, пробуем LocalSettings
             if (string.IsNullOrEmpty(savedTheme) && NativeHelper.IsAppPackaged)
             {
                 savedTheme = ApplicationData.Current.LocalSettings.Values[SelectedAppThemeKey]?.ToString();
@@ -109,16 +99,14 @@ namespace ufm
                         return;
                     }
                 }
-                catch { /* Ignore parse errors */ }
+                catch { }
             }
 
-            // Инициализируем пользовательские темы
             CustomThemeManager.Initialize();
         }
 
         public static bool IsDarkTheme(Window window = null)
         {
-            // Если указано конкретное окно - проверяем его тему
             if (window != null && window.Content is FrameworkElement rootElement)
             {
                 if (rootElement.RequestedTheme != ElementTheme.Default)
@@ -127,7 +115,6 @@ namespace ufm
                 }
             }
 
-            // Проверяем все активные окна
             foreach (Window w in WindowHelper.ActiveWindows)
             {
                 if (w.Content is FrameworkElement element &&
@@ -137,7 +124,6 @@ namespace ufm
                 }
             }
 
-            // Если ни в одном окне тема не задана явно - используем системную
             return Application.Current.RequestedTheme == ApplicationTheme.Dark;
         }
 
@@ -145,11 +131,7 @@ namespace ufm
         {
             try
             {
-                Debug.WriteLine("ForceThemeUpdate called");
-
-                // Способ 1: Через WindowHelper.ActiveWindows
                 var windows = WindowHelper.ActiveWindows;
-                Debug.WriteLine($"Found {windows.Count} windows via ActiveWindows");
 
                 foreach (Window window in windows)
                 {
@@ -158,27 +140,22 @@ namespace ufm
                         var currentTheme = rootElement.RequestedTheme;
                         rootElement.RequestedTheme = ElementTheme.Default;
                         rootElement.RequestedTheme = currentTheme;
-                        Debug.WriteLine($"Refreshed window theme: {currentTheme}");
                     }
                 }
 
-                // Способ 2: Резервный - через Application.Current.MainWindow
                 if (windows.Count == 0)
                 {
-                    Debug.WriteLine("No windows in ActiveWindows, trying MainWindow property");
                     var mainWindow = Application.Current.GetType().GetProperty("MainWindow")?.GetValue(Application.Current) as Window;
                     if (mainWindow?.Content is FrameworkElement mainRoot)
                     {
                         var currentTheme = mainRoot.RequestedTheme;
                         mainRoot.RequestedTheme = ElementTheme.Default;
                         mainRoot.RequestedTheme = currentTheme;
-                        Debug.WriteLine($"Refreshed main window theme: {currentTheme}");
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error in ForceThemeUpdate: {ex}");
             }
         }
     }

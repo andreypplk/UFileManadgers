@@ -526,7 +526,6 @@ namespace ufm
         {
             if (panel.Content is ISupportsIconSize sizeSupport)
             {
-                Debug.WriteLine($"Setting icon size for panel: {iconSize}");
                 sizeSupport.SetIconSize(iconSize);
             }
         }
@@ -564,9 +563,8 @@ namespace ufm
                 // Восстанавливаем активную панель
                 SetActivePanel(_activePanelIndex);
             }
-            catch (Exception ex)
+            catch 
             {
-                Debug.WriteLine($"Ошибка загрузки состояний панелей: {ex.Message}");
                 ResetAllPanelStatesToDefault();
             }
         }
@@ -619,8 +617,6 @@ namespace ufm
 
             App.SettingsManager?.SaveSetting("LeftPreviewWidth", _leftPreviewWidth);
             App.SettingsManager?.SaveSetting("RightPreviewWidth", _rightPreviewWidth);
-
-            Debug.WriteLine($"Saved preview sizes: Left={_leftPreviewWidth}, Right={_rightPreviewWidth}");
         }
 
         private void SaveSplitterSizes()
@@ -653,13 +649,11 @@ namespace ufm
                     if (value <= 0)
                     {
                         App.SettingsManager.SaveSetting(key, 0);
-                        Debug.WriteLine($"Cleaned invalid setting: {key}");
                     }
                 }
             }
-            catch (Exception ex)
+            catch 
             {
-                Debug.WriteLine($"Error cleaning splitter settings: {ex.Message}");
             }
         }
 
@@ -963,9 +957,8 @@ namespace ufm
                             App.SettingsManager.SaveSetting("SelectedSizeIconViewPage", fullSizeKey);
                             saved = true;
                         }
-                        catch (Exception ex)
+                        catch 
                         {
-                            Debug.WriteLine($"Ошибка SettingsManager при сохранении размера иконок: {ex.Message}");
                         }
                     }
 
@@ -976,9 +969,8 @@ namespace ufm
                             var localSettings = ApplicationData.Current.LocalSettings.Values;
                             localSettings["SelectedSizeIconViewPage"] = fullSizeKey;
                         }
-                        catch (Exception ex)
+                        catch 
                         {
-                            Debug.WriteLine($"Ошибка LocalSettings при сохранении размера иконок: {ex.Message}");
                         }
                     }
 
@@ -1261,7 +1253,6 @@ namespace ufm
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("Refresh clicked");
             RefreshActivePanel();
         }
 
@@ -1404,7 +1395,6 @@ namespace ufm
 
         private void TileView_NavigationChanged(object sender, EventArgs e)
         {
-            Debug.WriteLine("NavigationChanged event received from TileView");
             UpdateNavigationButtons();
             SaveAllPanelStates();
         }
