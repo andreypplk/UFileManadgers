@@ -64,11 +64,9 @@ namespace Core_FileManagement
                 // Инициализация счетчиков
                 _ = _cpuCounter.NextValue();
 
-                Debug.WriteLine("[PerfMonitor] Initialized successfully");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[PerfMonitor] Initialization failed: {ex.Message}");
                 throw new InvalidOperationException("Failed to initialize performance counters", ex);
             }
         }
@@ -85,7 +83,6 @@ namespace Core_FileManagement
                 _isMonitoring = true;
 
                 Task.Run(() => MonitorPerformanceLoopAsync(_monitoringCts.Token));
-                Debug.WriteLine("[PerfMonitor] Monitoring started");
             }
         }
 
@@ -100,7 +97,6 @@ namespace Core_FileManagement
                 _monitoringCts = null;
                 _isMonitoring = false;
 
-                Debug.WriteLine("[PerfMonitor] Monitoring stopped");
             }
         }
 
@@ -142,14 +138,12 @@ namespace Core_FileManagement
                     // Ожидаемое исключение при остановке
                     break;
                 }
-                catch (Exception ex)
+                catch 
                 {
-                    Debug.WriteLine($"[PerfMonitor] Error in monitoring loop: {ex.Message}");
                     await Task.Delay(MONITORING_INTERVAL_MS, cancellationToken);
                 }
             }
 
-            Debug.WriteLine("[PerfMonitor] Monitoring loop exited");
         }
         #endregion
 
@@ -161,9 +155,8 @@ namespace Core_FileManagement
                 _currentCpuUsage = _cpuCounter.NextValue();
                 return _currentCpuUsage;
             }
-            catch (Exception ex)
+            catch 
             {
-                Debug.WriteLine($"[PerfMonitor] CPU reading error: {ex.Message}");
                 return 0;
             }
         }
@@ -177,9 +170,8 @@ namespace Core_FileManagement
                 _currentIoUsage = (read + write) / (1024 * 1024); // Convert to MB/s
                 return _currentIoUsage;
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"[PerfMonitor] IO reading error: {ex.Message}");
                 return 0;
             }
         }
@@ -192,9 +184,8 @@ namespace Core_FileManagement
                 long totalMemory = PerformanceManager.GetTotalSystemMemory();
                 return totalMemory - (long)(availableMB * 1024 * 1024);
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"[PerfMonitor] Memory reading error: {ex.Message}");
                 return 0;
             }
         }
@@ -224,7 +215,6 @@ namespace Core_FileManagement
                 _isDisposed = true;
             }
 
-            Debug.WriteLine("[PerfMonitor] Disposed");
         }
         #endregion
     }

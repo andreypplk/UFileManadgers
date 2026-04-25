@@ -16,6 +16,8 @@ namespace ufm
     {
         #region Поля и свойства
 
+        public static TreePanelPg01 Instance { get; private set; }
+
         private string _selectedSize = "Medium";
         private string _activePanelId = "MainTree";
         private readonly FileSystemService _fileSystemService;
@@ -31,6 +33,10 @@ namespace ufm
         private HashSet<string> _savedExpandedPaths = new HashSet<string>();
         private string _savedSelectedPath = null;
         private bool _isFirstLoad = true;
+
+        private HashSet<string> _specialFolderPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        public event EventHandler<string> NavigateRequested;
 
         public bool ExpandedTreeSelectedSetting
         {
@@ -77,6 +83,8 @@ namespace ufm
             }
         }
 
+        public string CurrentTileSize => _selectedSize;
+
         #endregion
 
         #region Конструктор и инициализация
@@ -84,6 +92,7 @@ namespace ufm
         public TreePanelPg01()
         {
             this.InitializeComponent();
+            Instance = this;
 
             _fileSystemService = new FileSystemService();
             _navigationManager = new NavigationManager();
@@ -194,6 +203,7 @@ namespace ufm
                 }
                 finally
                 {
+                    Instance = null;
                     GC.SuppressFinalize(this);
                     _disposed = true;
                 }
@@ -273,6 +283,7 @@ namespace ufm
                     {
                         UpdateTreeViewSelection(_activePanelId, _savedSelectedPath);
                     }
+                    ScheduleUpdateAllTiles();
                 });
             }
             else
@@ -449,6 +460,11 @@ namespace ufm
                 treeView.Expand(treeView.SelectedNode);
             else
                 treeView.Collapse(treeView.SelectedNode);
+
+            if (treeView.SelectedNode?.Content is ExplorerItemViewModel item)
+            {
+                OnNavigateRequested(item.FilePath);
+            }
         }
 
         private void TreeView_OnCollapsed(TreeView sender, TreeViewCollapsedEventArgs args)
@@ -485,6 +501,14 @@ namespace ufm
             DispatcherQueue.TryEnqueue(async () =>
             {
                 await LoadHomeContentsAsync(specialFoldersNode);
+
+                _specialFolderPaths.Clear();
+                foreach (var child in specialFoldersNode.Children)
+                {
+                    if (child.Content is ExplorerItemViewModel childItem && !string.IsNullOrEmpty(childItem.FilePath))
+                        _specialFolderPaths.Add(childItem.FilePath);
+                }
+
                 await PreloadFirstLevelForSpFAsync(specialFoldersNode);
 
                 if (ExpanderNodesSFStartsSetting)
@@ -540,6 +564,13 @@ namespace ufm
                 {
                     args.Node.HasUnrealizedChildren = false;
                     await LoadHomeContentsAsync(args.Node);
+
+                    _specialFolderPaths.Clear();
+                    foreach (var child in args.Node.Children)
+                    {
+                        if (child.Content is ExplorerItemViewModel childItem && !string.IsNullOrEmpty(childItem.FilePath))
+                            _specialFolderPaths.Add(childItem.FilePath);
+                    }
                     UpdateAllTiles();
                 }
                 else if (Directory.Exists(treeItem.FilePath) && args.Node.Children.Count == 0)
@@ -602,6 +633,11 @@ namespace ufm
                 treeViewSpF.Expand(treeViewSpF.SelectedNode);
             else
                 treeViewSpF.Collapse(treeViewSpF.SelectedNode);
+
+            if (treeViewSpF.SelectedNode?.Content is ExplorerItemViewModel item)
+            {
+                OnNavigateRequested(item.FilePath);
+            }
         }
 
         #endregion
@@ -690,6 +726,47 @@ namespace ufm
 
         #region Обновление отображения элементов
 
+        private TreeViewNode FindNodeByItem(IList<TreeViewNode> nodes, ExplorerItemViewModel targetItem)
+        {
+            if (nodes == null) return null;
+            foreach (var node in nodes)
+            {
+                if (node.Content == targetItem)
+                    return node;
+                if (node.Children.Count > 0)
+                {
+                    var found = FindNodeByItem(node.Children, targetItem);
+                    if (found != null)
+                        return found;
+                }
+            }
+            return null;
+        }
+
+        private void ScrollToSelectedItem(TreeView targetTreeView, object item)
+        {
+            if (targetTreeView == null || item == null) return;
+
+            try
+            {
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    var container = targetTreeView.ContainerFromItem(item) as TreeViewItem;
+                    if (container != null)
+                    {
+                        container.StartBringIntoView(new BringIntoViewOptions
+                        {
+                            AnimationDesired = true,
+                            VerticalAlignmentRatio = 0.5
+                        });
+                    }
+                });
+            }
+            catch
+            {
+            }
+        }
+
         private async void UpdateTreeViewSelection(string panelId, string path)
         {
             try
@@ -702,13 +779,20 @@ namespace ufm
 
                 _isNavigationChangingSelection = true;
 
-                foreach (var rootNode in targetTreeView.RootNodes)
+                if (!IsVirtualPath(path))
                 {
-                    if (rootNode?.Content is ExplorerItemViewModel rootItem)
+                    foreach (var rootNode in targetTreeView.RootNodes)
                     {
-                        if (rootItem.FilePath == "MyComputer")
+                        if (rootNode?.Content is ExplorerItemViewModel rootItem)
                         {
-                            await EnsureMyComputerExpanded(rootNode);
+                            if (rootItem.FilePath == "MyComputer")
+                            {
+                                await EnsureMyComputerExpanded(rootNode);
+                            }
+                            else if (rootItem.FilePath == "SpecialFolders")
+                            {
+                                await EnsureSpecialFoldersExpanded(rootNode);
+                            }
                         }
                     }
                 }
@@ -721,6 +805,34 @@ namespace ufm
                         targetTreeView.SelectedItem = targetItem;
                         _currentSelectedItemPath = targetItem.FilePath;
                         _activePanelId = panelId;
+                        ScrollToSelectedItem(targetTreeView, targetItem);
+                    }
+                    return;
+                }
+
+                if (panelId == "SpFTree")
+                {
+                    var targetItem = FindItemByPath(targetTreeView.RootNodes, path);
+                    if (targetItem != null)
+                    {
+                        targetTreeView.SelectedItem = targetItem;
+                        _currentSelectedItemPath = targetItem.FilePath;
+                        _activePanelId = panelId;
+
+                        var node = FindNodeByItem(targetTreeView.RootNodes, targetItem);
+                        if (node != null)
+                        {
+                            if (node.HasUnrealizedChildren || node.Children.Count == 0)
+                            {
+                                await ExpandNode(node, targetItem.FilePath, panelId);
+                            }
+                            if (!node.IsExpanded)
+                            {
+                                targetTreeView.Expand(node);
+                            }
+                        }
+
+                        ScrollToSelectedItem(targetTreeView, targetItem);
                     }
                     return;
                 }
@@ -738,6 +850,7 @@ namespace ufm
                         targetTreeView.SelectedItem = simpleItem;
                         _currentSelectedItemPath = simpleItem.FilePath;
                         _activePanelId = panelId;
+                        ScrollToSelectedItem(targetTreeView, simpleItem);
                     }
                 }
             }
@@ -748,6 +861,7 @@ namespace ufm
             {
                 _isNavigationChangingSelection = false;
                 UpdateNavigationButtons();
+                ScheduleUpdateAllTiles();
             }
         }
 
@@ -776,14 +890,27 @@ namespace ufm
                         _currentSelectedItemPath = item.FilePath;
                         _activePanelId = panelId;
 
-                        if (!node.IsExpanded && ExpandedTreeSelectedSetting)
+                        if (node.HasUnrealizedChildren || node.Children.Count == 0)
+                        {
+                            await ExpandNode(node, item.FilePath, panelId);
+                        }
+
+                        if (!node.IsExpanded)
+                        {
                             targetTreeView.Expand(node);
+                        }
+
+                        ScheduleUpdateAllTiles();
+                        ScrollToSelectedItem(targetTreeView, item);
                         return true;
                     }
                     else
                     {
                         if (!node.IsExpanded)
+                        {
                             await ExpandNode(node, item.FilePath, panelId);
+                            ScheduleUpdateAllTiles();
+                        }
 
                         if (node.Children.Count == 0)
                             await Task.Delay(10);
@@ -816,6 +943,27 @@ namespace ufm
                 if (myComputerNode.Children.Count == 0)
                 {
                     await LoadDrivesSync(myComputerNode);
+                }
+            }
+        }
+
+        private async Task EnsureSpecialFoldersExpanded(TreeViewNode specialFoldersNode)
+        {
+            if (specialFoldersNode?.Content is ExplorerItemViewModel item && item.FilePath == "SpecialFolders")
+            {
+                if (!specialFoldersNode.IsExpanded)
+                {
+                    treeViewSpF.Expand(specialFoldersNode);
+                }
+                if (specialFoldersNode.Children.Count == 0)
+                {
+                    await LoadHomeContentsAsync(specialFoldersNode);
+                    _specialFolderPaths.Clear();
+                    foreach (var child in specialFoldersNode.Children)
+                    {
+                        if (child.Content is ExplorerItemViewModel childItem && !string.IsNullOrEmpty(childItem.FilePath))
+                            _specialFolderPaths.Add(childItem.FilePath);
+                    }
                 }
             }
         }
@@ -945,6 +1093,14 @@ namespace ufm
             }
         }
 
+        private void ScheduleUpdateAllTiles()
+        {
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                UpdateAllTiles();
+            });
+        }
+
         #endregion
 
         #region Управление поиском
@@ -969,7 +1125,7 @@ namespace ufm
             return null;
         }
 
-        private bool IsVirtualPath(string path) => path == "MyComputer" || path == "SpecialFolders" || path == "..";
+        private bool IsVirtualPath(string path) => path == "MyComputer" || path == "SpecialFolders" || path == ".." || path == "Drives";
 
         private string NormalizePath(string path)
         {
@@ -1053,6 +1209,11 @@ namespace ufm
                 _activePanelId = "SpFTree";
                 _navigationManager.NavigateTo(selectedItem.FilePath, "SpFTree");
                 UpdateNavigationButtons();
+
+                if (!IsVirtualPath(selectedItem.FilePath))
+                {
+                    OnNavigateRequested(selectedItem.FilePath);
+                }
             }
         }
 
@@ -1067,6 +1228,11 @@ namespace ufm
                 _activePanelId = "MainTree";
                 _navigationManager.NavigateTo(selectedItem.FilePath, "MainTree");
                 UpdateNavigationButtons();
+
+                if (!IsVirtualPath(selectedItem.FilePath))
+                {
+                    OnNavigateRequested(selectedItem.FilePath);
+                }
             }
         }
 
@@ -1099,6 +1265,7 @@ namespace ufm
                     {
                         string activePanel = GetActivePanel();
                         _navigationManager.NavigateTo(parentDir.FullName, activePanel);
+                        OnNavigateRequested(parentDir.FullName);
                     }
                 }
             }
@@ -1110,6 +1277,32 @@ namespace ufm
         private string GetActivePanel() => _activePanelId ?? "MainTree";
 
         private DirectoryHistory GetActiveHistory() => GetActivePanel() == "SpFTree" ? _historySpF : _history;
+
+        #endregion
+
+        #region Публичные методы для внешнего взаимодействия
+
+        private void OnNavigateRequested(string path)
+        {
+            NavigateRequested?.Invoke(this, path);
+        }
+
+        public void SelectPath(string path)
+        {
+            string panelId;
+
+            if (_specialFolderPaths.Contains(path) || path == "SpecialFolders" || path.StartsWith("SpecialFolders"))
+            {
+                panelId = "SpFTree";
+            }
+            else
+            {
+                panelId = "MainTree";
+            }
+
+            UpdateTreeViewSelection(panelId, path);
+            ScheduleUpdateAllTiles();
+        }
 
         #endregion
     }

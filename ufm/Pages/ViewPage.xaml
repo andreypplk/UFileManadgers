@@ -1,4 +1,4 @@
-<Page
+<!--<Page
     x:Class="ufm.ViewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -138,7 +138,7 @@
             </Setter>
         </Style>
 
-        <!--  Добавляем стиль для панели предпросмотра  -->
+        --><!--  Добавляем стиль для панели предпросмотра  --><!--
         <Style x:Key="PreviewPanelStyle" TargetType="ContentControl">
             <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource BorderPrimaryBrush}" />
@@ -154,7 +154,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <!--  Верхнее меню навигации  -->
+            --><!--  Верхнее меню навигации  --><!--
 
             <Border
                 x:Name="GridMenuFirst"
@@ -168,7 +168,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <!--  Кнопки навигации  -->
+                    --><!--  Кнопки навигации  --><!--
 
                     <StackPanel
                         Grid.Column="0"
@@ -204,7 +204,7 @@
                             FontFamily="Segoe fluent icons"
                             Foreground="{StaticResource NavigationIconBrush}" />
                     </StackPanel>
-                    <!--  Хлебные крошки  -->
+                    --><!--  Хлебные крошки  --><!--
 
                     <Border
                         Grid.Column="1"
@@ -225,7 +225,7 @@
                             </BreadcrumbBar.Resources>
                         </BreadcrumbBar>
                     </Border>
-                    <!--  Поиск  -->
+                    --><!--  Поиск  --><!--
 
                     <AutoSuggestBox
                         x:Name="SearchBox"
@@ -239,7 +239,7 @@
                         QuerySubmitted="SearchBox_QuerySubmitted" />
                 </Grid>
             </Border>
-            <!--  Панель инструментов  -->
+            --><!--  Панель инструментов  --><!--
 
             <Border
                 x:Name="GridMenuSecond"
@@ -254,7 +254,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <!--  Кнопки операций  -->
+                    --><!--  Кнопки операций  --><!--
 
                     <StackPanel
                         Grid.Column="0"
@@ -302,10 +302,10 @@
                             Style="{StaticResource OperationButtonStyle}" />
 
                     </StackPanel>
-                    <!--  Пустое пространство между кнопками операций и выпадающими меню  -->
+                    --><!--  Пустое пространство между кнопками операций и выпадающими меню  --><!--
 
                     <Grid Grid.Column="1" />
-                    <!--  Выпадающие меню (выровнены по правому краю) ЛОКАЛИЗОВАТЬ  -->
+                    --><!--  Выпадающие меню (выровнены по правому краю) ЛОКАЛИЗОВАТЬ  --><!--
 
                     <StackPanel
                         Grid.Column="2"
@@ -322,7 +322,7 @@
 
                             <muxc:DropDownButton.Flyout>
                                 <MenuFlyout Placement="Bottom">
-                                    <!--  Субменю для одной панели  -->
+                                    --><!--  Субменю для одной панели  --><!--
 
                                     <MenuFlyoutSubItem Lngmng:Uids.Uid="VPfirstrmFI_SinglePanel">
                                         <MenuFlyoutSubItem.Icon>
@@ -339,7 +339,7 @@
                                             </RadioMenuFlyoutItem.Icon>
                                         </RadioMenuFlyoutItem>
                                     </MenuFlyoutSubItem>
-                                    <!--  Субменю для двух панелей  -->
+                                    --><!--  Субменю для двух панелей  --><!--
 
                                     <MenuFlyoutSubItem Lngmng:Uids.Uid="VPfirstrmFI_TwoPanels">
                                         <MenuFlyoutSubItem.Icon>
@@ -364,7 +364,7 @@
                                             </RadioMenuFlyoutItem.Icon>
                                         </RadioMenuFlyoutItem>
                                     </MenuFlyoutSubItem>
-                                    <!--  Субменю для трех панелей  -->
+                                    --><!--  Субменю для трех панелей  --><!--
 
                                     <MenuFlyoutSubItem Lngmng:Uids.Uid="VPfirstrmFI_ThreePanels">
                                         <MenuFlyoutSubItem.Icon>
@@ -425,7 +425,7 @@
                                             </RadioMenuFlyoutItem.Icon>
                                         </RadioMenuFlyoutItem>
                                     </MenuFlyoutSubItem>
-                                    <!--  Субменю для четырех панелей  -->
+                                    --><!--  Субменю для четырех панелей  --><!--
 
                                     <MenuFlyoutSubItem Lngmng:Uids.Uid="VPfirstrmFI_QuadPanels">
                                         <MenuFlyoutSubItem.Icon>
@@ -494,7 +494,7 @@
                             <muxc:DropDownButton.Flyout>
                                 <Flyout Placement="Bottom">
                                     <StackPanel Background="{ThemeResource CardBackgroundBrush}">
-                                        <!--  Секция размеров значков  -->
+                                        --><!--  Секция размеров значков  --><!--
 
                                         <TextBlock
                                             Margin="12,8,12,4"
@@ -584,7 +584,7 @@
                                             Tag="Huge" />
 
                                         <muxc:MenuFlyoutSeparator />
-                                        <!--  Секция режимов отображения  -->
+                                        --><!--  Секция режимов отображения  --><!--
 
                                         <TextBlock
                                             Margin="12,8,12,4"
@@ -641,7 +641,7 @@
                     </StackPanel>
                 </Grid>
             </Border>
-            <!--  Основная рабочая область  -->
+            --><!--  Основная рабочая область  --><!--
 
             <Grid Grid.Row="2" Background="{StaticResource AppBackgroundBrush}">
                 <Grid.ColumnDefinitions>
@@ -664,7 +664,7 @@
                 </Grid.ColumnDefinitions>
 
 
-                <!--  Левая панель предпросмотра  -->
+                --><!--  Левая панель предпросмотра  --><!--
                 <Grid
                     x:Name="PreviewPanelLeft"
                     Grid.Column="0"
@@ -676,7 +676,7 @@
                     <ContentControl x:Name="PreviewContentLeft" Style="{StaticResource PreviewPanelStyle}" />
                 </Grid>
 
-                <!--  Разделитель левой панели  -->
+                --><!--  Разделитель левой панели  --><!--
                 <controls1:GridSplitter
                     x:Name="LeftPreviewSplitter"
                     Grid.Column="1"
@@ -691,7 +691,7 @@
                     </controls1:GridSplitter.RenderTransform>
                 </controls1:GridSplitter>
 
-                <!--  Основная рабочая область с разделителями для панели предпросмотра  -->
+                --><!--  Основная рабочая область с разделителями для панели предпросмотра  --><!--
 
 
                 <Grid x:Name="FilePanelsContainer" Grid.Column="2">
@@ -708,7 +708,7 @@
                             BorderThickness="2"
                             Style="{StaticResource PanelContentControlStyle}" />
                     </Grid>
-                    <!--  Двойное представление по вертикали  -->
+                    --><!--  Двойное представление по вертикали  --><!--
                     <Grid
                         x:Name="VerticalViewGrid"
                         x:FieldModifier="public"
@@ -751,7 +751,7 @@
                                 Style="{StaticResource PanelContentControlStyle}" />
                         </Grid>
                     </Grid>
-                    <!--  Двойное представление по горизонтали  -->
+                    --><!--  Двойное представление по горизонтали  --><!--
                     <Grid
                         x:Name="HorizontalViewGrid"
                         x:FieldModifier="public"
@@ -794,7 +794,7 @@
                                 Style="{StaticResource PanelContentControlStyle}" />
                         </Grid>
                     </Grid>
-                    <!--  Тройное представление - вариант 1 (вертикальное)  -->
+                    --><!--  Тройное представление - вариант 1 (вертикальное)  --><!--
                     <Grid
                         x:Name="TripleVerticalViewGrid"
                         x:FieldModifier="public"
@@ -847,7 +847,7 @@
                                 Style="{StaticResource PanelContentControlStyle}" />
                         </Grid>
                     </Grid>
-                    <!--  Тройное представление - вариант 2 (горизонтальное)  -->
+                    --><!--  Тройное представление - вариант 2 (горизонтальное)  --><!--
                     <Grid
                         x:Name="TripleHorizontalViewGrid"
                         x:FieldModifier="public"
@@ -900,7 +900,7 @@
                                 Style="{StaticResource PanelContentControlStyle}" />
                         </Grid>
                     </Grid>
-                    <!--  Тройное представление - вариант 3 (2 сверху, 1 снизу)  -->
+                    --><!--  Тройное представление - вариант 3 (2 сверху, 1 снизу)  --><!--
                     <Grid
                         x:Name="TripleTopBottomViewGrid"
                         x:FieldModifier="public"
@@ -952,7 +952,7 @@
                             <ContentControl x:Name="TripleBottomContent" Style="{StaticResource PanelContentControlStyle}" />
                         </Grid>
                     </Grid>
-                    <!--  Тройное представление - вариант 4 (1 сверху, 2 снизу)  -->
+                    --><!--  Тройное представление - вариант 4 (1 сверху, 2 снизу)  --><!--
                     <Grid
                         x:Name="TripleBottomTopViewGrid"
                         x:FieldModifier="public"
@@ -1001,7 +1001,7 @@
                             <ContentControl x:Name="TripleBottomRightContent" Style="{StaticResource PanelContentControlStyle}" />
                         </Grid>
                     </Grid>
-                    <!--  Тройное представление - вариант 5 (1 слева, 2 справа)  -->
+                    --><!--  Тройное представление - вариант 5 (1 слева, 2 справа)  --><!--
                     <Grid
                         x:Name="TripleLeftRightViewGrid"
                         x:FieldModifier="public"
@@ -1050,7 +1050,7 @@
                             <ContentControl x:Name="TripleRightBottomContent" Style="{StaticResource PanelContentControlStyle}" />
                         </Grid>
                     </Grid>
-                    <!--  Тройное представление - вариант 6 (2 слева, 1 справа)  -->
+                    --><!--  Тройное представление - вариант 6 (2 слева, 1 справа)  --><!--
                     <Grid
                         x:Name="TripleRightLeftViewGrid"
                         x:FieldModifier="public"
@@ -1099,7 +1099,7 @@
                             <ContentControl x:Name="TripleRightContent" Style="{StaticResource PanelContentControlStyle}" />
                         </Grid>
                     </Grid>
-                    <!--  Четверное представление (2x2)  -->
+                    --><!--  Четверное представление (2x2)  --><!--
                     <Grid
                         x:Name="QuadViewGrid"
                         x:FieldModifier="public"
@@ -1167,7 +1167,7 @@
                         </Grid>
                     </Grid>
                 </Grid>
-                <!--  Разделитель правой панели  -->
+                --><!--  Разделитель правой панели  --><!--
                 <controls1:GridSplitter
                     x:Name="RightPreviewSplitter"
                     Grid.Column="3"
@@ -1182,7 +1182,7 @@
                     </controls1:GridSplitter.RenderTransform>
                 </controls1:GridSplitter>
 
-                <!--  Правая панель предпросмотра  -->
+                --><!--  Правая панель предпросмотра  --><!--
                 <Grid
                     x:Name="PreviewPanelRight"
                     Grid.Column="4"
@@ -1196,4 +1196,1199 @@
             </Grid>
         </Grid>
     </Grid>
+</Page>-->
+
+
+<Page
+    x:Class="ufm.ViewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Lngmng="using:Core_Language"
+    xmlns:controls1="using:CommunityToolkit.WinUI.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:viewModel="using:Core_FileManagement"
+    xmlns:controls="using:ufm.Controls.BreadcrumbBar"
+    Background="{StaticResource AppBackgroundBrush}">
+
+	<Page.DataContext>
+		<viewModel:MainViewModel />
+	</Page.DataContext>
+
+	<Page.Resources>
+
+		<Style x:Key="SmallRadioButtonStyle" TargetType="RadioButton">
+			<Setter Property="FontSize" Value="14" />
+			<Setter Property="Padding" Value="1" />
+			<Setter Property="Margin" Value="1" />
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="RadioButton">
+						<Grid
+                            x:Name="RootGrid"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<Grid
+                                x:Name="OuterEllipseGrid"
+                                Width="16"
+                                Height="16"
+                                VerticalAlignment="Center">
+								<Ellipse
+                                    x:Name="OuterEllipse"
+                                    Width="12"
+                                    Height="12"
+                                    Fill="{ThemeResource ButtonBackgroundColor}"
+                                    Stroke="{ThemeResource ButtonBorderColor}"
+                                    StrokeThickness="1" />
+								<Ellipse
+                                    x:Name="CheckGlyph"
+                                    Width="6"
+                                    Height="6"
+                                    Fill="{ThemeResource SystemAccentColor}"
+                                    Opacity="0" />
+							</Grid>
+							<ContentPresenter
+                                x:Name="ContentPresenter"
+                                Grid.Column="1"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Foreground="{ThemeResource TextPrimaryColor}"
+                                TextWrapping="Wrap" />
+							<VisualStateManager.VisualStateGroups>
+								<VisualStateGroup x:Name="CommonStates">
+									<VisualState x:Name="Normal" />
+									<VisualState x:Name="PointerOver">
+										<Storyboard>
+											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
+												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemAccentColor}" />
+											</ObjectAnimationUsingKeyFrames>
+										</Storyboard>
+									</VisualState>
+									<VisualState x:Name="Pressed">
+										<Storyboard>
+											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
+												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemAccentColorDark1}" />
+											</ObjectAnimationUsingKeyFrames>
+										</Storyboard>
+									</VisualState>
+									<VisualState x:Name="Disabled">
+										<Storyboard>
+											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
+												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextSecondaryColor}" />
+											</ObjectAnimationUsingKeyFrames>
+											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextSecondaryColor}" />
+											</ObjectAnimationUsingKeyFrames>
+										</Storyboard>
+									</VisualState>
+								</VisualStateGroup>
+								<VisualStateGroup x:Name="CheckStates">
+									<VisualState x:Name="Checked">
+										<Storyboard>
+											<DoubleAnimation
+                                                Storyboard.TargetName="CheckGlyph"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="1"
+                                                Duration="0" />
+										</Storyboard>
+									</VisualState>
+									<VisualState x:Name="Unchecked" />
+									<VisualState x:Name="Indeterminate" />
+								</VisualStateGroup>
+							</VisualStateManager.VisualStateGroups>
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+
+		<Style
+            x:Key="OperationButtonStyle"
+            BasedOn="{StaticResource AccentButtonStyle}"
+            TargetType="Button">
+			<Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+			<Setter Property="FontSize" Value="14" />
+			<Setter Property="Width" Value="40" />
+			<Setter Property="Height" Value="38" />
+			<Setter Property="Padding" Value="4" />
+		</Style>
+
+		<Style x:Key="PanelContentControlStyle" TargetType="ContentControl">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="{StaticResource TransparentBrush}" />
+			<Setter Property="BorderThickness" Value="2" />
+			<Setter Property="IsTabStop" Value="True" />
+			<Setter Property="FocusVisualPrimaryBrush" Value="{StaticResource AccentBorderBrush}" />
+			<Setter Property="FocusVisualSecondaryBrush" Value="{StaticResource AccentBorderBrush}" />
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="ContentControl">
+						<Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+							<ContentPresenter Content="{TemplateBinding Content}" />
+						</Border>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+
+		<!--  Добавляем стиль для панели предпросмотра  -->
+		<Style x:Key="PreviewPanelStyle" TargetType="ContentControl">
+			<Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{StaticResource BorderPrimaryBrush}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="Padding" Value="10" />
+		</Style>
+	</Page.Resources>
+
+	<Grid x:Name="GridViewDataPage">
+		<Grid x:Name="GridWorkAreaView">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
+			<!--  Верхнее меню навигации  -->
+
+			<Border
+                x:Name="GridMenuFirst"
+                Grid.Row="0"
+                Padding="10,5"
+                Background="{StaticResource NavigationButtonBrush}"
+                CornerRadius="4">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<!--  Кнопки навигации  -->
+
+					<StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="8">
+						<Button
+                            x:Name="BackButton"
+                            Lngmng:Uids.ToolTipUid="VPfirstmemustBut_ttsttBtBackButton"
+                            Click="BackButton_Click"
+                            Content="&#xE72B;"
+                            FontFamily="Segoe MDL2 Assets"
+                            Foreground="{StaticResource NavigationIconBrush}" />
+						<Button
+                            x:Name="ForwardButton"
+                            Lngmng:Uids.ToolTipUid="VPfirstmemustBut_ttsttBtForwardButton"
+                            Click="ForwardButton_Click"
+                            Content="&#xE72A;"
+                            FontFamily="Segoe MDL2 Assets"
+                            Foreground="{StaticResource NavigationIconBrush}" />
+						<Button
+                            x:Name="UpButton"
+                            Lngmng:Uids.ToolTipUid="VPfirstmemustBut_ttsttBtUpButton"
+                            Click="UpButton_Click"
+                            Content="&#xE74A;"
+                            FontFamily="Segoe fluent icons"
+                            Foreground="{StaticResource NavigationIconBrush}" />
+						<Button
+                            x:Name="RefreshButton"
+                            Lngmng:Uids.ToolTipUid="VPfirstmemustBut_ttsttBtRefreshButton"
+                            Click="RefreshButton_Click"
+                            Content="&#xE72C;"
+                            FontFamily="Segoe fluent icons"
+                            Foreground="{StaticResource NavigationIconBrush}" />
+					</StackPanel>
+					<!--  Хлебные крошки  -->
+
+					<Border
+                        Grid.Column="1"
+                        Margin="10,0"
+                        Padding="5"
+                        VerticalAlignment="Center"
+                        BorderBrush="{StaticResource BorderPrimaryBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+						<controls:CustomBreadcrumbBar
+                            x:Name="CustomBreadcrumb"
+                            ItemClicked="CustomBreadcrumb_ItemClicked" />
+					</Border>
+					<!--  Поиск  -->
+
+					<AutoSuggestBox
+                        x:Name="SearchBox"
+                        Grid.Column="2"
+                        Width="220"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource CardBackgroundBrush}"
+                        Foreground="{StaticResource PrimaryTextBrush}"
+                        PlaceholderText="..."
+                        QueryIcon="Find"
+                        QuerySubmitted="SearchBox_QuerySubmitted" />
+				</Grid>
+			</Border>
+			<!--  Панель инструментов  -->
+
+			<Border
+                x:Name="GridMenuSecond"
+                Grid.Row="1"
+                Padding="10,5"
+                Background="{StaticResource HeaderBackgroundBrush}"
+                BorderBrush="{StaticResource BorderPrimaryBrush}"
+                BorderThickness="0,1,0,1">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<!--  Кнопки операций  -->
+
+					<StackPanel
+                        Grid.Column="0"
+                        Orientation="Horizontal"
+                        Spacing="8">
+						<Button
+                            x:Name="CopyButton"
+                            Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtCopyButton"
+                            Click="CopyButton_Click"
+                            Content="&#xE8C8;"
+                            Style="{StaticResource OperationButtonStyle}" />
+						<Button
+                            x:Name="MoveButton"
+                            Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtMoveButton"
+                            Click="MoveButton_Click"
+                            Content="&#xE715;"
+                            Style="{StaticResource OperationButtonStyle}" />
+
+						<Button
+                            x:Name="RenameButton"
+                            Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtRenameButton"
+                            Click="RenameButton_Click"
+                            Content="&#xE8AC;"
+                            Style="{StaticResource OperationButtonStyle}" />
+
+						<Button
+                            x:Name="CutButton"
+                            Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtCutButton"
+                            Click="CutButton_Click"
+                            Content="&#xE8C6;"
+                            Style="{StaticResource OperationButtonStyle}" />
+
+						<Button
+                            x:Name="PasteButton"
+                            Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtPasteButton"
+                            Click="PasteButton_Click"
+                            Content="&#xE77F;"
+                            Style="{StaticResource OperationButtonStyle}" />
+
+						<Button
+                            x:Name="DeleteButton"
+                            Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtDeleteButton"
+                            Click="DeleteButton_Click"
+                            Content="&#xE74D;"
+                            Style="{StaticResource OperationButtonStyle}" />
+
+					</StackPanel>
+					<!--  Пустое пространство между кнопками операций и выпадающими меню  -->
+
+					<Grid Grid.Column="1" />
+					<!--  Выпадающие меню (выровнены по правому краю) ЛОКАЛИЗОВАТЬ  -->
+
+					<StackPanel
+                        Grid.Column="2"
+                        Orientation="Horizontal"
+                        Spacing="10">
+
+						<muxc:DropDownButton
+                            x:Name="ViewModeButton"
+                            Lngmng:Uids.ToolTipUid="VPfirstrmFI_ttsttViewchangesMode"
+                            Background="{StaticResource NavigationButtonBrush}"
+                            Foreground="{StaticResource NavigationIconBrush}">
+
+							<FontIcon Glyph="&#xE152;" />
+
+							<muxc:DropDownButton.Flyout>
+								<MenuFlyout Placement="Bottom">
+									<!--  Субменю для одной панели  -->
+
+									<MenuFlyoutSubItem Lngmng:Uids.Uid="VPfirstrmFI_SinglePanel">
+										<MenuFlyoutSubItem.Icon>
+											<FontIcon Glyph="&#xF56E;" />
+										</MenuFlyoutSubItem.Icon>
+										<RadioMenuFlyoutItem
+                                            x:Name="SingleViewRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_SinglePanel"
+                                            Click="SingleView_Click"
+                                            GroupName="PanelLayoutGroup"
+                                            IsChecked="True">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xF56E;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+									</MenuFlyoutSubItem>
+									<!--  Субменю для двух панелей  -->
+
+									<MenuFlyoutSubItem Lngmng:Uids.Uid="VPfirstrmFI_TwoPanels">
+										<MenuFlyoutSubItem.Icon>
+											<FontIcon Glyph="&#xF57C;" />
+										</MenuFlyoutSubItem.Icon>
+										<RadioMenuFlyoutItem
+                                            x:Name="VerticalViewRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_VerticalTwoPanels"
+                                            Click="VerticalView_Click"
+                                            GroupName="PanelLayoutGroup">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xF464;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+										<RadioMenuFlyoutItem
+                                            x:Name="HorizontalViewRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_HorizontalTwoPanels"
+                                            Click="HorizontalView_Click"
+                                            GroupName="PanelLayoutGroup">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xF462;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+									</MenuFlyoutSubItem>
+									<!--  Субменю для трех панелей  -->
+
+									<MenuFlyoutSubItem Lngmng:Uids.Uid="VPfirstrmFI_ThreePanels">
+										<MenuFlyoutSubItem.Icon>
+											<FontIcon Glyph="&#xECAA;" />
+										</MenuFlyoutSubItem.Icon>
+										<RadioMenuFlyoutItem
+                                            x:Name="TripleVerticalViewRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_VerticalThreePanels"
+                                            Click="TripleVerticalView_Click"
+                                            GroupName="PanelLayoutGroup">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xE8C0;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+										<RadioMenuFlyoutItem
+                                            x:Name="TripleHorizontalViewRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_HorizontalThreePanels"
+                                            Click="TripleHorizontalView_Click"
+                                            GroupName="PanelLayoutGroup">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xE700;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+										<RadioMenuFlyoutItem
+                                            x:Name="TripleTopBottomViewRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_TripleTopBottomThreePanels"
+                                            Click="TripleTopBottomView_Click"
+                                            GroupName="PanelLayoutGroup">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xE96E;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+										<RadioMenuFlyoutItem
+                                            x:Name="TripleBottomTopViewRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_TripleBottomTopThreePanels"
+                                            Click="TripleBottomTopView_Click"
+                                            GroupName="PanelLayoutGroup">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xE96D;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+										<RadioMenuFlyoutItem
+                                            x:Name="TripleLeftRightViewRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_TripleLeftRightThreePanels"
+                                            Click="TripleLeftRightView_Click"
+                                            GroupName="PanelLayoutGroup">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xE96F;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+										<RadioMenuFlyoutItem
+                                            x:Name="TripleRightLeftViewRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_TripleRightLeftThreePanels"
+                                            Click="TripleRightLeftView_Click"
+                                            GroupName="PanelLayoutGroup">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xE970;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+									</MenuFlyoutSubItem>
+									<!--  Субменю для четырех панелей  -->
+
+									<MenuFlyoutSubItem Lngmng:Uids.Uid="VPfirstrmFI_QuadPanels">
+										<MenuFlyoutSubItem.Icon>
+											<FontIcon Glyph="&#xE8A9;" />
+										</MenuFlyoutSubItem.Icon>
+										<RadioMenuFlyoutItem
+                                            x:Name="QuadViewRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_QuadQuadPanels"
+                                            Click="QuadView_Click"
+                                            GroupName="PanelLayoutGroup">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xE8A9;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+									</MenuFlyoutSubItem>
+									<MenuFlyoutSeparator />
+									<MenuFlyoutSubItem Lngmng:Uids.Uid="VPfirstrmFI_PreviewPanels">
+										<MenuFlyoutSubItem.Icon>
+											<FontIcon Glyph="&#xE8FF;" />
+										</MenuFlyoutSubItem.Icon>
+										<RadioMenuFlyoutItem
+                                            x:Name="PreviewLeftRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_PreviewLeftPanels"
+                                            Click="PreviewLeft_Click"
+                                            GroupName="PreviewPanelGroup">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xE26B;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+										<RadioMenuFlyoutItem
+                                            x:Name="PreviewRightRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_PreviewRightPanels"
+                                            Click="PreviewRight_Click"
+                                            GroupName="PreviewPanelGroup">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xE26C;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+										<RadioMenuFlyoutItem
+                                            x:Name="PreviewNoneRadio"
+                                            Lngmng:Uids.Uid="VPfirstrmFI_PreviewHidePanels"
+                                            Click="PreviewNone_Click"
+                                            GroupName="PreviewPanelGroup"
+                                            IsChecked="True">
+											<RadioMenuFlyoutItem.Icon>
+												<FontIcon Glyph="&#xE711;" />
+											</RadioMenuFlyoutItem.Icon>
+										</RadioMenuFlyoutItem>
+									</MenuFlyoutSubItem>
+								</MenuFlyout>
+							</muxc:DropDownButton.Flyout>
+						</muxc:DropDownButton>
+
+
+						<muxc:DropDownButton
+                            x:Name="ViewModeDropDownButton"
+                            Margin="10,0"
+                            Lngmng:Uids.ToolTipUid="VPsecondrmFI_ttsttViewMode"
+                            Background="{ThemeResource NavigationButtonBrush}"
+                            Foreground="{ThemeResource NavigationIconBrush}"
+                            RelativePanel.AlignRightWithPanel="True"
+                            RelativePanel.AlignVerticalCenterWithPanel="True">
+
+							<FontIcon Glyph="&#xE762;" />
+
+							<muxc:DropDownButton.Flyout>
+								<Flyout Placement="Bottom">
+									<StackPanel Background="{ThemeResource CardBackgroundBrush}">
+										<!--  Секция размеров значков  -->
+
+										<TextBlock
+                                            Margin="12,8,12,4"
+                                            Lngmng:Uids.Uid="VPsecondrmFI_txtddtSizeIcon"
+                                            Foreground="{ThemeResource TextSecondaryColor}"
+                                            Style="{ThemeResource CaptionTextBlockStyle}" />
+
+										<RadioButton
+                                            x:Name="TinySizeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbTinySizeIcon"
+                                            Checked="SizeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="SizeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Tiny" />
+
+										<RadioButton
+                                            x:Name="ExtraSmallSizeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbExtraSmallSizeIcon"
+                                            Checked="SizeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="SizeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Extra Small" />
+
+										<RadioButton
+                                            x:Name="SmallSizeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbSmallSizeIcon"
+                                            Checked="SizeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="SizeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Small" />
+
+										<RadioButton
+                                            x:Name="BelowMediumSizeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbBelowMediumSizeIcon"
+                                            Checked="SizeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="SizeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Below Medium" />
+
+										<RadioButton
+                                            x:Name="MediumSizeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbMediumSizeIcon"
+                                            Checked="SizeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="SizeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Medium" />
+
+										<RadioButton
+                                            x:Name="AboveMediumSizeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbAboveMediumSizeIcon"
+                                            Checked="SizeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="SizeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Above Medium" />
+
+										<RadioButton
+                                            x:Name="LargeSizeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbLargeSizeIcon"
+                                            Checked="SizeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="SizeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Large" />
+
+										<RadioButton
+                                            x:Name="ExtraLargeSizeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbExtraLargeSizeIcon"
+                                            Checked="SizeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="SizeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Extra Large" />
+
+										<RadioButton
+                                            x:Name="HugeSizeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbHugeSizeIcon"
+                                            Checked="SizeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="SizeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Huge" />
+
+										<muxc:MenuFlyoutSeparator />
+										<!--  Секция режимов отображения  -->
+
+										<TextBlock
+                                            Margin="12,8,12,4"
+                                            Lngmng:Uids.Uid="VPsecondrmFI_txtddtModeViewing"
+                                            Foreground="{ThemeResource TextSecondaryColor}"
+                                            Style="{ThemeResource CaptionTextBlockStyle}" />
+										<RadioButton
+                                            x:Name="IconsModeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbMVIcons"
+                                            Checked="ViewModeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="ViewModeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Icons" />
+										<RadioButton
+                                            x:Name="ListModeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbMVList"
+                                            Checked="ViewModeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="ViewModeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="List" />
+
+										<RadioButton
+                                            x:Name="CompListModeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbMVCompList"
+                                            Checked="ViewModeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="ViewModeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="CompactList" />
+
+										<RadioButton
+                                            x:Name="TilesModeRadioButton"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbMVTiles"
+                                            Checked="ViewModeRadioButton_Checked"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="ViewModeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Tiles" />
+
+										<RadioButton
+                                            x:Name="TableModeRadioButton"
+                                            Checked="ViewModeRadioButton_Checked"
+                                            Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbMVTable"
+                                            Foreground="{ThemeResource TextPrimaryColor}"
+                                            GroupName="ViewModeGroup"
+                                            Style="{StaticResource SmallRadioButtonStyle}"
+                                            Tag="Table" />
+									</StackPanel>
+								</Flyout>
+							</muxc:DropDownButton.Flyout>
+						</muxc:DropDownButton>
+					</StackPanel>
+				</Grid>
+			</Border>
+			<!--  Основная рабочая область  -->
+
+			<Grid Grid.Row="2" Background="{StaticResource AppBackgroundBrush}">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition
+                        x:Name="ColumPreviewLeft"
+                        Width="Auto"
+                        MinWidth="0"
+                        MaxWidth="800" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition
+                        Width="*"
+                        MinWidth="100"
+                        MaxWidth="4096" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition
+                        x:Name="ColumPreviewRigth"
+                        Width="Auto"
+                        MinWidth="0"
+                        MaxWidth="800" />
+				</Grid.ColumnDefinitions>
+
+
+				<!--  Левая панель предпросмотра  -->
+				<Grid
+                    x:Name="PreviewPanelLeft"
+                    Grid.Column="0"
+                    HorizontalAlignment="Stretch"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderPrimaryBrush}"
+                    BorderThickness="5"
+                    Visibility="Collapsed">
+					<ContentControl x:Name="PreviewContentLeft" Style="{StaticResource PreviewPanelStyle}" />
+				</Grid>
+
+				<!--  Разделитель левой панели  -->
+				<controls1:GridSplitter
+                    x:Name="LeftPreviewSplitter"
+                    Grid.Column="1"
+                    Width="3"
+                    Background="Transparent"
+                    PointerReleased="PreviewSplitter_PointerReleased"
+                    ResizeBehavior="PreviousAndNext"
+                    ResizeDirection="Columns"
+                    Visibility="Collapsed">
+					<controls1:GridSplitter.RenderTransform>
+						<TranslateTransform X="-7" />
+					</controls1:GridSplitter.RenderTransform>
+				</controls1:GridSplitter>
+
+				<!--  Основная рабочая область с разделителями для панели предпросмотра  -->
+
+
+				<Grid x:Name="FilePanelsContainer" Grid.Column="2">
+					<Grid
+                        x:Name="SingleViewGrid"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Visibility="Visible">
+						<ContentControl
+                            x:Name="ViewContainer"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"
+                            BorderBrush="{StaticResource TransparentBrush}"
+                            BorderThickness="2"
+                            Style="{StaticResource PanelContentControlStyle}" />
+					</Grid>
+					<!--  Двойное представление по вертикали  -->
+					<Grid
+                        x:Name="VerticalViewGrid"
+                        x:FieldModifier="public"
+                        Visibility="Collapsed">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" MinWidth="100" />
+						</Grid.ColumnDefinitions>
+						<Grid
+                            Grid.Column="0"
+                            HorizontalAlignment="Stretch"
+                            BorderBrush="{StaticResource TransparentBrush}"
+                            BorderThickness="2">
+							<ContentControl
+                                x:Name="VerticalLeftContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="VerticalSplitter"
+                            Grid.Column="1"
+                            Width="1"
+                            HorizontalAlignment="Left"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Columns">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform X="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            BorderBrush="{StaticResource TransparentBrush}"
+                            BorderThickness="2">
+							<ContentControl
+                                x:Name="VerticalRightContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+					</Grid>
+					<!--  Двойное представление по горизонтали  -->
+					<Grid
+                        x:Name="HorizontalViewGrid"
+                        x:FieldModifier="public"
+                        Visibility="Collapsed">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*" MinHeight="100" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" MinHeight="100" />
+						</Grid.RowDefinitions>
+						<Grid
+                            Grid.Row="0"
+                            VerticalAlignment="Stretch"
+                            BorderBrush="{StaticResource TransparentBrush}"
+                            BorderThickness="2">
+							<ContentControl
+                                x:Name="HorizontalTopContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="HorizontalSplitter"
+                            Grid.Row="1"
+                            Height="1"
+                            VerticalAlignment="Top"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Rows">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform Y="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid
+                            Grid.Row="2"
+                            VerticalAlignment="Stretch"
+                            BorderBrush="{StaticResource TransparentBrush}"
+                            BorderThickness="2">
+							<ContentControl
+                                x:Name="HorizontalBottomContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+					</Grid>
+					<!--  Тройное представление - вариант 1 (вертикальное)  -->
+					<Grid
+                        x:Name="TripleVerticalViewGrid"
+                        x:FieldModifier="public"
+                        Visibility="Collapsed">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" MinWidth="100" />
+						</Grid.ColumnDefinitions>
+						<Grid Grid.Column="0">
+							<ContentControl
+                                x:Name="TripleVerticalLeftContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleVerticalSplitter1"
+                            Grid.Column="1"
+                            Width="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Columns">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform X="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Column="2">
+							<ContentControl
+                                x:Name="TripleVerticalCenterContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleVerticalSplitter2"
+                            Grid.Column="3"
+                            Width="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Columns">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform X="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Column="4">
+							<ContentControl
+                                x:Name="TripleVerticalRightContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+					</Grid>
+					<!--  Тройное представление - вариант 2 (горизонтальное)  -->
+					<Grid
+                        x:Name="TripleHorizontalViewGrid"
+                        x:FieldModifier="public"
+                        Visibility="Collapsed">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*" MinHeight="100" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" MinHeight="100" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" MinHeight="100" />
+						</Grid.RowDefinitions>
+						<Grid Grid.Row="0">
+							<ContentControl
+                                x:Name="TripleHorizontalTopContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleHorizontalSplitter1"
+                            Grid.Row="1"
+                            Height="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Rows">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform Y="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="2">
+							<ContentControl
+                                x:Name="TripleHorizontalCenterContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleHorizontalSplitter2"
+                            Grid.Row="3"
+                            Height="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Rows">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform Y="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="4">
+							<ContentControl
+                                x:Name="TripleHorizontalBottomContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+					</Grid>
+					<!--  Тройное представление - вариант 3 (2 сверху, 1 снизу)  -->
+					<Grid
+                        x:Name="TripleTopBottomViewGrid"
+                        x:FieldModifier="public"
+                        Visibility="Collapsed">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*" MinHeight="100" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" MinHeight="100" />
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" MinWidth="100" />
+						</Grid.ColumnDefinitions>
+						<Grid Grid.Row="0" Grid.Column="0">
+							<ContentControl
+                                x:Name="TripleTopLeftContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleTopBottomHorizontalSplitter"
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Width="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Columns">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform X="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="0" Grid.Column="2">
+							<ContentControl x:Name="TripleTopRightContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleTopBottomVerticalSplitter"
+                            Grid.Row="1"
+                            Grid.ColumnSpan="3"
+                            Height="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Rows">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform Y="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="2" Grid.ColumnSpan="3">
+							<ContentControl x:Name="TripleBottomContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+					</Grid>
+					<!--  Тройное представление - вариант 4 (1 сверху, 2 снизу)  -->
+					<Grid
+                        x:Name="TripleBottomTopViewGrid"
+                        x:FieldModifier="public"
+                        Visibility="Collapsed">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*" MinHeight="100" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" MinHeight="100" />
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" MinWidth="100" />
+						</Grid.ColumnDefinitions>
+						<Grid Grid.Row="0" Grid.ColumnSpan="3">
+							<ContentControl x:Name="TripleTopContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleBottomTopVerticalSplitter"
+                            Grid.Row="1"
+                            Grid.ColumnSpan="3"
+                            Height="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Rows">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform Y="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="2" Grid.Column="0">
+							<ContentControl x:Name="TripleBottomLeftContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleBottomTopHorizontalSplitter"
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Width="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Columns">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform X="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="2" Grid.Column="2">
+							<ContentControl x:Name="TripleBottomRightContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+					</Grid>
+					<!--  Тройное представление - вариант 5 (1 слева, 2 справа)  -->
+					<Grid
+                        x:Name="TripleLeftRightViewGrid"
+                        x:FieldModifier="public"
+                        Visibility="Collapsed">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" MinWidth="100" />
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*" MinHeight="100" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" MinHeight="100" />
+						</Grid.RowDefinitions>
+						<Grid Grid.RowSpan="3" Grid.Column="0">
+							<ContentControl x:Name="TripleLeftContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleLeftRightVerticalSplitter"
+                            Grid.RowSpan="3"
+                            Grid.Column="1"
+                            Width="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Columns">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform X="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="0" Grid.Column="2">
+							<ContentControl x:Name="TripleRightTopContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleLeftRightHorizontalSplitter"
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Height="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Rows">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform Y="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="2" Grid.Column="2">
+							<ContentControl x:Name="TripleRightBottomContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+					</Grid>
+					<!--  Тройное представление - вариант 6 (2 слева, 1 справа)  -->
+					<Grid
+                        x:Name="TripleRightLeftViewGrid"
+                        x:FieldModifier="public"
+                        Visibility="Collapsed">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" MinWidth="100" />
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*" MinHeight="100" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" MinHeight="100" />
+						</Grid.RowDefinitions>
+						<Grid Grid.Row="0" Grid.Column="0">
+							<ContentControl x:Name="TripleLeftTopContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleRightLeftHorizontalSplitter1"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Height="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Rows">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform Y="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="2" Grid.Column="0">
+							<ContentControl x:Name="TripleLeftBottomContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="TripleRightLeftVerticalSplitter"
+                            Grid.RowSpan="3"
+                            Grid.Column="1"
+                            Width="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Columns">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform X="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.RowSpan="3" Grid.Column="2">
+							<ContentControl x:Name="TripleRightContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+					</Grid>
+					<!--  Четверное представление (2x2)  -->
+					<Grid
+                        x:Name="QuadViewGrid"
+                        x:FieldModifier="public"
+                        Visibility="Collapsed">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*" MinHeight="100" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" MinHeight="100" />
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" MinWidth="100" />
+						</Grid.ColumnDefinitions>
+						<Grid Grid.Row="0" Grid.Column="0">
+							<ContentControl
+                                x:Name="QuadTopLeftContent"
+                                x:FieldModifier="public"
+                                Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="QuadHorizontalSplitter1"
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Width="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Columns">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform X="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="0" Grid.Column="2">
+							<ContentControl x:Name="QuadTopRightContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="QuadVerticalSplitter"
+                            Grid.Row="1"
+                            Grid.ColumnSpan="3"
+                            Height="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Rows">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform Y="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="2" Grid.Column="0">
+							<ContentControl x:Name="QuadBottomLeftContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+						<controls1:GridSplitter
+                            x:Name="QuadHorizontalSplitter2"
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Width="1"
+                            Background="Transparent"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Columns">
+							<controls1:GridSplitter.RenderTransform>
+								<TranslateTransform X="-7" />
+							</controls1:GridSplitter.RenderTransform>
+						</controls1:GridSplitter>
+						<Grid Grid.Row="2" Grid.Column="2">
+							<ContentControl x:Name="QuadBottomRightContent" Style="{StaticResource PanelContentControlStyle}" />
+						</Grid>
+					</Grid>
+				</Grid>
+				<!--  Разделитель правой панели  -->
+				<controls1:GridSplitter
+                    x:Name="RightPreviewSplitter"
+                    Grid.Column="3"
+                    Width="3"
+                    Background="Transparent"
+                    PointerReleased="PreviewSplitter_PointerReleased"
+                    ResizeBehavior="PreviousAndNext"
+                    ResizeDirection="Columns"
+                    Visibility="Collapsed">
+					<controls1:GridSplitter.RenderTransform>
+						<TranslateTransform X="-7" />
+					</controls1:GridSplitter.RenderTransform>
+				</controls1:GridSplitter>
+
+				<!--  Правая панель предпросмотра  -->
+				<Grid
+                    x:Name="PreviewPanelRight"
+                    Grid.Column="4"
+                    HorizontalAlignment="Stretch"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderPrimaryBrush}"
+                    BorderThickness="5"
+                    Visibility="Collapsed">
+					<ContentControl x:Name="PreviewContentRight" Style="{StaticResource PreviewPanelStyle}" />
+				</Grid>
+			</Grid>
+		</Grid>
+	</Grid>
 </Page>

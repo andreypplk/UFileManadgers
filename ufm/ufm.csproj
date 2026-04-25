@@ -18,6 +18,7 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="Controls\BreadcrumbBar\CustomBreadcrumbBar.xaml" />
 	  <None Remove="Controls\TileControl\TileViewerContent.xaml" />
 	  <None Remove="Themes\BlueTheme.xaml" />
 	  <None Remove="Themes\CommonResources.xaml" />
@@ -94,6 +95,12 @@
 	  <Content Update="Assets\home.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Update="Controls\BreadcrumbBar\CustomBreadcrumbBar.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 	<ItemGroup>
