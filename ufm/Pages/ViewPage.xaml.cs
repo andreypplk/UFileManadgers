@@ -3472,23 +3472,19 @@ namespace ufm
             if (string.IsNullOrEmpty(path))
                 return;
 
-            // Формируем элементы без иконок
             var items = new ObservableCollection<CustomBreadcrumbItem>();
             BuildBreadcrumbItems(path, items);
-
-            // Загружаем иконки
             await LoadIconsForBreadcrumbAsync(items);
 
-            // Устанавливаем источник ОДИН РАЗ
+            // Единственная установка источника – без последующих переприсвоений
             CustomBreadcrumb.ItemsSource = items;
 
-            // Фоново загружаем дочерние элементы
+            // Фоновая загрузка выпадающих списков (не трогает UI)
             _ = LoadBreadcrumbChildrenAsync(items);
         }
 
         private void BuildBreadcrumbItems(string path, ObservableCollection<CustomBreadcrumbItem> items)
         {
-            // ... (полностью идентично предыдущей версии без изменений)
             if (path == "MyComputer" || path == "SpecialFolders" || path == "Drives")
             {
                 if (path == "Drives")
@@ -3564,7 +3560,6 @@ namespace ufm
         {
             foreach (var item in items)
             {
-                // Иконку устанавливаем однократно
                 try
                 {
                     if (item.FullPath == "MyComputer")
@@ -3603,8 +3598,6 @@ namespace ufm
 
         private async Task LoadBreadcrumbChildrenAsync(ObservableCollection<CustomBreadcrumbItem> items)
         {
-            bool changed = false;
-
             for (int i = 0; i < items.Count - 1; i++)
             {
                 var item = items[i];
@@ -3641,19 +3634,12 @@ namespace ufm
                                 Icon = child.ImageSource
                             });
                         }
-                        item.Children = childItems;
-                        changed = true;
+                        item.Children = childItems;  // Обновляем модель, UI не трогаем
                     }
                 }
                 catch { }
             }
-
-            // Если были обновлены Children, лёгким способом даём знать контролу,
-            // не заменяя ItemsSource и не вызывая полную перерисовку иконок.
-            if (changed)
-            {
-                CustomBreadcrumb.RefreshChevrons();
-            }
+            // Никаких переустановок ItemsSource!
         }
         #endregion
     }
