@@ -204,4 +204,21 @@
 		</Setter>
 	</Style>
 	
+	<ContentDialog
+    x:Key="DeleteConfirmationDialog"
+    x:Name="DeleteConfirmationDialog"
+    Title="Подтверждение удаления"
+    PrimaryButtonText="Удалить"
+    SecondaryButtonText="Отмена"
+    IsPrimaryButtonEnabled="True"
+    IsSecondaryButtonEnabled="True"
+    DefaultButton="Secondary"
+    CloseButtonText="">
+		<!-- убираем стандартную кнопку закрытия, если нужна только Да/Нет -->
+		<ContentDialog.Content>
+			<TextBlock Text="Вы уверены, что хотите удалить выбранные элементы?"
+                   TextWrapping="Wrap" />
+		</ContentDialog.Content>
+	</ContentDialog>
+	
 </ResourceDictionary>
