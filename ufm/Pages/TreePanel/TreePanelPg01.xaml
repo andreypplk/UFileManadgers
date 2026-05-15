@@ -15,47 +15,47 @@
     NavigationCacheMode="Enabled"
     mc:Ignorable="d">
 
-    <Page.DataContext>
-        <viewModel:MainViewModel />
-    </Page.DataContext>
+	<Page.DataContext>
+		<viewModel:MainViewModel />
+	</Page.DataContext>
 
-    <Page.Resources>
-        <Style x:Key="SmallRadioButtonStyle" TargetType="RadioButton">
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Padding" Value="1" />
-            <Setter Property="Margin" Value="1" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="RadioButton">
-                        <Grid
+	<Page.Resources>
+		<Style x:Key="SmallRadioButtonStyle" TargetType="RadioButton">
+			<Setter Property="FontSize" Value="14" />
+			<Setter Property="Padding" Value="1" />
+			<Setter Property="Margin" Value="1" />
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="RadioButton">
+						<Grid
                             x:Name="RootGrid"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<Grid
                                 x:Name="OuterEllipseGrid"
                                 Width="16"
                                 Height="16"
                                 VerticalAlignment="Center">
-                                <Ellipse
+								<Ellipse
                                     x:Name="OuterEllipse"
                                     Width="12"
                                     Height="12"
                                     Fill="{ThemeResource ButtonBackgroundColor}"
                                     Stroke="{ThemeResource ButtonBorderColor}"
                                     StrokeThickness="1" />
-                                <Ellipse
+								<Ellipse
                                     x:Name="CheckGlyph"
                                     Width="6"
                                     Height="6"
                                     Fill="{ThemeResource SystemAccentColor}"
                                     Opacity="0" />
-                            </Grid>
-                            <ContentPresenter
+							</Grid>
+							<ContentPresenter
                                 x:Name="ContentPresenter"
                                 Grid.Column="1"
                                 Margin="8,0,0,0"
@@ -64,71 +64,71 @@
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 Foreground="{ThemeResource TextPrimaryColor}"
                                 TextWrapping="Wrap" />
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="CommonStates">
-                                    <VisualState x:Name="Normal" />
-                                    <VisualState x:Name="PointerOver">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemAccentColor}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name="Pressed">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemAccentColorDark1}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name="Disabled">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextSecondaryColor}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextSecondaryColor}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                </VisualStateGroup>
-                                <VisualStateGroup x:Name="CheckStates">
-                                    <VisualState x:Name="Checked">
-                                        <Storyboard>
-                                            <DoubleAnimation
+							<VisualStateManager.VisualStateGroups>
+								<VisualStateGroup x:Name="CommonStates">
+									<VisualState x:Name="Normal" />
+									<VisualState x:Name="PointerOver">
+										<Storyboard>
+											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
+												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemAccentColor}" />
+											</ObjectAnimationUsingKeyFrames>
+										</Storyboard>
+									</VisualState>
+									<VisualState x:Name="Pressed">
+										<Storyboard>
+											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
+												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemAccentColorDark1}" />
+											</ObjectAnimationUsingKeyFrames>
+										</Storyboard>
+									</VisualState>
+									<VisualState x:Name="Disabled">
+										<Storyboard>
+											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
+												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextSecondaryColor}" />
+											</ObjectAnimationUsingKeyFrames>
+											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextSecondaryColor}" />
+											</ObjectAnimationUsingKeyFrames>
+										</Storyboard>
+									</VisualState>
+								</VisualStateGroup>
+								<VisualStateGroup x:Name="CheckStates">
+									<VisualState x:Name="Checked">
+										<Storyboard>
+											<DoubleAnimation
                                                 Storyboard.TargetName="CheckGlyph"
                                                 Storyboard.TargetProperty="Opacity"
                                                 To="1"
                                                 Duration="0" />
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name="Unchecked" />
-                                    <VisualState x:Name="Indeterminate" />
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <controls:StringToBoolConverter x:Key="StringToBoolConverter" />
-    </Page.Resources>
+										</Storyboard>
+									</VisualState>
+									<VisualState x:Name="Unchecked" />
+									<VisualState x:Name="Indeterminate" />
+								</VisualStateGroup>
+							</VisualStateManager.VisualStateGroups>
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<controls:StringToBoolConverter x:Key="StringToBoolConverter" />
+	</Page.Resources>
 
-    <Grid Background="Transparent">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+	<Grid Background="Transparent">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
 
-        <!--  Исправлено: заменены StaticResource на ThemeResource  -->
-        <Border
+		<!--  Исправлено: заменены StaticResource на ThemeResource  -->
+		<Border
             Grid.Row="0"
             Padding="5"
             Background="{ThemeResource HeaderBackgroundBrush}"
             BorderBrush="{ThemeResource HeaderBorderBrush}"
             BorderThickness="1">
-            <RelativePanel>
-                <Button
+			<RelativePanel>
+				<Button
                     x:Name="BackButton"
                     Margin="5,0"
                     Padding="10,5"
@@ -138,10 +138,10 @@
                     Foreground="{ThemeResource NavigationIconBrush}"
                     RelativePanel.AlignLeftWithPanel="True"
                     RelativePanel.AlignVerticalCenterWithPanel="True">
-                    <FontIcon Glyph="&#xE72B;" />
-                </Button>
+					<FontIcon Glyph="&#xE72B;" />
+				</Button>
 
-                <Button
+				<Button
                     x:Name="ForwardButton"
                     Margin="5,0"
                     Padding="10,5"
@@ -151,10 +151,10 @@
                     Foreground="{ThemeResource NavigationIconBrush}"
                     RelativePanel.AlignVerticalCenterWithPanel="True"
                     RelativePanel.RightOf="BackButton">
-                    <FontIcon Glyph="&#xE72A;" />
-                </Button>
+					<FontIcon Glyph="&#xE72A;" />
+				</Button>
 
-                <Button
+				<Button
                     x:Name="UpButton"
                     Margin="5,0"
                     Padding="10,5"
@@ -164,21 +164,21 @@
                     Foreground="{ThemeResource NavigationIconBrush}"
                     RelativePanel.AlignVerticalCenterWithPanel="True"
                     RelativePanel.RightOf="ForwardButton">
-                    <FontIcon Glyph="&#xE74A;" />
-                </Button>
+					<FontIcon Glyph="&#xE74A;" />
+				</Button>
 
-                <DropDownButton
+				<DropDownButton
                     x:Name="SizeDropDownButton"
                     Margin="10,0"
                     Background="{ThemeResource NavigationButtonBrush}"
                     Foreground="{ThemeResource NavigationIconBrush}"
                     RelativePanel.AlignRightWithPanel="True"
                     RelativePanel.AlignVerticalCenterWithPanel="True">
-                    <FontIcon Glyph="&#xE762;" />
-                    <DropDownButton.Flyout>
-                        <Flyout Placement="Bottom">
-                            <StackPanel Background="{ThemeResource CardBackgroundBrush}">
-                                <RadioButton
+					<FontIcon Glyph="&#xE762;" />
+					<DropDownButton.Flyout>
+						<Flyout Placement="Bottom">
+							<StackPanel Background="{ThemeResource CardBackgroundBrush}">
+								<RadioButton
                                     x:Name="ExtraSmallSizeRadioButton"
                                     Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbExtraSmallSizeIcon"
                                     Checked="SizeRadioButton_Checked"
@@ -186,7 +186,7 @@
                                     GroupName="SizeGroup"
                                     Style="{StaticResource SmallRadioButtonStyle}"
                                     Tag="Extra Small" />
-                                <RadioButton
+								<RadioButton
                                     x:Name="SmallSizeRadioButton"
                                     Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbSmallSizeIcon"
                                     Checked="SizeRadioButton_Checked"
@@ -194,7 +194,7 @@
                                     GroupName="SizeGroup"
                                     Style="{StaticResource SmallRadioButtonStyle}"
                                     Tag="Small" />
-                                <RadioButton
+								<RadioButton
                                     x:Name="MediumSizeRadioButton"
                                     Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbMediumSizeIcon"
                                     Checked="SizeRadioButton_Checked"
@@ -202,7 +202,7 @@
                                     GroupName="SizeGroup"
                                     Style="{StaticResource SmallRadioButtonStyle}"
                                     Tag="Medium" />
-                                <RadioButton
+								<RadioButton
                                     x:Name="LargeSizeRadioButton"
                                     Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbLargeSizeIcon"
                                     Checked="SizeRadioButton_Checked"
@@ -210,7 +210,7 @@
                                     GroupName="SizeGroup"
                                     Style="{StaticResource SmallRadioButtonStyle}"
                                     Tag="Large" />
-                                <RadioButton
+								<RadioButton
                                     x:Name="ExtraLargeSizeRadioButton"
                                     Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbExtraLargeSizeIcon"
                                     Checked="SizeRadioButton_Checked"
@@ -218,33 +218,33 @@
                                     GroupName="SizeGroup"
                                     Style="{StaticResource SmallRadioButtonStyle}"
                                     Tag="Extra Large" />
-                            </StackPanel>
-                        </Flyout>
-                    </DropDownButton.Flyout>
-                </DropDownButton>
-            </RelativePanel>
-        </Border>
+							</StackPanel>
+						</Flyout>
+					</DropDownButton.Flyout>
+				</DropDownButton>
+			</RelativePanel>
+		</Border>
 
 
-        <ScrollViewer
+		<ScrollViewer
             x:Name="ScrollViewerTreeView"
             Grid.Row="1"
             HorizontalScrollBarVisibility="Auto"
             HorizontalScrollMode="Enabled"
             VerticalScrollBarVisibility="Auto"
             VerticalScrollMode="Enabled">
-            <ScrollViewer.Resources>
-                <Style TargetType="ScrollBar">
-                    <Setter Property="Background" Value="{ThemeResource BorderPrimaryColor}" />
-                    <Setter Property="Foreground" Value="{ThemeResource SystemAccentColor}" />
-                </Style>
-            </ScrollViewer.Resources>
+			<ScrollViewer.Resources>
+				<Style TargetType="ScrollBar">
+					<Setter Property="Background" Value="{ThemeResource BorderPrimaryColor}" />
+					<Setter Property="Foreground" Value="{ThemeResource SystemAccentColor}" />
+				</Style>
+			</ScrollViewer.Resources>
 
-            <!--  ОБЕРТКА: весь контент ScrollViewer должен быть в одном контейнере  -->
-            <StackPanel>
-                <!--  Секция специальных папок с TreeView  -->
+			<!--  ОБЕРТКА: весь контент ScrollViewer должен быть в одном контейнере  -->
+			<StackPanel>
+				<!--  Секция специальных папок с TreeView  -->
 
-                <TreeView
+				<TreeView
                     x:Name="treeViewSpF"
                     Margin="1"
                     Padding="0,0,2,2"
@@ -254,68 +254,70 @@
                     DoubleTapped="TreeViewSpF_OnDoubleTapped"
                     Expanding="TreeViewSpF_OnExpanding"
                     SelectionChanged="TreeViewSpF_SelectionChanged"
+					DragItemsStarting="treeViewSpF_DragItemsStarting"
+                    DragOver="treeViewSpF_DragOver"
+                    Drop="treeViewSpF_Drop"
                     IsDoubleTapEnabled="True"
                     ItemsSource="{Binding ExplorerItems}"
                     Loaded="TreeViewSpF_OnLoaded">
+					<TreeView.ItemContainerStyle>
+						<Style TargetType="TreeViewItem">
+							<Setter Property="HasUnrealizedChildren" Value="True" />
+							<Setter Property="Margin" Value="1,1,0,0" />
+							<Setter Property="Padding" Value="0,0,0,0" />
+							<Setter Property="Background" Value="Transparent" />
+							<Setter Property="HorizontalContentAlignment" Value="Left" />
+						</Style>
+					</TreeView.ItemContainerStyle>
 
-                    <TreeView.ItemContainerStyle>
-                        <Style TargetType="TreeViewItem">
-                            <Setter Property="HasUnrealizedChildren" Value="True" />
-                            <Setter Property="Margin" Value="1,1,0,0" />
-                            <Setter Property="Padding" Value="0,0,0,0" />
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="HorizontalContentAlignment" Value="Left" />
-                        </Style>
-                    </TreeView.ItemContainerStyle>
-
-                    <!--  ИСПОЛЬЗУЕМ ТОТ ЖЕ ТЕМПЛЕЙТ-СЕЛЕКТОР  -->
-                    <TreeView.ItemTemplateSelector>
-                        <controls:TreeViewItemTemplateSelector>
-                            <controls:TreeViewItemTemplateSelector.MyComputerTemplate>
-                                <DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-                                    <controls:TileMyPcUC
+					<!--  ИСПОЛЬЗУЕМ ТОТ ЖЕ ТЕМПЛЕЙТ-СЕЛЕКТОР  -->
+					<TreeView.ItemTemplateSelector>
+						<controls:TreeViewItemTemplateSelector>
+							<controls:TreeViewItemTemplateSelector.MyComputerTemplate>
+								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
+									<controls:TileMyPcUC
                                         Margin="5"
                                         Padding="0"
                                         HorizontalAlignment="Stretch"
                                         DisplayMode="Horizontal">
-                                        <controls:TileMyPcUC.RenderTransform>
-                                            <ScaleTransform x:Name="ScaleTransformMyCompSpF" ScaleX="1" ScaleY="1" />
-                                        </controls:TileMyPcUC.RenderTransform>
-                                    </controls:TileMyPcUC>
-                                </DataTemplate>
-                            </controls:TreeViewItemTemplateSelector.MyComputerTemplate>
+										<controls:TileMyPcUC.RenderTransform>
+											<ScaleTransform x:Name="ScaleTransformMyCompSpF" ScaleX="1" ScaleY="1" />
+										</controls:TileMyPcUC.RenderTransform>
+									</controls:TileMyPcUC>
+								</DataTemplate>
+							</controls:TreeViewItemTemplateSelector.MyComputerTemplate>
 
-                            <controls:TreeViewItemTemplateSelector.DriveTemplate>
-                                <DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-                                    <controls:TileMyDriveUc
+							<controls:TreeViewItemTemplateSelector.DriveTemplate>
+								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
+									<controls:TileMyDriveUc
                                         Margin="0"
                                         Padding="0"
                                         HorizontalAlignment="Stretch">
-                                        <controls:TileMyDriveUc.RenderTransform>
-                                            <ScaleTransform x:Name="ScaleTransformDriveUcSpF" ScaleX="1" ScaleY="1" />
-                                        </controls:TileMyDriveUc.RenderTransform>
-                                    </controls:TileMyDriveUc>
-                                </DataTemplate>
-                            </controls:TreeViewItemTemplateSelector.DriveTemplate>
+										<controls:TileMyDriveUc.RenderTransform>
+											<ScaleTransform x:Name="ScaleTransformDriveUcSpF" ScaleX="1" ScaleY="1" />
+										</controls:TileMyDriveUc.RenderTransform>
+									</controls:TileMyDriveUc>
+								</DataTemplate>
+							</controls:TreeViewItemTemplateSelector.DriveTemplate>
 
-                            <controls:TreeViewItemTemplateSelector.FolderTemplate>
-                                <DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-                                    <controls:TileMyFoldersUc
+							<controls:TreeViewItemTemplateSelector.FolderTemplate>
+								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
+									<controls:TileMyFoldersUc
                                         Margin="0"
                                         Padding="0"
                                         HorizontalAlignment="Stretch">
-                                        <controls:TileMyFoldersUc.RenderTransform>
-                                            <ScaleTransform x:Name="ScaleTransformFolderUcSpF" ScaleX="1" ScaleY="1" />
-                                        </controls:TileMyFoldersUc.RenderTransform>
-                                    </controls:TileMyFoldersUc>
-                                </DataTemplate>
-                            </controls:TreeViewItemTemplateSelector.FolderTemplate>
-                        </controls:TreeViewItemTemplateSelector>
-                    </TreeView.ItemTemplateSelector>
-                </TreeView>
+										<controls:TileMyFoldersUc.RenderTransform>
+											<ScaleTransform x:Name="ScaleTransformFolderUcSpF" ScaleX="1" ScaleY="1" />
+										</controls:TileMyFoldersUc.RenderTransform>
+									</controls:TileMyFoldersUc>
+								</DataTemplate>
+							</controls:TreeViewItemTemplateSelector.FolderTemplate>
+						</controls:TreeViewItemTemplateSelector>
+					</TreeView.ItemTemplateSelector>
+				</TreeView>
 
-                <!--  Основной TreeView для файловой системы  -->
-                <TreeView
+				<!--  Основной TreeView для файловой системы  -->
+				<TreeView
                     x:Name="treeView"
                     Margin="1"
                     Padding="0,0,2,2"
@@ -325,67 +327,71 @@
                     DoubleTapped="TreeView_OnDoubleTapped"
                     Expanding="TreeView_OnExpanding"
                     SelectionChanged="TreeView_SelectionChanged"
+					DragItemsStarting="treeView_DragItemsStarting"
+					DragOver="treeView_DragOver"
+					Drop="treeView_Drop"
                     IsDoubleTapEnabled="True"
                     ItemsSource="{Binding ExplorerItems}"
                     Loaded="TreeView_OnLoaded">
+					<TreeView.ItemContainerStyle>
+						<Style TargetType="TreeViewItem">
+							<Setter Property="HasUnrealizedChildren" Value="True" />
+							<Setter Property="Margin" Value="1,1,0,0" />
+							<Setter Property="Padding" Value="0,0,0,0" />
+							<Setter Property="Background" Value="Transparent" />
+							<Setter Property="HorizontalContentAlignment" Value="Left" />
+						</Style>
+					</TreeView.ItemContainerStyle>
 
-                    <TreeView.ItemContainerStyle>
-                        <Style TargetType="TreeViewItem">
-                            <Setter Property="HasUnrealizedChildren" Value="True" />
-                            <Setter Property="Margin" Value="1,1,0,0" />
-                            <Setter Property="Padding" Value="0,0,0,0" />
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="HorizontalContentAlignment" Value="Left" />
-                        </Style>
-                    </TreeView.ItemContainerStyle>
-
-                    <TreeView.ItemTemplateSelector>
-                        <controls:TreeViewItemTemplateSelector>
-                            <controls:TreeViewItemTemplateSelector.MyComputerTemplate>
-                                <DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-                                    <controls:TileMyPcUC
+					<TreeView.ItemTemplateSelector>
+						<controls:TreeViewItemTemplateSelector>
+							<controls:TreeViewItemTemplateSelector.MyComputerTemplate>
+								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
+									<controls:TileMyPcUC
                                         Margin="5"
                                         Padding="0"
                                         HorizontalAlignment="Stretch"
                                         DisplayMode="Horizontal">
-                                        <controls:TileMyPcUC.RenderTransform>
-                                            <ScaleTransform x:Name="ScaleTransformMyComp" ScaleX="1" ScaleY="1" />
-                                        </controls:TileMyPcUC.RenderTransform>
-                                    </controls:TileMyPcUC>
-                                </DataTemplate>
-                            </controls:TreeViewItemTemplateSelector.MyComputerTemplate>
+										<controls:TileMyPcUC.RenderTransform>
+											<ScaleTransform x:Name="ScaleTransformMyComp" ScaleX="1" ScaleY="1" />
+										</controls:TileMyPcUC.RenderTransform>
+									</controls:TileMyPcUC>
+								</DataTemplate>
+							</controls:TreeViewItemTemplateSelector.MyComputerTemplate>
 
-                            <controls:TreeViewItemTemplateSelector.DriveTemplate>
-                                <DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-                                    <controls:TileMyDriveUc
+							<controls:TreeViewItemTemplateSelector.DriveTemplate>
+								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
+									<controls:TileMyDriveUc
                                         Margin="0"
                                         Padding="0"
                                         HorizontalAlignment="Stretch"
                                         DisplayMode="Horizontal">
-                                        <controls:TileMyDriveUc.RenderTransform>
-                                            <ScaleTransform x:Name="ScaleTransformDriveUc" ScaleX="1" ScaleY="1" />
-                                        </controls:TileMyDriveUc.RenderTransform>
-                                    </controls:TileMyDriveUc>
-                                </DataTemplate>
-                            </controls:TreeViewItemTemplateSelector.DriveTemplate>
+										<controls:TileMyDriveUc.RenderTransform>
+											<ScaleTransform x:Name="ScaleTransformDriveUc" ScaleX="1" ScaleY="1" />
+										</controls:TileMyDriveUc.RenderTransform>
+									</controls:TileMyDriveUc>
+								</DataTemplate>
+							</controls:TreeViewItemTemplateSelector.DriveTemplate>
 
-                            <controls:TreeViewItemTemplateSelector.FolderTemplate>
-                                <DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-                                    <controls:TileMyFoldersUc
+							<controls:TreeViewItemTemplateSelector.FolderTemplate>
+								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
+									<controls:TileMyFoldersUc
                                         Margin="0"
                                         Padding="0"
                                         HorizontalAlignment="Stretch"
                                         DisplayMode="Horizontal">
-                                        <controls:TileMyFoldersUc.RenderTransform>
-                                            <ScaleTransform x:Name="ScaleTransformFolderUc" ScaleX="1" ScaleY="1" />
-                                        </controls:TileMyFoldersUc.RenderTransform>
-                                    </controls:TileMyFoldersUc>
-                                </DataTemplate>
-                            </controls:TreeViewItemTemplateSelector.FolderTemplate>
-                        </controls:TreeViewItemTemplateSelector>
-                    </TreeView.ItemTemplateSelector>
-                </TreeView>
-            </StackPanel>
-        </ScrollViewer>
-    </Grid>
+										<controls:TileMyFoldersUc.RenderTransform>
+											<ScaleTransform x:Name="ScaleTransformFolderUc" ScaleX="1" ScaleY="1" />
+										</controls:TileMyFoldersUc.RenderTransform>
+									</controls:TileMyFoldersUc>
+								</DataTemplate>
+							</controls:TreeViewItemTemplateSelector.FolderTemplate>
+						</controls:TreeViewItemTemplateSelector>
+					</TreeView.ItemTemplateSelector>
+				</TreeView>
+			</StackPanel>
+		</ScrollViewer>
+	</Grid>
 </Page>
+
+
