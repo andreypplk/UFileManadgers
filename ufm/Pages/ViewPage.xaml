@@ -260,12 +260,14 @@
                             Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtCopyButton"
                             Click="CopyButton_Click"
                             Content="&#xE8C8;"
+							  IsEnabled="False"
                             Style="{StaticResource OperationButtonStyle}" />
 						<Button
                             x:Name="MoveButton"
                             Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtMoveButton"
                             Click="MoveButton_Click"
                             Content="&#xE715;"
+							  IsEnabled="False"
                             Style="{StaticResource OperationButtonStyle}" />
 
 						<Button
@@ -273,6 +275,7 @@
                             Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtRenameButton"
                             Click="RenameButton_Click"
                             Content="&#xE8AC;"
+							  IsEnabled="False"
                             Style="{StaticResource OperationButtonStyle}" />
 
 						<Button
@@ -280,6 +283,7 @@
                             Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtCutButton"
                             Click="CutButton_Click"
                             Content="&#xE8C6;"
+							  IsEnabled="False"
                             Style="{StaticResource OperationButtonStyle}" />
 
 						<Button
@@ -287,6 +291,7 @@
                             Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtPasteButton"
                             Click="PasteButton_Click"
                             Content="&#xE77F;"
+							  IsEnabled="False"
                             Style="{StaticResource OperationButtonStyle}" />
 
 						<Button
@@ -294,6 +299,7 @@
                             Lngmng:Uids.ToolTipUid="VPsecondmemustBut_ttsttBtDeleteButton"
                             Click="DeleteButton_Click"
                             Content="&#xE74D;"
+							  IsEnabled="False"
                             Style="{StaticResource OperationButtonStyle}" />
 
 					</StackPanel>

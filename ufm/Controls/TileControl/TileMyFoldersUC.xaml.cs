@@ -155,22 +155,22 @@ namespace ufm
         {
             try
             {
-                var visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+                //var visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
 
-                if (ItemsCountText != null)
-                {
-                    ItemsCountText.Visibility = showDetails ? visibility : Visibility.Collapsed;
-                }
+                //if (ItemsCountText != null)
+                //{
+                //    ItemsCountText.Visibility = showDetails ? visibility : Visibility.Collapsed;
+                //}
 
-                if (LastModifiedText != null)
-                {
-                    LastModifiedText.Visibility = showDetails ? visibility : Visibility.Collapsed;
-                }
+                //if (LastModifiedText != null)
+                //{
+                //    LastModifiedText.Visibility = showDetails ? visibility : Visibility.Collapsed;
+                //}
 
-                if (AttributesText != null)
-                {
-                    AttributesText.Visibility = showAttributes ? visibility : Visibility.Collapsed;
-                }
+                //if (AttributesText != null)
+                //{
+                //    AttributesText.Visibility = showAttributes ? visibility : Visibility.Collapsed;
+                //}
             }
             catch  
             {
