@@ -14,6 +14,9 @@ namespace ufm
     {
         //private MainWindow _mainWindow;
 
+        // Флаг, показывающий, что страница находится в процессе инициализации
+        private bool _isInitializing;
+
         public AdvancedSettingsPage()
         {
             this.InitializeComponent();
@@ -22,18 +25,19 @@ namespace ufm
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            _isInitializing = true;
             try
             {
                 Debug.WriteLine("AdvancedSettingsPage loaded");
 
-                // Загружаем состояние настройки навигации
+                // Загружаем состояния всех чекбоксов
                 LoadNavigationBackItemSetting();
                 LoadExpandedTreeSelected();
                 LoadExpanderNodesSFStartsSetting();
                 LoadExpanderNodesMyPcStartsSetting();
                 LoadSingleClickOpenSetting();
 
-                // Загружаем остальные настройки
+                // Загружаем остальные настройки (закомментированы, но при необходимости раскомментировать)
                 //ShowFileExtensionsCheckBox.IsChecked = App.SettingsManager.GetSetting<bool>("ShowFileExtensions", false);
                 //ShowHiddenFilesCheckBox.IsChecked = App.SettingsManager.GetSetting<bool>("ShowHiddenFiles", false);
                 //HideSystemFilesCheckBox.IsChecked = App.SettingsManager.GetSetting<bool>("HideSystemFiles", true);
@@ -47,12 +51,17 @@ namespace ufm
             {
                 Debug.WriteLine($"OnLoaded error: {ex}");
             }
+            finally
+            {
+                _isInitializing = false;
+            }
         }
+
+        // Методы загрузки – только устанавливают значение, без проверок флага
         private void LoadNavigationBackItemSetting()
         {
             try
             {
-                // Загружаем состояние настройки навигации
                 ShowNavigationBackItemCheckBox.IsChecked = App.SettingsManager.GetSetting<bool>("ShowNavigationBackItem", true);
             }
             catch (Exception ex)
@@ -60,23 +69,23 @@ namespace ufm
                 Debug.WriteLine($"LoadNavigationBackItemSetting error: {ex}");
             }
         }
+
         private void LoadExpandedTreeSelected()
         {
             try
             {
-                // Загружаем состояние настройки навигации
                 ShowExpandedTreeSelectedCheckBox.IsChecked = App.SettingsManager.GetSetting<bool>("ExpandedTreeSelected", true);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"LoadNavigationBackItemSetting error: {ex}");
+                Debug.WriteLine($"LoadExpandedTreeSelected error: {ex}");
             }
         }
-        private void LoadExpanderNodesSFStartsSetting() // Новый метод
+
+        private void LoadExpanderNodesSFStartsSetting()
         {
             try
             {
-                // Загружаем состояние настройки раскрытия узлов специальных папок при старте
                 ExpanderNodesSFStartsCheckBox.IsChecked = App.SettingsManager.GetSetting<bool>("ExpanderNodesSFStarts", true);
             }
             catch (Exception ex)
@@ -84,11 +93,11 @@ namespace ufm
                 Debug.WriteLine($"LoadExpanderNodesSFStartsSetting error: {ex}");
             }
         }
-        private void LoadExpanderNodesMyPcStartsSetting() // Новый метод
+
+        private void LoadExpanderNodesMyPcStartsSetting()
         {
             try
             {
-                // Загружаем состояние настройки раскрытия узлов специальных папок при старте
                 ExpanderNodesMyPcStartsCheckBox.IsChecked = App.SettingsManager.GetSetting<bool>("ExpanderNodesMyPcStarts", true);
             }
             catch (Exception ex)
@@ -96,6 +105,7 @@ namespace ufm
                 Debug.WriteLine($"LoadExpanderNodesMyPcStartsSetting error: {ex}");
             }
         }
+
         private void LoadSingleClickOpenSetting()
         {
             try
@@ -108,18 +118,15 @@ namespace ufm
             }
         }
 
+        // Обработчики событий – подавляем действия, если страница инициализируется
         private void ShowNavigationBackItemCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool showBackNavigation = ShowNavigationBackItemCheckBox.IsChecked ?? false;
-
-                // Сохраняем настройку
                 App.SettingsManager.SaveSetting("ShowNavigationBackItem", showBackNavigation);
-
                 Debug.WriteLine($"Navigation back item setting changed: {showBackNavigation}");
-
-                // Прямой вызов через медиатор - ВСЕ ОСТАЛЬНЫЕ КЛАССЫ НЕ НУЖНЫ!
                 NavigationSettingsMediator.NotifySettingsChanged(showBackNavigation);
             }
             catch (Exception ex)
@@ -130,14 +137,11 @@ namespace ufm
 
         private void ShowExpandedTreeSelectedCheckBox_Checked(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool boolExpandedTreeSelected = ShowExpandedTreeSelectedCheckBox.IsChecked ?? false;
-
-                // Сохраняем настройку
                 App.SettingsManager.SaveSetting("ExpandedTreeSelected", boolExpandedTreeSelected);
-
-                // Прямой вызов через медиатор - ВСЕ ОСТАЛЬНЫЕ КЛАССЫ НЕ НУЖНЫ!
                 NavigationSettingsMediator.NotifySettingsChanged(boolExpandedTreeSelected);
             }
             catch (Exception ex)
@@ -148,6 +152,7 @@ namespace ufm
 
         private void ExpanderNodesSFStartsCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool ExpNode = ExpanderNodesSFStartsCheckBox.IsChecked ?? false;
@@ -159,8 +164,10 @@ namespace ufm
                 Debug.WriteLine($"ExpanderNodesSFStartsCheckBox_Changed error: {ex}");
             }
         }
+
         private void ExpanderNodesMyPcStartsCheckBox_Checked(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool ExpNode = ExpanderNodesMyPcStartsCheckBox.IsChecked ?? false;
@@ -172,18 +179,15 @@ namespace ufm
                 Debug.WriteLine($"ExpanderNodesMyPcStartsCheckBox_Changed error: {ex}");
             }
         }
+
         private void SingleClickOpenCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool boolsingleClickOpen = SingleClickOpenCheckBox.IsChecked ?? false;
-
-                // Сохраняем настройку
                 App.SettingsManager.SaveSetting("SingleClickOpen", boolsingleClickOpen);
-
                 Debug.WriteLine($"Single click open setting changed: {boolsingleClickOpen}");
-
-                // Если нужно уведомить другие части приложения
                 NavigationSettingsMediator.NotifySettingsChanged(boolsingleClickOpen);
             }
             catch (Exception ex)
@@ -191,8 +195,11 @@ namespace ufm
                 Debug.WriteLine($"SingleClickOpenCheckBox_Changed error: {ex}");
             }
         }
+
+        // Обработчики, которые не вызывают медиатор (можно тоже обернуть в if (_isInitializing) для единообразия)
         private void ShowHiddenFilesCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool showHidden = ShowHiddenFilesCheckBox.IsChecked ?? false;
@@ -207,6 +214,7 @@ namespace ufm
 
         private void HideSystemFilesCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool hideSystemFiles = HideSystemFilesCheckBox.IsChecked ?? false;
@@ -221,6 +229,7 @@ namespace ufm
 
         private void ShowRibbonCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool showRibbon = ShowRibbonCheckBox.IsChecked ?? false;
@@ -235,6 +244,7 @@ namespace ufm
 
         private void SingleInstanceCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool singleInstance = SingleInstanceCheckBox.IsChecked ?? false;
@@ -249,6 +259,7 @@ namespace ufm
 
         private void ShowPreviewPaneCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool showPreview = ShowPreviewPaneCheckBox.IsChecked ?? false;
@@ -263,6 +274,7 @@ namespace ufm
 
         private void ShowQuickAccessCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool showQuickAccess = ShowQuickAccessCheckBox.IsChecked ?? false;
@@ -277,6 +289,7 @@ namespace ufm
 
         private void ShowNotificationsCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
             try
             {
                 bool showNotifications = ShowNotificationsCheckBox.IsChecked ?? false;
@@ -313,7 +326,5 @@ namespace ufm
                 Debug.WriteLine($"OnNavigatingFrom error: {ex}");
             }
         }
-
-    
     }
 }

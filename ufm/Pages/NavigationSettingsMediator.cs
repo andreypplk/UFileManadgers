@@ -9,6 +9,9 @@ namespace ufm
         private static readonly List<WeakReference<IRefreshablePanel>> _panels = new();
         private static readonly object _lock = new object();
 
+        // Храним последнее отправленное значение, чтобы избежать повторной рассылки
+        private static bool? _lastShowBackNavigation = null;
+
         public static void RegisterPanel(IRefreshablePanel panel)
         {
             lock (_lock)
@@ -30,6 +33,12 @@ namespace ufm
 
         public static void NotifySettingsChanged(bool showBackNavigation)
         {
+            // Если значение не изменилось, не рассылаем уведомление
+            if (_lastShowBackNavigation.HasValue && _lastShowBackNavigation.Value == showBackNavigation)
+                return;
+
+            _lastShowBackNavigation = showBackNavigation;
+
             lock (_lock)
             {
                 foreach (var weakRef in _panels.ToList())

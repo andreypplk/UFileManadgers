@@ -166,21 +166,85 @@ namespace ufm
         /// <param name="destinationFolder">Папка назначения (null для удаления)</param>
         /// <param name="progressTitle">Заголовок окна прогресса</param>
         /// <param name="additionalFlags">Дополнительные флаги (например, FOF_ALLOWUNDO для корзины)</param>
+        //private async Task<bool> RunOperationWithProgressAsync(
+        //    uint wFunc,
+        //    List<string> sourcePaths,
+        //    string destinationFolder,
+        //    string progressTitle,
+        //    ushort additionalFlags = 0)
+        //{
+        //    string fromList = string.Join("\0", sourcePaths) + "\0\0";
+        //    string toPath = (destinationFolder != null) ? destinationFolder + "\0\0" : null;
+
+        //    ushort flags = FOF_SIMPLEPROGRESS;
+        //    if (wFunc != FO_DELETE)
+        //    {
+        //        flags |= FOF_MULTIDESTFILES;
+        //    }
+        //    flags |= additionalFlags;
+
+        //    var op = new SHFILEOPSTRUCT
+        //    {
+        //        hwnd = _parentHwnd,
+        //        wFunc = wFunc,
+        //        pFrom = fromList,
+        //        pTo = toPath,
+        //        fFlags = flags,
+        //        fAnyOperationsAborted = false,
+        //        hNameMappings = IntPtr.Zero,
+        //        lpszProgressTitle = progressTitle
+        //    };
+
+        //    bool success;
+        //    if (_dispatcherQueue != null)
+        //    {
+        //        var tcs = new TaskCompletionSource<bool>();
+        //        _dispatcherQueue.TryEnqueue(() =>
+        //        {
+        //            try
+        //            {
+        //                int result = SHFileOperation(ref op);
+        //                success = (result == 0 && !op.fAnyOperationsAborted);
+        //            }
+        //            catch
+        //            {
+        //                success = false;
+        //            }
+        //            tcs.SetResult(success);
+        //        });
+        //        success = await tcs.Task;
+        //    }
+        //    else
+        //    {
+        //        success = await Task.Run(() =>
+        //        {
+        //            try
+        //            {
+        //                int result = SHFileOperation(ref op);
+        //                return (result == 0 && !op.fAnyOperationsAborted);
+        //            }
+        //            catch
+        //            {
+        //                return false;
+        //            }
+        //        });
+        //    }
+
+        //    return success;
+        //}
         private async Task<bool> RunOperationWithProgressAsync(
-            uint wFunc,
-            List<string> sourcePaths,
-            string destinationFolder,
-            string progressTitle,
-            ushort additionalFlags = 0)
+uint wFunc,
+List<string> sourcePaths,
+string destinationFolder,
+string progressTitle,
+ushort additionalFlags = 0)
         {
             string fromList = string.Join("\0", sourcePaths) + "\0\0";
-            string toPath = (destinationFolder != null) ? destinationFolder + "\0\0" : null;
+            string toPath = destinationFolder != null ? destinationFolder + "\0\0" : null;
 
             ushort flags = FOF_SIMPLEPROGRESS;
             if (wFunc != FO_DELETE)
-            {
                 flags |= FOF_MULTIDESTFILES;
-            }
             flags |= additionalFlags;
 
             var op = new SHFILEOPSTRUCT
@@ -195,44 +259,20 @@ namespace ufm
                 lpszProgressTitle = progressTitle
             };
 
-            bool success;
-            if (_dispatcherQueue != null)
+            // Всегда выполняем в фоновом потоке
+            return await Task.Run(() =>
             {
-                var tcs = new TaskCompletionSource<bool>();
-                _dispatcherQueue.TryEnqueue(() =>
+                try
                 {
-                    try
-                    {
-                        int result = SHFileOperation(ref op);
-                        success = (result == 0 && !op.fAnyOperationsAborted);
-                    }
-                    catch
-                    {
-                        success = false;
-                    }
-                    tcs.SetResult(success);
-                });
-                success = await tcs.Task;
-            }
-            else
-            {
-                success = await Task.Run(() =>
+                    int result = SHFileOperation(ref op);
+                    return result == 0 && !op.fAnyOperationsAborted;
+                }
+                catch
                 {
-                    try
-                    {
-                        int result = SHFileOperation(ref op);
-                        return (result == 0 && !op.fAnyOperationsAborted);
-                    }
-                    catch
-                    {
-                        return false;
-                    }
-                });
-            }
-
-            return success;
+                    return false;
+                }
+            });
         }
-
         // ===================== Ручной fallback (без интерфейса) =====================
         private static void ManualPasteFallback(List<string> sources, string dest, bool isCut)
         {

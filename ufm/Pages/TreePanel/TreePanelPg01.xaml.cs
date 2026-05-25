@@ -1,5 +1,6 @@
 ﻿//using System;
 //using System.Collections.Generic;
+//using System.Diagnostics;
 //using System.IO;
 //using System.Linq;
 //using System.Threading.Tasks;
@@ -36,6 +37,9 @@
 //        private HashSet<string> _savedExpandedPaths = new HashSet<string>();
 //        private string _savedSelectedPath = null;
 //        private bool _isFirstLoad = true;
+
+//        // Флаг, показывающий, что содержимое SpecialFolders загружено (однократно)
+//        private volatile bool _spfContentLoaded = false;
 
 //        private HashSet<string> _specialFolderPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -133,23 +137,34 @@
 //        {
 //            try
 //            {
-//                var savedPaths = App.SettingsManager?.GetSetting<List<string>>("TreePanelExpandedPaths", new List<string>());
+//                var savedPaths = App.SettingsManager?.GetSetting<List<string>>(
+//                    "TreePanelExpandedPaths", new List<string>());
+
+//                _savedExpandedPaths.Clear();
+
 //                if (savedPaths != null && savedPaths.Count > 0)
 //                {
-//                    _savedExpandedPaths.Clear();
 //                    foreach (var path in savedPaths)
 //                        _savedExpandedPaths.Add(path);
 //                }
-//                else
-//                {
-//                    if (ExpanderNodesMyPcStartsSetting)
-//                        _savedExpandedPaths.Add("MyComputer");
-//                }
+
+//                if (!ExpanderNodesMyPcStartsSetting)
+//                    _savedExpandedPaths.Remove("MyComputer");
+//                else if (!_savedExpandedPaths.Contains("MyComputer"))
+//                    _savedExpandedPaths.Add("MyComputer");
+
+//                if (!ExpanderNodesSFStartsSetting)
+//                    _savedExpandedPaths.Remove("SpecialFolders");
+//                else if (!_savedExpandedPaths.Contains("SpecialFolders"))
+//                    _savedExpandedPaths.Add("SpecialFolders");
 //            }
 //            catch
 //            {
+//                _savedExpandedPaths.Clear();
 //                if (ExpanderNodesMyPcStartsSetting)
 //                    _savedExpandedPaths.Add("MyComputer");
+//                if (ExpanderNodesSFStartsSetting)
+//                    _savedExpandedPaths.Add("SpecialFolders");
 //            }
 //        }
 
@@ -165,9 +180,7 @@
 //                var pathsList = _savedExpandedPaths.ToList();
 //                App.SettingsManager?.SaveSetting("TreePanelExpandedPaths", pathsList);
 //            }
-//            catch
-//            {
-//            }
+//            catch { }
 //        }
 
 //        public void Dispose()
@@ -204,9 +217,7 @@
 //                    _history?.Dispose();
 //                    _historySpF?.Dispose();
 //                }
-//                catch
-//                {
-//                }
+//                catch { }
 //                finally
 //                {
 //                    Instance = null;
@@ -236,12 +247,22 @@
 //            {
 //                if (node.Content is ExplorerItemViewModel item)
 //                {
-//                    bool shouldExpand = _expandedPaths.Contains(item.FilePath);
-//                    if (shouldExpand && !node.IsExpanded)
+//                    bool canExpand = true;
+//                    if (item.FilePath == "MyComputer")
+//                        canExpand = ExpanderNodesMyPcStartsSetting;
+//                    else if (item.FilePath == "SpecialFolders")
+//                        canExpand = ExpanderNodesSFStartsSetting;
+
+//                    if (canExpand && _expandedPaths.Contains(item.FilePath) && !node.IsExpanded)
 //                    {
 //                        tree.Expand(node);
 //                    }
+//                    else if (!canExpand && node.IsExpanded)
+//                    {
+//                        tree.Collapse(node);
+//                    }
 //                }
+
 //                RestoreExpandedState(tree, node.Children, treeName + "->children");
 //            }
 //        }
@@ -250,11 +271,21 @@
 
 //        #region Обработчики событий страницы
 
-//        private void TreePanelPg01_Loaded(object sender, RoutedEventArgs e)
+//        private async void TreePanelPg01_Loaded(object sender, RoutedEventArgs e)
 //        {
 //            _expandedPaths.Clear();
 //            foreach (var path in _savedExpandedPaths)
 //                _expandedPaths.Add(path);
+
+//            if (!ExpanderNodesMyPcStartsSetting)
+//                _expandedPaths.Remove("MyComputer");
+//            else if (!_expandedPaths.Contains("MyComputer"))
+//                _expandedPaths.Add("MyComputer");
+
+//            if (!ExpanderNodesSFStartsSetting)
+//                _expandedPaths.Remove("SpecialFolders");
+//            else if (!_expandedPaths.Contains("SpecialFolders"))
+//                _expandedPaths.Add("SpecialFolders");
 
 //            if (App.SettingsManager != null)
 //            {
@@ -280,16 +311,22 @@
 
 //            if (!_isFirstLoad)
 //            {
-//                DispatcherQueue.TryEnqueue(async () =>
+//                // Ждём завершения фоновой загрузки SpecialFolders, затем восстанавливаем состояние
+//                _ = Task.Run(async () =>
 //                {
-//                    await Task.Delay(300);
-//                    RestoreExpandedState(treeView, treeView.RootNodes, "treeView");
-//                    RestoreExpandedState(treeViewSpF, treeViewSpF.RootNodes, "treeViewSpF");
-//                    if (!string.IsNullOrEmpty(_savedSelectedPath))
+//                    while (!_spfContentLoaded)
+//                        await Task.Delay(50);
+//                    await DispatcherQueue.EnqueueAsync(async () =>
 //                    {
-//                        UpdateTreeViewSelection(_activePanelId, _savedSelectedPath);
-//                    }
-//                    ScheduleUpdateAllTiles();
+//                        await Task.Delay(100);
+//                        RestoreExpandedState(treeView, treeView.RootNodes, "treeView");
+//                        RestoreExpandedState(treeViewSpF, treeViewSpF.RootNodes, "treeViewSpF");
+//                        if (!string.IsNullOrEmpty(_savedSelectedPath))
+//                        {
+//                            UpdateTreeViewSelection(_activePanelId, _savedSelectedPath);
+//                        }
+//                        ScheduleUpdateAllTiles();
+//                    });
 //                });
 //            }
 //            else
@@ -312,21 +349,11 @@
 
 //            switch (selectedSize)
 //            {
-//                case "Extra Small":
-//                    ExtraSmallSizeRadioButton.IsChecked = true;
-//                    break;
-//                case "Small":
-//                    SmallSizeRadioButton.IsChecked = true;
-//                    break;
-//                case "Medium":
-//                    MediumSizeRadioButton.IsChecked = true;
-//                    break;
-//                case "Large":
-//                    LargeSizeRadioButton.IsChecked = true;
-//                    break;
-//                case "Extra Large":
-//                    ExtraLargeSizeRadioButton.IsChecked = true;
-//                    break;
+//                case "Extra Small": ExtraSmallSizeRadioButton.IsChecked = true; break;
+//                case "Small": SmallSizeRadioButton.IsChecked = true; break;
+//                case "Medium": MediumSizeRadioButton.IsChecked = true; break;
+//                case "Large": LargeSizeRadioButton.IsChecked = true; break;
+//                case "Extra Large": ExtraLargeSizeRadioButton.IsChecked = true; break;
 //            }
 //        }
 
@@ -344,9 +371,7 @@
 //                        App.SettingsManager.SaveSetting("SelectedSizeIconTreeView", _selectedSize);
 //                        saved = true;
 //                    }
-//                    catch
-//                    {
-//                    }
+//                    catch { }
 //                }
 
 //                if (!saved)
@@ -356,9 +381,7 @@
 //                        var localSettings = ApplicationData.Current.LocalSettings.Values;
 //                        localSettings["SelectedSizeIconTreeView"] = _selectedSize;
 //                    }
-//                    catch
-//                    {
-//                    }
+//                    catch { }
 //                }
 
 //                UpdateAllTiles();
@@ -426,9 +449,7 @@
 //                            driveNode.Children.Add(node);
 //                        }
 //                    }
-//                    catch
-//                    {
-//                    }
+//                    catch { }
 //                }
 //            }
 //        }
@@ -453,9 +474,7 @@
 //                    UpdateAllTiles();
 //                }
 //            }
-//            catch
-//            {
-//            }
+//            catch { }
 //        }
 
 //        private void TreeView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -526,6 +545,9 @@
 //                {
 //                    specialFoldersNode.IsExpanded = false;
 //                }
+
+//                // Сообщаем, что загрузка завершена
+//                _spfContentLoaded = true;
 //            });
 //        }
 
@@ -550,9 +572,7 @@
 //                            UpdateTileSizeSpF(node);
 //                        }
 //                    }
-//                    catch
-//                    {
-//                    }
+//                    catch { }
 //                }
 //            }
 //        }
@@ -586,9 +606,7 @@
 //                    UpdateAllTiles();
 //                }
 //            }
-//            catch
-//            {
-//            }
+//            catch { }
 //            finally
 //            {
 //                _isLoadingSpF = false;
@@ -598,6 +616,10 @@
 
 //        private async Task LoadHomeContentsAsync(TreeViewNode parentNode)
 //        {
+//            // Если содержимое уже загружено, ничего не делаем
+//            if (parentNode.Children.Count > 0)
+//                return;
+
 //            try
 //            {
 //                parentNode.Children.Clear();
@@ -615,9 +637,7 @@
 //                    UpdateTileSizeSpF(node);
 //                }
 //            }
-//            catch
-//            {
-//            }
+//            catch { }
 //        }
 
 //        private void TreeViewSpF_OnCollapsed(TreeView sender, TreeViewCollapsedEventArgs args)
@@ -666,9 +686,7 @@
 //                    parentNode.Children.Add(driveNode);
 //                }
 //            }
-//            catch
-//            {
-//            }
+//            catch { }
 //        }
 
 //        private async Task LoadSubfoldersAsync(TreeViewNode parentNode, string folderPath)
@@ -688,9 +706,7 @@
 //                    UpdateTileSize(node);
 //                }
 //            }
-//            catch
-//            {
-//            }
+//            catch { }
 //        }
 
 //        private async Task LoadSubfoldersForSpFAsync(TreeViewNode parentNode, string folderPath)
@@ -710,9 +726,7 @@
 //                    UpdateTileSizeSpF(node);
 //                }
 //            }
-//            catch
-//            {
-//            }
+//            catch { }
 //        }
 
 //        private bool IsItemInTreeView(IList<TreeViewNode> nodes, ExplorerItemViewModel targetItem)
@@ -768,9 +782,7 @@
 //                    }
 //                });
 //            }
-//            catch
-//            {
-//            }
+//            catch { }
 //        }
 
 //        private async void UpdateTreeViewSelection(string panelId, string path)
@@ -860,9 +872,7 @@
 //                    }
 //                }
 //            }
-//            catch
-//            {
-//            }
+//            catch { }
 //            finally
 //            {
 //                _isNavigationChangingSelection = false;
@@ -1001,9 +1011,7 @@
 
 //                await Task.Delay(20);
 //            }
-//            catch
-//            {
-//            }
+//            catch { }
 //        }
 
 //        private string[] SplitPath(string path)
@@ -1131,11 +1139,11 @@
 //            return null;
 //        }
 
-//        private bool IsVirtualPath(string path) => path == "MyComputer" || path == "SpecialFolders" || path == ".." || path == "Drives";
+//        private bool IsVirtualPath(string path) => path == ".." || path == "Drives";
 
 //        private string NormalizePath(string path)
 //        {
-//            if (string.IsNullOrEmpty(path) || IsVirtualPath(path))
+//            if (string.IsNullOrEmpty(path) || IsVirtualPath(path) || path == "SpecialFolders" || path == "MyComputer")
 //                return path;
 
 //            try
@@ -1198,9 +1206,7 @@
 //                    ForwardButton.IsEnabled = activeHistory?.CanMoveForward ?? false;
 //                    UpButton.IsEnabled = upButtonEnabled;
 //                }
-//                catch
-//                {
-//                }
+//                catch { }
 //            });
 //        }
 
@@ -1213,6 +1219,10 @@
 
 //                _currentSelectedItemPath = selectedItem.FilePath;
 //                _activePanelId = "SpFTree";
+
+//                if (treeView.SelectedItem != null)
+//                    treeView.SelectedItem = null;
+
 //                _navigationManager.NavigateTo(selectedItem.FilePath, "SpFTree");
 //                UpdateNavigationButtons();
 
@@ -1232,6 +1242,10 @@
 
 //                _currentSelectedItemPath = selectedItem.FilePath;
 //                _activePanelId = "MainTree";
+
+//                if (treeViewSpF.SelectedItem != null)
+//                    treeViewSpF.SelectedItem = null;
+
 //                _navigationManager.NavigateTo(selectedItem.FilePath, "MainTree");
 //                UpdateNavigationButtons();
 
@@ -1250,14 +1264,30 @@
 //        {
 //            string activePanel = GetActivePanel();
 //            if (_navigationManager.CanGoBack(activePanel))
+//            {
 //                _navigationManager.GoBack(activePanel);
+//                var history = GetActiveHistory();
+//                string newPath = history?.Current?.DirectoryPath;
+//                if (!string.IsNullOrEmpty(newPath))
+//                {
+//                    OnNavigateRequested(newPath);
+//                }
+//            }
 //        }
 
 //        private void ForwardButton_Click(object sender, RoutedEventArgs e)
 //        {
 //            string activePanel = GetActivePanel();
 //            if (_navigationManager.CanGoForward(activePanel))
+//            {
 //                _navigationManager.GoForward(activePanel);
+//                var history = GetActiveHistory();
+//                string newPath = history?.Current?.DirectoryPath;
+//                if (!string.IsNullOrEmpty(newPath))
+//                {
+//                    OnNavigateRequested(newPath);
+//                }
+//            }
 //        }
 
 //        private void UpButton_Click(object sender, RoutedEventArgs e)
@@ -1275,9 +1305,7 @@
 //                    }
 //                }
 //            }
-//            catch
-//            {
-//            }
+//            catch { }
 //        }
 
 //        private string GetActivePanel() => _activePanelId ?? "MainTree";
@@ -1296,18 +1324,62 @@
 //        public void SelectPath(string path)
 //        {
 //            string panelId;
+//            string treePath = path;
 
-//            if (_specialFolderPaths.Contains(path) || path == "SpecialFolders" || path.StartsWith("SpecialFolders"))
+//            if (path == "Drives" || path == "MyComputer")
+//            {
+//                panelId = "MainTree";
+//                treePath = "MyComputer";
+//                if (treeViewSpF.SelectedNodes.Count > 0 || treeViewSpF.SelectedItem != null)
+//                {
+//                    treeViewSpF.SelectedNodes.Clear();
+//                    treeViewSpF.SelectedItem = null;
+//                    treeViewSpF.UpdateLayout();
+//                }
+//            }
+//            else if (_specialFolderPaths.Contains(path) || path == "SpecialFolders" || path.StartsWith("SpecialFolders"))
 //            {
 //                panelId = "SpFTree";
+//                treePath = path;
+//                if (treeView.SelectedNodes.Count > 0 || treeView.SelectedItem != null)
+//                {
+//                    treeView.SelectedNodes.Clear();
+//                    treeView.SelectedItem = null;
+//                    treeView.UpdateLayout();
+//                }
 //            }
 //            else
 //            {
 //                panelId = "MainTree";
+//                if (treeViewSpF.SelectedNodes.Count > 0 || treeViewSpF.SelectedItem != null)
+//                {
+//                    treeViewSpF.SelectedNodes.Clear();
+//                    treeViewSpF.SelectedItem = null;
+//                    treeViewSpF.UpdateLayout();
+//                }
 //            }
 
-//            UpdateTreeViewSelection(panelId, path);
+//            UpdateTreeViewSelection(panelId, treePath);
 //            ScheduleUpdateAllTiles();
+//        }
+
+//        public void NavigateToPath(string path)
+//        {
+//            string panelId;
+//            if (_specialFolderPaths.Contains(path) || path == "SpecialFolders" || path.StartsWith("SpecialFolders"))
+//                panelId = "SpFTree";
+//            else
+//                panelId = "MainTree";
+
+//            _isNavigationChangingSelection = true;
+//            try
+//            {
+//                _navigationManager.NavigateTo(path, panelId);
+//            }
+//            finally
+//            {
+//                _isNavigationChangingSelection = false;
+//            }
 //        }
 
 //        private IEnumerable<ExplorerItemViewModel> GetSelectedItems(TreeView tree)
@@ -1462,6 +1534,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -1477,7 +1550,7 @@ using Microsoft.UI.Input;
 
 namespace ufm
 {
-    public sealed partial class TreePanelPg01 : Page, IDisposable
+    public sealed partial class TreePanelPg01 : Page, IDisposable, IDropTarget
     {
         #region Поля и свойства
 
@@ -1499,54 +1572,23 @@ namespace ufm
         private string _savedSelectedPath = null;
         private bool _isFirstLoad = true;
 
+        private volatile bool _spfContentLoaded = false;
         private HashSet<string> _specialFolderPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        // Новые поля для Drag & Drop
+        private DragDropService _dragDropService;
+        private string _currentTargetFolder;
 
         public event EventHandler<string> NavigateRequested;
 
-        public bool ExpandedTreeSelectedSetting
-        {
-            get
-            {
-                try
-                {
-                    return App.SettingsManager?.GetSetting<bool>("ExpandedTreeSelected", true) ?? true;
-                }
-                catch
-                {
-                    return true;
-                }
-            }
-        }
+        public bool ExpandedTreeSelectedSetting =>
+            App.SettingsManager?.GetSetting<bool>("ExpandedTreeSelected", true) ?? true;
 
-        public bool ExpanderNodesSFStartsSetting
-        {
-            get
-            {
-                try
-                {
-                    return App.SettingsManager?.GetSetting<bool>("ExpanderNodesSFStarts", true) ?? true;
-                }
-                catch
-                {
-                    return true;
-                }
-            }
-        }
+        public bool ExpanderNodesSFStartsSetting =>
+            App.SettingsManager?.GetSetting<bool>("ExpanderNodesSFStarts", true) ?? true;
 
-        public bool ExpanderNodesMyPcStartsSetting
-        {
-            get
-            {
-                try
-                {
-                    return App.SettingsManager?.GetSetting<bool>("ExpanderNodesMyPcStarts", true) ?? true;
-                }
-                catch
-                {
-                    return true;
-                }
-            }
-        }
+        public bool ExpanderNodesMyPcStartsSetting =>
+            App.SettingsManager?.GetSetting<bool>("ExpanderNodesMyPcStarts", true) ?? true;
 
         public string CurrentTileSize => _selectedSize;
 
@@ -1568,6 +1610,9 @@ namespace ufm
             _navigationManager.RegisterPanel("SpFTree", _historySpF);
             _navigationManager.NavigationChanged += OnNavigationChanged;
 
+            // Инициализация DragDropService
+            _dragDropService = new DragDropService(App.FileOperationService, _modifierKeyService);
+
             this.Loaded += TreePanelPg01_Loaded;
             this.Unloaded += TreePanelPg01_Unloaded;
             this.KeyDown += (s, e) => _modifierKeyService.UpdateKeyState(e.Key, true);
@@ -1576,6 +1621,7 @@ namespace ufm
 
             LoadDefaultExpandedState();
 
+            // Подписки для treeView
             treeView.Loaded += TreeView_OnLoaded;
             treeView.Expanding += TreeView_OnExpanding;
             treeView.Collapsed += TreeView_OnCollapsed;
@@ -1583,35 +1629,53 @@ namespace ufm
             treeView.SelectionChanged += TreeView_SelectionChanged;
             treeView.Expanding += (s, e) => AddExpandedPath(e.Node);
 
+            treeView.DragItemsStarting += TreeView_DragItemsStarting;
+            treeView.DragOver += TreeView_DragOver;
+            treeView.Drop += TreeView_Drop;
+            treeView.DragEnter += TreeView_DragEnter;
+            treeView.DragLeave += TreeView_DragLeave;
+
+            // Подписки для treeViewSpF
             treeViewSpF.Loaded += TreeViewSpF_OnLoaded;
             treeViewSpF.Expanding += TreeViewSpF_OnExpanding;
             treeViewSpF.Collapsed += TreeViewSpF_OnCollapsed;
             treeViewSpF.DoubleTapped += TreeViewSpF_OnDoubleTapped;
             treeViewSpF.SelectionChanged += TreeViewSpF_SelectionChanged;
             treeViewSpF.Expanding += (s, e) => AddExpandedPath(e.Node);
+
+            treeViewSpF.DragItemsStarting += TreeViewSpF_DragItemsStarting;
+            treeViewSpF.DragOver += TreeViewSpF_DragOver;
+            treeViewSpF.Drop += TreeViewSpF_Drop;
+            treeViewSpF.DragEnter += TreeViewSpF_DragEnter;
+            treeViewSpF.DragLeave += TreeViewSpF_DragLeave;
         }
 
         private void LoadDefaultExpandedState()
         {
             try
             {
-                var savedPaths = App.SettingsManager?.GetSetting<List<string>>("TreePanelExpandedPaths", new List<string>());
+                var savedPaths = App.SettingsManager?.GetSetting<List<string>>(
+                    "TreePanelExpandedPaths", new List<string>());
+                _savedExpandedPaths.Clear();
                 if (savedPaths != null && savedPaths.Count > 0)
-                {
-                    _savedExpandedPaths.Clear();
                     foreach (var path in savedPaths)
                         _savedExpandedPaths.Add(path);
-                }
-                else
-                {
-                    if (ExpanderNodesMyPcStartsSetting)
-                        _savedExpandedPaths.Add("MyComputer");
-                }
+
+                if (!ExpanderNodesMyPcStartsSetting)
+                    _savedExpandedPaths.Remove("MyComputer");
+                else if (!_savedExpandedPaths.Contains("MyComputer"))
+                    _savedExpandedPaths.Add("MyComputer");
+
+                if (!ExpanderNodesSFStartsSetting)
+                    _savedExpandedPaths.Remove("SpecialFolders");
+                else if (!_savedExpandedPaths.Contains("SpecialFolders"))
+                    _savedExpandedPaths.Add("SpecialFolders");
             }
             catch
             {
-                if (ExpanderNodesMyPcStartsSetting)
-                    _savedExpandedPaths.Add("MyComputer");
+                _savedExpandedPaths.Clear();
+                if (ExpanderNodesMyPcStartsSetting) _savedExpandedPaths.Add("MyComputer");
+                if (ExpanderNodesSFStartsSetting) _savedExpandedPaths.Add("SpecialFolders");
             }
         }
 
@@ -1621,15 +1685,11 @@ namespace ufm
             foreach (var path in _expandedPaths)
                 _savedExpandedPaths.Add(path);
             _savedSelectedPath = _currentSelectedItemPath;
-
             try
             {
-                var pathsList = _savedExpandedPaths.ToList();
-                App.SettingsManager?.SaveSetting("TreePanelExpandedPaths", pathsList);
+                App.SettingsManager?.SaveSetting("TreePanelExpandedPaths", _savedExpandedPaths.ToList());
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         public void Dispose()
@@ -1640,7 +1700,6 @@ namespace ufm
                 {
                     this.Loaded -= TreePanelPg01_Loaded;
                     this.Unloaded -= TreePanelPg01_Unloaded;
-
                     if (_navigationManager != null)
                         _navigationManager.NavigationChanged -= OnNavigationChanged;
 
@@ -1651,6 +1710,11 @@ namespace ufm
                         treeView.Collapsed -= TreeView_OnCollapsed;
                         treeView.DoubleTapped -= TreeView_OnDoubleTapped;
                         treeView.SelectionChanged -= TreeView_SelectionChanged;
+                        treeView.DragItemsStarting -= TreeView_DragItemsStarting;
+                        treeView.DragOver -= TreeView_DragOver;
+                        treeView.Drop -= TreeView_Drop;
+                        treeView.DragEnter -= TreeView_DragEnter;
+                        treeView.DragLeave -= TreeView_DragLeave;
                     }
 
                     if (treeViewSpF != null)
@@ -1660,15 +1724,18 @@ namespace ufm
                         treeViewSpF.Collapsed -= TreeViewSpF_OnCollapsed;
                         treeViewSpF.DoubleTapped -= TreeViewSpF_OnDoubleTapped;
                         treeViewSpF.SelectionChanged -= TreeViewSpF_SelectionChanged;
+                        treeViewSpF.DragItemsStarting -= TreeViewSpF_DragItemsStarting;
+                        treeViewSpF.DragOver -= TreeViewSpF_DragOver;
+                        treeViewSpF.Drop -= TreeViewSpF_Drop;
+                        treeViewSpF.DragEnter -= TreeViewSpF_DragEnter;
+                        treeViewSpF.DragLeave -= TreeViewSpF_DragLeave;
                     }
 
                     _fileSystemService?.Dispose();
                     _history?.Dispose();
                     _historySpF?.Dispose();
                 }
-                catch
-                {
-                }
+                catch { }
                 finally
                 {
                     Instance = null;
@@ -1680,29 +1747,52 @@ namespace ufm
 
         #endregion
 
+        #region IDropTarget implementation (простая)
+
+        public string GetTargetFolder() => _currentTargetFolder;
+
+        public void ShowDropTarget(bool show)
+        {
+            // Простейшая подсветка – фон дерева
+            if (show)
+            {
+                treeView.Background = new SolidColorBrush(Microsoft.UI.Colors.LightGray);
+                treeViewSpF.Background = new SolidColorBrush(Microsoft.UI.Colors.LightGray);
+            }
+            else
+            {
+                treeView.Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+                treeViewSpF.Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+            }
+        }
+
+        #endregion
+
         #region Сохранение и восстановление состояния дерева
 
         private void AddExpandedPath(TreeViewNode node)
         {
             if (node.Content is ExplorerItemViewModel item && !string.IsNullOrEmpty(item.FilePath))
-            {
                 _expandedPaths.Add(item.FilePath);
-            }
         }
 
         private void RestoreExpandedState(TreeView tree, IList<TreeViewNode> nodes, string treeName)
         {
             if (nodes == null) return;
-
             foreach (var node in nodes)
             {
                 if (node.Content is ExplorerItemViewModel item)
                 {
-                    bool shouldExpand = _expandedPaths.Contains(item.FilePath);
-                    if (shouldExpand && !node.IsExpanded)
-                    {
+                    bool canExpand = true;
+                    if (item.FilePath == "MyComputer")
+                        canExpand = ExpanderNodesMyPcStartsSetting;
+                    else if (item.FilePath == "SpecialFolders")
+                        canExpand = ExpanderNodesSFStartsSetting;
+
+                    if (canExpand && _expandedPaths.Contains(item.FilePath) && !node.IsExpanded)
                         tree.Expand(node);
-                    }
+                    else if (!canExpand && node.IsExpanded)
+                        tree.Collapse(node);
                 }
                 RestoreExpandedState(tree, node.Children, treeName + "->children");
             }
@@ -1712,46 +1802,49 @@ namespace ufm
 
         #region Обработчики событий страницы
 
-        private void TreePanelPg01_Loaded(object sender, RoutedEventArgs e)
+        private async void TreePanelPg01_Loaded(object sender, RoutedEventArgs e)
         {
             _expandedPaths.Clear();
             foreach (var path in _savedExpandedPaths)
                 _expandedPaths.Add(path);
 
-            if (App.SettingsManager != null)
-            {
-                _selectedSize = App.SettingsManager.GetSetting<string>("SelectedSizeIconTreeView");
-            }
+            if (!ExpanderNodesMyPcStartsSetting)
+                _expandedPaths.Remove("MyComputer");
+            else if (!_expandedPaths.Contains("MyComputer"))
+                _expandedPaths.Add("MyComputer");
 
+            if (!ExpanderNodesSFStartsSetting)
+                _expandedPaths.Remove("SpecialFolders");
+            else if (!_expandedPaths.Contains("SpecialFolders"))
+                _expandedPaths.Add("SpecialFolders");
+
+            _selectedSize = App.SettingsManager?.GetSetting<string>("SelectedSizeIconTreeView");
             if (string.IsNullOrEmpty(_selectedSize))
             {
                 var localSettings = ApplicationData.Current.LocalSettings.Values;
                 if (localSettings?.ContainsKey("SelectedSizeIconTreeView") == true)
-                {
                     _selectedSize = localSettings["SelectedSizeIconTreeView"]?.ToString();
-                }
             }
-
             if (string.IsNullOrEmpty(_selectedSize))
-            {
                 _selectedSize = "Medium";
-            }
 
             SetSelectedRadioButton(_selectedSize);
             UpdateAllTiles();
 
             if (!_isFirstLoad)
             {
-                DispatcherQueue.TryEnqueue(async () =>
+                _ = Task.Run(async () =>
                 {
-                    await Task.Delay(300);
-                    RestoreExpandedState(treeView, treeView.RootNodes, "treeView");
-                    RestoreExpandedState(treeViewSpF, treeViewSpF.RootNodes, "treeViewSpF");
-                    if (!string.IsNullOrEmpty(_savedSelectedPath))
+                    while (!_spfContentLoaded) await Task.Delay(50);
+                    await DispatcherQueue.EnqueueAsync(async () =>
                     {
-                        UpdateTreeViewSelection(_activePanelId, _savedSelectedPath);
-                    }
-                    ScheduleUpdateAllTiles();
+                        await Task.Delay(100);
+                        RestoreExpandedState(treeView, treeView.RootNodes, "treeView");
+                        RestoreExpandedState(treeViewSpF, treeViewSpF.RootNodes, "treeViewSpF");
+                        if (!string.IsNullOrEmpty(_savedSelectedPath))
+                            UpdateTreeViewSelection(_activePanelId, _savedSelectedPath);
+                        ScheduleUpdateAllTiles();
+                    });
                 });
             }
             else
@@ -1774,21 +1867,11 @@ namespace ufm
 
             switch (selectedSize)
             {
-                case "Extra Small":
-                    ExtraSmallSizeRadioButton.IsChecked = true;
-                    break;
-                case "Small":
-                    SmallSizeRadioButton.IsChecked = true;
-                    break;
-                case "Medium":
-                    MediumSizeRadioButton.IsChecked = true;
-                    break;
-                case "Large":
-                    LargeSizeRadioButton.IsChecked = true;
-                    break;
-                case "Extra Large":
-                    ExtraLargeSizeRadioButton.IsChecked = true;
-                    break;
+                case "Extra Small": ExtraSmallSizeRadioButton.IsChecked = true; break;
+                case "Small": SmallSizeRadioButton.IsChecked = true; break;
+                case "Medium": MediumSizeRadioButton.IsChecked = true; break;
+                case "Large": LargeSizeRadioButton.IsChecked = true; break;
+                case "Extra Large": ExtraLargeSizeRadioButton.IsChecked = true; break;
             }
         }
 
@@ -1797,32 +1880,8 @@ namespace ufm
             if (sender is RadioButton radioButton && radioButton.Tag is string selectedSize)
             {
                 _selectedSize = selectedSize;
-
-                bool saved = false;
-                if (App.SettingsManager != null)
-                {
-                    try
-                    {
-                        App.SettingsManager.SaveSetting("SelectedSizeIconTreeView", _selectedSize);
-                        saved = true;
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                if (!saved)
-                {
-                    try
-                    {
-                        var localSettings = ApplicationData.Current.LocalSettings.Values;
-                        localSettings["SelectedSizeIconTreeView"] = _selectedSize;
-                    }
-                    catch
-                    {
-                    }
-                }
-
+                try { App.SettingsManager?.SaveSetting("SelectedSizeIconTreeView", _selectedSize); }
+                catch { ApplicationData.Current.LocalSettings.Values["SelectedSizeIconTreeView"] = _selectedSize; }
                 UpdateAllTiles();
             }
         }
@@ -1834,7 +1893,6 @@ namespace ufm
         private async void TreeView_OnLoaded(object sender, RoutedEventArgs e)
         {
             treeView.RootNodes.Clear();
-
             var myComputerNode = new TreeViewNode
             {
                 Content = new ExplorerItemViewModel(_history)
@@ -1847,13 +1905,11 @@ namespace ufm
                 IsExpanded = ExpanderNodesMyPcStartsSetting,
                 HasUnrealizedChildren = true
             };
-
             treeView.RootNodes.Add(myComputerNode);
 
             DispatcherQueue.TryEnqueue(async () =>
             {
                 UpdateTileSize(myComputerNode);
-
                 if (ExpanderNodesMyPcStartsSetting)
                 {
                     await LoadDrivesSync(myComputerNode);
@@ -1876,30 +1932,21 @@ namespace ufm
                 {
                     try
                     {
-                        var firstLevelItems = await _fileSystemService.LoadFoldersOnlyAsync(driveItem.FilePath, _history);
-                        foreach (var item in firstLevelItems.Take(3))
+                        var items = await _fileSystemService.LoadFoldersOnlyAsync(driveItem.FilePath, _history);
+                        foreach (var item in items.Take(3))
                         {
                             item.IsTreeViewNode = true;
-                            var node = new TreeViewNode
-                            {
-                                Content = item,
-                                HasUnrealizedChildren = true
-                            };
-                            driveNode.Children.Add(node);
+                            driveNode.Children.Add(new TreeViewNode { Content = item, HasUnrealizedChildren = true });
                         }
                     }
-                    catch
-                    {
-                    }
+                    catch { }
                 }
             }
         }
 
         private async void TreeView_OnExpanding(TreeView sender, TreeViewExpandingEventArgs args)
         {
-            if (args.Node.Content is not ExplorerItemViewModel treeItem)
-                return;
-
+            if (args.Node.Content is not ExplorerItemViewModel treeItem) return;
             try
             {
                 if (treeItem.Name == "Мой Компьютер" && (args.Node.HasUnrealizedChildren || args.Node.Children.Count == 0))
@@ -1915,24 +1962,18 @@ namespace ufm
                     UpdateAllTiles();
                 }
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         private void TreeView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (treeView.SelectedNode == null) return;
-
             if (!treeView.SelectedNode.IsExpanded)
                 treeView.Expand(treeView.SelectedNode);
             else
                 treeView.Collapse(treeView.SelectedNode);
-
             if (treeView.SelectedNode?.Content is ExplorerItemViewModel item)
-            {
                 OnNavigateRequested(item.FilePath);
-            }
         }
 
         private void TreeView_OnCollapsed(TreeView sender, TreeViewCollapsedEventArgs args)
@@ -1951,17 +1992,14 @@ namespace ufm
         private void TreeViewSpF_OnLoaded(object sender, RoutedEventArgs e)
         {
             if (_isTreeViewSpFInitialized) return;
-
             treeViewSpF.ItemsSource = null;
             treeViewSpF.RootNodes.Clear();
-
             var specialFoldersNode = new TreeViewNode
             {
                 Content = _fileSystemService.CreateSpecialFoldersItem(_historySpF),
                 IsExpanded = ExpanderNodesSFStartsSetting,
                 HasUnrealizedChildren = true
             };
-
             treeViewSpF.RootNodes.Add(specialFoldersNode);
             _isTreeViewSpFInitialized = true;
             UpdateAllTiles();
@@ -1969,25 +2007,20 @@ namespace ufm
             DispatcherQueue.TryEnqueue(async () =>
             {
                 await LoadHomeContentsAsync(specialFoldersNode);
-
                 _specialFolderPaths.Clear();
                 foreach (var child in specialFoldersNode.Children)
-                {
                     if (child.Content is ExplorerItemViewModel childItem && !string.IsNullOrEmpty(childItem.FilePath))
                         _specialFolderPaths.Add(childItem.FilePath);
-                }
 
                 await PreloadFirstLevelForSpFAsync(specialFoldersNode);
-
                 if (ExpanderNodesSFStartsSetting)
                 {
                     specialFoldersNode.IsExpanded = true;
                     treeViewSpF.Expand(specialFoldersNode);
                 }
                 else
-                {
                     specialFoldersNode.IsExpanded = false;
-                }
+                _spfContentLoaded = true;
             });
         }
 
@@ -1999,46 +2032,34 @@ namespace ufm
                 {
                     try
                     {
-                        var firstLevelItems = await _fileSystemService.LoadFoldersOnlyAsync(folderItem.FilePath, _historySpF);
-                        foreach (var item in firstLevelItems.Take(3))
+                        var items = await _fileSystemService.LoadFoldersOnlyAsync(folderItem.FilePath, _historySpF);
+                        foreach (var item in items.Take(3))
                         {
                             item.IsTreeViewNode = true;
-                            var node = new TreeViewNode
-                            {
-                                Content = item,
-                                HasUnrealizedChildren = true
-                            };
+                            var node = new TreeViewNode { Content = item, HasUnrealizedChildren = true };
                             systemFolderNode.Children.Add(node);
                             UpdateTileSizeSpF(node);
                         }
                     }
-                    catch
-                    {
-                    }
+                    catch { }
                 }
             }
         }
 
         private async void TreeViewSpF_OnExpanding(TreeView sender, TreeViewExpandingEventArgs args)
         {
-            if (_isLoadingSpF || args.Node.Content is not ExplorerItemViewModel treeItem)
-                return;
-
+            if (_isLoadingSpF || args.Node.Content is not ExplorerItemViewModel treeItem) return;
             try
             {
                 _isLoadingSpF = true;
-
                 if (treeItem.FilePath == "SpecialFolders" && args.Node.Children.Count == 0)
                 {
                     args.Node.HasUnrealizedChildren = false;
                     await LoadHomeContentsAsync(args.Node);
-
                     _specialFolderPaths.Clear();
                     foreach (var child in args.Node.Children)
-                    {
                         if (child.Content is ExplorerItemViewModel childItem && !string.IsNullOrEmpty(childItem.FilePath))
                             _specialFolderPaths.Add(childItem.FilePath);
-                    }
                     UpdateAllTiles();
                 }
                 else if (Directory.Exists(treeItem.FilePath) && args.Node.Children.Count == 0)
@@ -2048,38 +2069,26 @@ namespace ufm
                     UpdateAllTiles();
                 }
             }
-            catch
-            {
-            }
-            finally
-            {
-                _isLoadingSpF = false;
-            }
-            UpdateAllTiles();
+            catch { }
+            finally { _isLoadingSpF = false; UpdateAllTiles(); }
         }
 
         private async Task LoadHomeContentsAsync(TreeViewNode parentNode)
         {
+            if (parentNode.Children.Count > 0) return;
             try
             {
                 parentNode.Children.Clear();
                 var homeItems = await _fileSystemService.LoadHomeAsync("TreeViewSpF", _historySpF);
-
                 foreach (var item in homeItems)
                 {
                     item.IsTreeViewNode = true;
-                    var node = new TreeViewNode
-                    {
-                        Content = item,
-                        HasUnrealizedChildren = Directory.Exists(item.FilePath)
-                    };
+                    var node = new TreeViewNode { Content = item, HasUnrealizedChildren = Directory.Exists(item.FilePath) };
                     parentNode.Children.Add(node);
                     UpdateTileSizeSpF(node);
                 }
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         private void TreeViewSpF_OnCollapsed(TreeView sender, TreeViewCollapsedEventArgs args)
@@ -2096,16 +2105,12 @@ namespace ufm
         private void TreeViewSpF_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (treeViewSpF.SelectedNode == null) return;
-
             if (!treeViewSpF.SelectedNode.IsExpanded)
                 treeViewSpF.Expand(treeViewSpF.SelectedNode);
             else
                 treeViewSpF.Collapse(treeViewSpF.SelectedNode);
-
             if (treeViewSpF.SelectedNode?.Content is ExplorerItemViewModel item)
-            {
                 OnNavigateRequested(item.FilePath);
-            }
         }
 
         #endregion
@@ -2120,17 +2125,10 @@ namespace ufm
                 foreach (var driveItem in driveItems)
                 {
                     driveItem.IsTreeViewNode = true;
-                    var driveNode = new TreeViewNode
-                    {
-                        Content = driveItem,
-                        HasUnrealizedChildren = true
-                    };
-                    parentNode.Children.Add(driveNode);
+                    parentNode.Children.Add(new TreeViewNode { Content = driveItem, HasUnrealizedChildren = true });
                 }
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         private async Task LoadSubfoldersAsync(TreeViewNode parentNode, string folderPath)
@@ -2141,18 +2139,12 @@ namespace ufm
                 foreach (var item in folderItems)
                 {
                     item.IsTreeViewNode = true;
-                    var node = new TreeViewNode
-                    {
-                        Content = item,
-                        HasUnrealizedChildren = true
-                    };
+                    var node = new TreeViewNode { Content = item, HasUnrealizedChildren = true };
                     parentNode.Children.Add(node);
                     UpdateTileSize(node);
                 }
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         private async Task LoadSubfoldersForSpFAsync(TreeViewNode parentNode, string folderPath)
@@ -2163,87 +2155,118 @@ namespace ufm
                 foreach (var item in folderItems)
                 {
                     item.IsTreeViewNode = true;
-                    var node = new TreeViewNode
-                    {
-                        Content = item,
-                        HasUnrealizedChildren = true
-                    };
+                    var node = new TreeViewNode { Content = item, HasUnrealizedChildren = true };
                     parentNode.Children.Add(node);
                     UpdateTileSizeSpF(node);
                 }
             }
-            catch
-            {
-            }
-        }
-
-        private bool IsItemInTreeView(IList<TreeViewNode> nodes, ExplorerItemViewModel targetItem)
-        {
-            if (nodes == null) return false;
-            foreach (var node in nodes)
-            {
-                if (node?.Content == targetItem)
-                    return true;
-                if (node?.Children?.Count > 0 && IsItemInTreeView(node.Children, targetItem))
-                    return true;
-            }
-            return false;
+            catch { }
         }
 
         #endregion
 
         #region Обновление отображения элементов
 
-        private TreeViewNode FindNodeByItem(IList<TreeViewNode> nodes, ExplorerItemViewModel targetItem)
+        private void UpdateAllTiles()
+        {
+            if (treeView?.RootNodes?.Count > 0)
+                foreach (var node in treeView.RootNodes) UpdateTileSize(node);
+            if (treeViewSpF?.RootNodes?.Count > 0)
+                foreach (var node in treeViewSpF.RootNodes) UpdateTileSizeSpF(node);
+        }
+
+        private void UpdateTileSize(TreeViewNode node)
+        {
+            if (node == null) return;
+            var container = treeView?.ContainerFromNode(node) as TreeViewItem;
+            var tile = container?.ContentTemplateRoot as BaseTileControl;
+            if (tile != null) tile.UpdateSize(_selectedSize);
+            if (node.IsExpanded)
+                foreach (var childNode in node.Children) UpdateTileSize(childNode);
+        }
+
+        private void UpdateTileSizeSpF(TreeViewNode node)
+        {
+            if (node == null) return;
+            var container = treeViewSpF?.ContainerFromNode(node) as TreeViewItem;
+            var tile = container?.ContentTemplateRoot as BaseTileControl;
+            if (tile != null) tile.UpdateSize(_selectedSize);
+            if (node.IsExpanded)
+                foreach (var childNode in node.Children) UpdateTileSizeSpF(childNode);
+        }
+
+        private void ScheduleUpdateAllTiles()
+        {
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => UpdateAllTiles());
+        }
+
+        #endregion
+
+        #region Управление поиском
+
+        private ExplorerItemViewModel FindItemByPath(IList<TreeViewNode> nodes, string path)
         {
             if (nodes == null) return null;
             foreach (var node in nodes)
             {
-                if (node.Content == targetItem)
-                    return node;
-                if (node.Children.Count > 0)
+                if (node?.Content is ExplorerItemViewModel item && NormalizePath(item.FilePath) == NormalizePath(path))
+                    return item;
+                if (node?.Children?.Count > 0)
                 {
-                    var found = FindNodeByItem(node.Children, targetItem);
-                    if (found != null)
-                        return found;
+                    var found = FindItemByPath(node.Children, path);
+                    if (found != null) return found;
                 }
             }
             return null;
         }
 
-        private void ScrollToSelectedItem(TreeView targetTreeView, object item)
-        {
-            if (targetTreeView == null || item == null) return;
+        private bool IsVirtualPath(string path) => path == ".." || path == "Drives";
 
+        private string NormalizePath(string path)
+        {
+            if (string.IsNullOrEmpty(path) || IsVirtualPath(path) || path == "SpecialFolders" || path == "MyComputer")
+                return path;
             try
             {
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-                {
-                    var container = targetTreeView.ContainerFromItem(item) as TreeViewItem;
-                    if (container != null)
-                    {
-                        container.StartBringIntoView(new BringIntoViewOptions
-                        {
-                            AnimationDesired = true,
-                            VerticalAlignmentRatio = 0.5
-                        });
-                    }
-                });
+                if (path.Length == 2 && path[1] == ':') return path + Path.DirectorySeparatorChar;
+                if (path.Length == 3 && path[1] == ':' && path[2] == '\\') return path;
+                string fullPath = Path.GetFullPath(path);
+                return fullPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             }
-            catch
+            catch { return path; }
+        }
+
+        #endregion
+
+        #region Управление навигацией
+
+        private void OnNavigationChanged(object sender, NavigationEventArgs e)
+        {
+            if (e.PanelId == "MainTree" || e.PanelId == "SpFTree")
+                _activePanelId = e.PanelId;
+            else
+                _activePanelId ??= "MainTree";
+
+            UpdateNavigationButtons();
+            _isNavigationChangingSelection = true;
+            try
             {
+                UpdateTreeViewSelection(_activePanelId, e.Path);
+            }
+            finally
+            {
+                _isNavigationChangingSelection = false;
             }
         }
 
+        // Восстановленный метод UpdateTreeViewSelection
         private async void UpdateTreeViewSelection(string panelId, string path)
         {
             try
             {
                 TreeView targetTreeView = panelId == "MainTree" ? treeView : treeViewSpF;
                 if (targetTreeView == null || string.IsNullOrEmpty(path))
-                {
                     return;
-                }
 
                 _isNavigationChangingSelection = true;
 
@@ -2254,13 +2277,9 @@ namespace ufm
                         if (rootNode?.Content is ExplorerItemViewModel rootItem)
                         {
                             if (rootItem.FilePath == "MyComputer")
-                            {
                                 await EnsureMyComputerExpanded(rootNode);
-                            }
                             else if (rootItem.FilePath == "SpecialFolders")
-                            {
                                 await EnsureSpecialFoldersExpanded(rootNode);
-                            }
                         }
                     }
                 }
@@ -2291,15 +2310,10 @@ namespace ufm
                         if (node != null)
                         {
                             if (node.HasUnrealizedChildren || node.Children.Count == 0)
-                            {
                                 await ExpandNode(node, targetItem.FilePath, panelId);
-                            }
                             if (!node.IsExpanded)
-                            {
                                 targetTreeView.Expand(node);
-                            }
                         }
-
                         ScrollToSelectedItem(targetTreeView, targetItem);
                     }
                     return;
@@ -2322,9 +2336,7 @@ namespace ufm
                     }
                 }
             }
-            catch
-            {
-            }
+            catch { }
             finally
             {
                 _isNavigationChangingSelection = false;
@@ -2333,85 +2345,15 @@ namespace ufm
             }
         }
 
-        private async Task<bool> ExpandAndSelectPath(IList<TreeViewNode> nodes, string[] pathSegments, int currentIndex, string panelId)
-        {
-            if (currentIndex >= pathSegments.Length)
-                return false;
-
-            string currentPath = pathSegments[currentIndex];
-            bool isLastSegment = currentIndex == pathSegments.Length - 1;
-
-            foreach (var node in nodes)
-            {
-                if (node?.Content is not ExplorerItemViewModel item)
-                    continue;
-
-                string normalizedItemPath = NormalizePath(item.FilePath);
-                string normalizedCurrentPath = NormalizePath(currentPath);
-
-                if (normalizedItemPath == normalizedCurrentPath)
-                {
-                    if (isLastSegment)
-                    {
-                        var targetTreeView = panelId == "MainTree" ? treeView : treeViewSpF;
-                        targetTreeView.SelectedItem = item;
-                        _currentSelectedItemPath = item.FilePath;
-                        _activePanelId = panelId;
-
-                        if (node.HasUnrealizedChildren || node.Children.Count == 0)
-                        {
-                            await ExpandNode(node, item.FilePath, panelId);
-                        }
-
-                        if (!node.IsExpanded)
-                        {
-                            targetTreeView.Expand(node);
-                        }
-
-                        ScheduleUpdateAllTiles();
-                        ScrollToSelectedItem(targetTreeView, item);
-                        return true;
-                    }
-                    else
-                    {
-                        if (!node.IsExpanded)
-                        {
-                            await ExpandNode(node, item.FilePath, panelId);
-                            ScheduleUpdateAllTiles();
-                        }
-
-                        if (node.Children.Count == 0)
-                            await Task.Delay(10);
-
-                        bool found = await ExpandAndSelectPath(node.Children, pathSegments, currentIndex + 1, panelId);
-                        if (found)
-                            return true;
-                    }
-                }
-                else
-                {
-                    if (node.Children?.Count > 0)
-                    {
-                        bool foundInChildren = await ExpandAndSelectPath(node.Children, pathSegments, currentIndex, panelId);
-                        if (foundInChildren) return true;
-                    }
-                }
-            }
-            return false;
-        }
-
+        // Вспомогательные методы для UpdateTreeViewSelection
         private async Task EnsureMyComputerExpanded(TreeViewNode myComputerNode)
         {
             if (myComputerNode?.Content is ExplorerItemViewModel item && item.FilePath == "MyComputer")
             {
                 if (!myComputerNode.IsExpanded)
-                {
                     treeView.Expand(myComputerNode);
-                }
                 if (myComputerNode.Children.Count == 0)
-                {
                     await LoadDrivesSync(myComputerNode);
-                }
             }
         }
 
@@ -2420,18 +2362,14 @@ namespace ufm
             if (specialFoldersNode?.Content is ExplorerItemViewModel item && item.FilePath == "SpecialFolders")
             {
                 if (!specialFoldersNode.IsExpanded)
-                {
                     treeViewSpF.Expand(specialFoldersNode);
-                }
                 if (specialFoldersNode.Children.Count == 0)
                 {
                     await LoadHomeContentsAsync(specialFoldersNode);
                     _specialFolderPaths.Clear();
                     foreach (var child in specialFoldersNode.Children)
-                    {
                         if (child.Content is ExplorerItemViewModel childItem && !string.IsNullOrEmpty(childItem.FilePath))
                             _specialFolderPaths.Add(childItem.FilePath);
-                    }
                 }
             }
         }
@@ -2463,9 +2401,102 @@ namespace ufm
 
                 await Task.Delay(20);
             }
-            catch
+            catch { }
+        }
+
+        private async Task<bool> ExpandAndSelectPath(IList<TreeViewNode> nodes, string[] pathSegments, int currentIndex, string panelId)
+        {
+            if (currentIndex >= pathSegments.Length) return false;
+
+            string currentPath = pathSegments[currentIndex];
+            bool isLastSegment = currentIndex == pathSegments.Length - 1;
+
+            foreach (var node in nodes)
             {
+                if (node?.Content is not ExplorerItemViewModel item) continue;
+
+                string normalizedItemPath = NormalizePath(item.FilePath);
+                string normalizedCurrentPath = NormalizePath(currentPath);
+
+                if (normalizedItemPath == normalizedCurrentPath)
+                {
+                    if (isLastSegment)
+                    {
+                        var targetTreeView = panelId == "MainTree" ? treeView : treeViewSpF;
+                        targetTreeView.SelectedItem = item;
+                        _currentSelectedItemPath = item.FilePath;
+                        _activePanelId = panelId;
+
+                        if (node.HasUnrealizedChildren || node.Children.Count == 0)
+                            await ExpandNode(node, item.FilePath, panelId);
+
+                        if (!node.IsExpanded)
+                            targetTreeView.Expand(node);
+
+                        ScheduleUpdateAllTiles();
+                        ScrollToSelectedItem(targetTreeView, item);
+                        return true;
+                    }
+                    else
+                    {
+                        if (!node.IsExpanded)
+                        {
+                            await ExpandNode(node, item.FilePath, panelId);
+                            ScheduleUpdateAllTiles();
+                        }
+                        if (node.Children.Count == 0)
+                            await Task.Delay(10);
+
+                        bool found = await ExpandAndSelectPath(node.Children, pathSegments, currentIndex + 1, panelId);
+                        if (found) return true;
+                    }
+                }
+                else
+                {
+                    if (node.Children?.Count > 0)
+                    {
+                        bool foundInChildren = await ExpandAndSelectPath(node.Children, pathSegments, currentIndex, panelId);
+                        if (foundInChildren) return true;
+                    }
+                }
             }
+            return false;
+        }
+
+        private TreeViewNode FindNodeByItem(IList<TreeViewNode> nodes, ExplorerItemViewModel targetItem)
+        {
+            if (nodes == null) return null;
+            foreach (var node in nodes)
+            {
+                if (node.Content == targetItem) return node;
+                if (node.Children.Count > 0)
+                {
+                    var found = FindNodeByItem(node.Children, targetItem);
+                    if (found != null) return found;
+                }
+            }
+            return null;
+        }
+
+        private void ScrollToSelectedItem(TreeView targetTreeView, object item)
+        {
+            if (targetTreeView == null || item == null) return;
+            try
+            {
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    var container = targetTreeView.ContainerFromItem(item) as TreeViewItem;
+                    if (container != null)
+                    {
+                        container.StartBringIntoView(new BringIntoViewOptions
+                        {
+                            AnimationDesired = true,
+                            VerticalAlignmentRatio = 0.5
+                        });
+                    }
+                });
+            }
+            catch { }
         }
 
         private string[] SplitPath(string path)
@@ -2512,158 +2543,24 @@ namespace ufm
             }
         }
 
-        private void UpdateAllTiles()
-        {
-            if (treeView?.RootNodes?.Count > 0)
-            {
-                foreach (var node in treeView.RootNodes)
-                    UpdateTileSize(node);
-            }
-
-            if (treeViewSpF?.RootNodes?.Count > 0)
-            {
-                foreach (var node in treeViewSpF.RootNodes)
-                    UpdateTileSizeSpF(node);
-            }
-        }
-
-        private void UpdateTileSize(TreeViewNode node)
-        {
-            if (node == null) return;
-
-            var container = treeView?.ContainerFromNode(node) as TreeViewItem;
-            var tile = container?.ContentTemplateRoot as BaseTileControl;
-
-            if (tile != null)
-                tile.UpdateSize(_selectedSize);
-
-            if (node.IsExpanded)
-            {
-                foreach (var childNode in node.Children)
-                    UpdateTileSize(childNode);
-            }
-        }
-
-        private void UpdateTileSizeSpF(TreeViewNode node)
-        {
-            if (node == null) return;
-
-            var container = treeViewSpF?.ContainerFromNode(node) as TreeViewItem;
-            var tile = container?.ContentTemplateRoot as BaseTileControl;
-
-            if (tile != null)
-                tile.UpdateSize(_selectedSize);
-
-            if (node.IsExpanded)
-            {
-                foreach (var childNode in node.Children)
-                    UpdateTileSizeSpF(childNode);
-            }
-        }
-
-        private void ScheduleUpdateAllTiles()
-        {
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-            {
-                UpdateAllTiles();
-            });
-        }
-
-        #endregion
-
-        #region Управление поиском
-
-        private ExplorerItemViewModel FindItemByPath(IList<TreeViewNode> nodes, string path)
-        {
-            if (nodes == null) return null;
-            foreach (var node in nodes)
-            {
-                if (node?.Content is ExplorerItemViewModel item)
-                {
-                    if (NormalizePath(item.FilePath) == NormalizePath(path))
-                        return item;
-                }
-                if (node?.Children?.Count > 0)
-                {
-                    var found = FindItemByPath(node.Children, path);
-                    if (found != null)
-                        return found;
-                }
-            }
-            return null;
-        }
-
-        // "MyComputer" убран из виртуальных, чтобы при выделении узла вызывалась навигация
-        private bool IsVirtualPath(string path) => path == ".." || path == "Drives";
-
-        private string NormalizePath(string path)
-        {
-            if (string.IsNullOrEmpty(path) || IsVirtualPath(path) || path == "SpecialFolders" || path == "MyComputer")
-                return path;
-
-            try
-            {
-                if (path.Length == 2 && path[1] == ':')
-                    return path + Path.DirectorySeparatorChar;
-                if (path.Length == 3 && path[1] == ':' && path[2] == '\\')
-                    return path;
-
-                string fullPath = Path.GetFullPath(path);
-                return fullPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            }
-            catch
-            {
-                return path;
-            }
-        }
-
-        #endregion
-
-        #region Управление навигацией
-
-        private void OnNavigationChanged(object sender, NavigationEventArgs e)
-        {
-            if (e.PanelId == "MainTree" || e.PanelId == "SpFTree")
-                _activePanelId = e.PanelId;
-            else
-                _activePanelId ??= "MainTree";
-
-            UpdateNavigationButtons();
-
-            _isNavigationChangingSelection = true;
-            try
-            {
-                UpdateTreeViewSelection(_activePanelId, e.Path);
-            }
-            finally
-            {
-                _isNavigationChangingSelection = false;
-            }
-        }
-
         private void UpdateNavigationButtons()
         {
             DispatcherQueue.TryEnqueue(() =>
             {
                 try
                 {
-                    string activePanel = _activePanelId ?? "MainTree";
-                    IDirectoryHistory activeHistory = GetActiveHistory();
+                    var activeHistory = GetActiveHistory();
                     bool upButtonEnabled = false;
-
                     if (!string.IsNullOrEmpty(_currentSelectedItemPath) && Directory.Exists(_currentSelectedItemPath))
                     {
                         var parent = Directory.GetParent(_currentSelectedItemPath);
                         upButtonEnabled = parent != null && Directory.Exists(parent.FullName);
                     }
-
                     BackButton.IsEnabled = activeHistory?.CanMoveBack ?? false;
                     ForwardButton.IsEnabled = activeHistory?.CanMoveForward ?? false;
                     UpButton.IsEnabled = upButtonEnabled;
                 }
-                catch
-                {
-                }
+                catch { }
             });
         }
 
@@ -2673,21 +2570,13 @@ namespace ufm
             if (treeViewSpF.SelectedNode?.Content is ExplorerItemViewModel selectedItem)
             {
                 if (_currentSelectedItemPath == selectedItem.FilePath) return;
-
                 _currentSelectedItemPath = selectedItem.FilePath;
                 _activePanelId = "SpFTree";
-
-                // Сброс выделения в основном дереве
-                if (treeView.SelectedItem != null)
-                    treeView.SelectedItem = null;
-
+                if (treeView.SelectedItem != null) treeView.SelectedItem = null;
                 _navigationManager.NavigateTo(selectedItem.FilePath, "SpFTree");
                 UpdateNavigationButtons();
-
                 if (!IsVirtualPath(selectedItem.FilePath))
-                {
                     OnNavigateRequested(selectedItem.FilePath);
-                }
             }
         }
 
@@ -2697,21 +2586,13 @@ namespace ufm
             if (treeView.SelectedNode?.Content is ExplorerItemViewModel selectedItem)
             {
                 if (_currentSelectedItemPath == selectedItem.FilePath) return;
-
                 _currentSelectedItemPath = selectedItem.FilePath;
                 _activePanelId = "MainTree";
-
-                // Сброс выделения в дереве специальных папок
-                if (treeViewSpF.SelectedItem != null)
-                    treeViewSpF.SelectedItem = null;
-
+                if (treeViewSpF.SelectedItem != null) treeViewSpF.SelectedItem = null;
                 _navigationManager.NavigateTo(selectedItem.FilePath, "MainTree");
                 UpdateNavigationButtons();
-
                 if (!IsVirtualPath(selectedItem.FilePath))
-                {
                     OnNavigateRequested(selectedItem.FilePath);
-                }
             }
         }
 
@@ -2723,14 +2604,22 @@ namespace ufm
         {
             string activePanel = GetActivePanel();
             if (_navigationManager.CanGoBack(activePanel))
+            {
                 _navigationManager.GoBack(activePanel);
+                var newPath = GetActiveHistory()?.Current?.DirectoryPath;
+                if (!string.IsNullOrEmpty(newPath)) OnNavigateRequested(newPath);
+            }
         }
 
         private void ForwardButton_Click(object sender, RoutedEventArgs e)
         {
             string activePanel = GetActivePanel();
             if (_navigationManager.CanGoForward(activePanel))
+            {
                 _navigationManager.GoForward(activePanel);
+                var newPath = GetActiveHistory()?.Current?.DirectoryPath;
+                if (!string.IsNullOrEmpty(newPath)) OnNavigateRequested(newPath);
+            }
         }
 
         private void UpButton_Click(object sender, RoutedEventArgs e)
@@ -2748,49 +2637,84 @@ namespace ufm
                     }
                 }
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         private string GetActivePanel() => _activePanelId ?? "MainTree";
-
         private DirectoryHistory GetActiveHistory() => GetActivePanel() == "SpFTree" ? _historySpF : _history;
 
         #endregion
 
         #region Публичные методы для внешнего взаимодействия
 
-        private void OnNavigateRequested(string path)
-        {
-            NavigateRequested?.Invoke(this, path);
-        }
+        private void OnNavigateRequested(string path) => NavigateRequested?.Invoke(this, path);
 
         public void SelectPath(string path)
         {
             string panelId;
+            string treePath = path;
 
-            if (_specialFolderPaths.Contains(path) || path == "SpecialFolders" || path.StartsWith("SpecialFolders"))
+            if (path == "Drives" || path == "MyComputer")
+            {
+                panelId = "MainTree";
+                treePath = "MyComputer";
+                if (treeViewSpF.SelectedNodes.Count > 0 || treeViewSpF.SelectedItem != null)
+                {
+                    treeViewSpF.SelectedNodes.Clear();
+                    treeViewSpF.SelectedItem = null;
+                    treeViewSpF.UpdateLayout();
+                }
+            }
+            else if (_specialFolderPaths.Contains(path) || path == "SpecialFolders" || path.StartsWith("SpecialFolders"))
             {
                 panelId = "SpFTree";
+                treePath = path;
+                if (treeView.SelectedNodes.Count > 0 || treeView.SelectedItem != null)
+                {
+                    treeView.SelectedNodes.Clear();
+                    treeView.SelectedItem = null;
+                    treeView.UpdateLayout();
+                }
             }
             else
             {
                 panelId = "MainTree";
+                if (treeViewSpF.SelectedNodes.Count > 0 || treeViewSpF.SelectedItem != null)
+                {
+                    treeViewSpF.SelectedNodes.Clear();
+                    treeViewSpF.SelectedItem = null;
+                    treeViewSpF.UpdateLayout();
+                }
             }
 
-            UpdateTreeViewSelection(panelId, path);
+            UpdateTreeViewSelection(panelId, treePath);
             ScheduleUpdateAllTiles();
+        }
+
+        public void NavigateToPath(string path)
+        {
+            string panelId;
+            if (_specialFolderPaths.Contains(path) || path == "SpecialFolders" || path.StartsWith("SpecialFolders"))
+                panelId = "SpFTree";
+            else
+                panelId = "MainTree";
+
+            _isNavigationChangingSelection = true;
+            try
+            {
+                _navigationManager.NavigateTo(path, panelId);
+            }
+            finally
+            {
+                _isNavigationChangingSelection = false;
+            }
         }
 
         private IEnumerable<ExplorerItemViewModel> GetSelectedItems(TreeView tree)
         {
             var list = new List<ExplorerItemViewModel>();
             foreach (var node in tree.SelectedNodes)
-            {
-                if (node.Content is ExplorerItemViewModel vm)
-                    list.Add(vm);
-            }
+                if (node.Content is ExplorerItemViewModel vm) list.Add(vm);
             return list;
         }
 
@@ -2801,16 +2725,14 @@ namespace ufm
 
             if (e.Key == Windows.System.VirtualKey.C)
             {
-                var selectedItems = GetSelectedItems(treeView).Concat(GetSelectedItems(treeViewSpF));
-                if (selectedItems.Any())
-                    App.FileOperationService?.Copy(selectedItems);
+                var items = GetSelectedItems(treeView).Concat(GetSelectedItems(treeViewSpF));
+                if (items.Any()) App.FileOperationService?.Copy(items);
                 e.Handled = true;
             }
             else if (e.Key == Windows.System.VirtualKey.X)
             {
-                var selectedItems = GetSelectedItems(treeView).Concat(GetSelectedItems(treeViewSpF));
-                if (selectedItems.Any())
-                    App.FileOperationService?.Cut(selectedItems);
+                var items = GetSelectedItems(treeView).Concat(GetSelectedItems(treeViewSpF));
+                if (items.Any()) App.FileOperationService?.Cut(items);
                 e.Handled = true;
             }
             else if (e.Key == Windows.System.VirtualKey.V)
@@ -2836,96 +2758,142 @@ namespace ufm
 
         #endregion
 
-        #region Drag-and-drop handlers
+        #region Drag-and-drop handlers (основное дерево)
 
-        private void treeViewSpF_DragItemsStarting(TreeView sender, TreeViewDragItemsStartingEventArgs args)
+        private void TreeView_DragItemsStarting(TreeView sender, TreeViewDragItemsStartingEventArgs args)
         {
-            var items = args.Items.OfType<ExplorerItemViewModel>().ToList();
-            if (items.Count == 0) return;
-            App.FileOperationService?.Copy(items);
+            var paths = args.Items.OfType<ExplorerItemViewModel>()
+                                 .Select(vm => vm.FilePath)
+                                 .Where(p => !string.IsNullOrEmpty(p))
+                                 .ToList();
+            if (paths.Count == 0) return;
+            _dragDropService.OnDragItemsStarting(paths, args);
         }
 
-        private void treeViewSpF_DragOver(object sender, DragEventArgs e)
+        private void TreeView_DragOver(object sender, DragEventArgs e)
         {
-            e.AcceptedOperation = e.DataView.Contains(StandardDataFormats.StorageItems)
-                ? DataPackageOperation.Copy
-                : DataPackageOperation.None;
+            _modifierKeyService.UpdateKeyStateFromCore();
+            string targetFolder = _currentSelectedItemPath;
+            _currentTargetFolder = targetFolder;
+            _dragDropService.OnDragOver(e, targetFolder, true);
+            e.Handled = true;
         }
 
-        private async void treeViewSpF_Drop(object sender, DragEventArgs e)
+        private async void TreeView_Drop(object sender, DragEventArgs e)
         {
-            await PasteToTreeView(sender as TreeView, e);
-        }
+            _modifierKeyService.UpdateKeyStateFromCore();
+            string targetFolder = _currentSelectedItemPath;
+            await _dragDropService.OnDropAsync(e, targetFolder);
+            e.Handled = true;
 
-        private void treeView_DragItemsStarting(TreeView sender, TreeViewDragItemsStartingEventArgs args)
-        {
-            var items = args.Items.OfType<ExplorerItemViewModel>().ToList();
-            if (items.Count == 0) return;
-            App.FileOperationService?.Copy(items);
-        }
-
-        private void treeView_DragOver(object sender, DragEventArgs e)
-        {
-            e.AcceptedOperation = e.DataView.Contains(StandardDataFormats.StorageItems)
-                ? DataPackageOperation.Copy
-                : DataPackageOperation.None;
-        }
-
-        private async void treeView_Drop(object sender, DragEventArgs e)
-        {
-            await PasteToTreeView(sender as TreeView, e);
-        }
-
-        private async Task PasteToTreeView(TreeView tree, DragEventArgs e)
-        {
-            if (tree == null) return;
-            TreeViewNode targetNode = null;
-            string destPath = null;
-
-            var pos = e.GetPosition(tree);
-            var elements = VisualTreeHelper.FindElementsInHostCoordinates(pos, tree);
-            foreach (var el in elements)
+            DispatcherQueue.TryEnqueue(() =>
             {
-                if (el is TreeViewItem tvi && tvi.DataContext is ExplorerItemViewModel vm)
+                var tree = sender as TreeView;
+                if (tree?.SelectedNode != null && Directory.Exists(targetFolder))
                 {
-                    targetNode = tree.NodeFromContainer(tvi);
-                    break;
+                    tree.SelectedNode.Children.Clear();
+                    tree.SelectedNode.HasUnrealizedChildren = true;
+                    if (!tree.SelectedNode.IsExpanded) tree.Expand(tree.SelectedNode);
                 }
-            }
+                else
+                {
+                    if (tree == treeView)
+                    {
+                        treeView.RootNodes.Clear();
+                        TreeView_OnLoaded(treeView, null);
+                    }
+                    else
+                    {
+                        treeViewSpF.RootNodes.Clear();
+                        TreeViewSpF_OnLoaded(treeViewSpF, null);
+                    }
+                }
+            });
+        }
 
-            if (targetNode?.Content is ExplorerItemViewModel tvm)
-            {
-                destPath = tvm.FilePath;
-                if (!Directory.Exists(destPath))
-                    destPath = System.IO.Path.GetDirectoryName(destPath);
-            }
-            else
-            {
-                destPath = _currentSelectedItemPath ?? "MyComputer";
-            }
 
-            if (!string.IsNullOrEmpty(destPath) && Directory.Exists(destPath))
+        private void TreeView_DragEnter(object sender, DragEventArgs e)
+        {
+            _modifierKeyService.UpdateKeyStateFromCore();
+            ShowDropTarget(true);
+            e.Handled = true;
+        }
+
+        private void TreeView_DragLeave(object sender, DragEventArgs e)
+        {
+            _modifierKeyService.UpdateKeyStateFromCore();
+            ShowDropTarget(false);
+            e.Handled = true;
+        }
+
+        #endregion
+
+        #region Drag-and-drop handlers (дерево спецпапок)
+
+        private void TreeViewSpF_DragItemsStarting(TreeView sender, TreeViewDragItemsStartingEventArgs args)
+        {
+            var paths = args.Items.OfType<ExplorerItemViewModel>()
+                                 .Select(vm => vm.FilePath)
+                                 .Where(p => !string.IsNullOrEmpty(p))
+                                 .ToList();
+            if (paths.Count == 0) return;
+            _dragDropService.OnDragItemsStarting(paths, args);
+        }
+
+        private void TreeViewSpF_DragOver(object sender, DragEventArgs e)
+        {
+            _modifierKeyService.UpdateKeyStateFromCore();
+            string targetFolder = _currentSelectedItemPath;
+            _currentTargetFolder = targetFolder;
+            _dragDropService.OnDragOver(e, targetFolder, true);
+            e.Handled = true;
+        }
+
+        private async void TreeViewSpF_Drop(object sender, DragEventArgs e)
+        {
+            _modifierKeyService.UpdateKeyStateFromCore();
+            string targetFolder = _currentSelectedItemPath;
+            await _dragDropService.OnDropAsync(e, targetFolder);
+            e.Handled = true;
+
+            DispatcherQueue.TryEnqueue(() =>
             {
-                await App.FileOperationService.PasteAsync(destPath);
-                if (targetNode != null)
+                var tree = sender as TreeView;
+                if (tree?.SelectedNode != null && Directory.Exists(targetFolder))
                 {
-                    targetNode.Children.Clear();
-                    targetNode.HasUnrealizedChildren = true;
-                    if (!targetNode.IsExpanded)
-                        tree.Expand(targetNode);
+                    tree.SelectedNode.Children.Clear();
+                    tree.SelectedNode.HasUnrealizedChildren = true;
+                    if (!tree.SelectedNode.IsExpanded) tree.Expand(tree.SelectedNode);
                 }
-                else if (tree == treeViewSpF)
+                else
                 {
-                    _isTreeViewSpFInitialized = false;
+                    if (tree == treeView)
+                    {
+                        treeView.RootNodes.Clear();
+                        TreeView_OnLoaded(treeView, null);
+                    }
+                    else
+                    {
+                        treeViewSpF.RootNodes.Clear();
+                        TreeViewSpF_OnLoaded(treeViewSpF, null);
+                    }
                 }
-                else if (treeView.RootNodes.Count > 0)
-                {
-                    var root = treeView.RootNodes[0];
-                    root.Children.Clear();
-                    root.HasUnrealizedChildren = true;
-                    if (!root.IsExpanded) treeView.Expand(root);
-                }
-            }
+            });
+        }
+
+
+        private void TreeViewSpF_DragEnter(object sender, DragEventArgs e)
+        {
+            _modifierKeyService.UpdateKeyStateFromCore();
+            ShowDropTarget(true);
+            e.Handled = true;
+        }
+
+        private void TreeViewSpF_DragLeave(object sender, DragEventArgs e)
+        {
+            _modifierKeyService.UpdateKeyStateFromCore();
+            ShowDropTarget(false);
+            e.Handled = true;
         }
 
         #endregion

@@ -245,21 +245,26 @@
 				<!--  Секция специальных папок с TreeView  -->
 
 				<TreeView
-                    x:Name="treeViewSpF"
-                    Margin="1"
-                    Padding="0,0,2,2"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Collapsed="TreeViewSpF_OnCollapsed"
-                    DoubleTapped="TreeViewSpF_OnDoubleTapped"
-                    Expanding="TreeViewSpF_OnExpanding"
-                    SelectionChanged="TreeViewSpF_SelectionChanged"
-					DragItemsStarting="treeViewSpF_DragItemsStarting"
-                    DragOver="treeViewSpF_DragOver"
-                    Drop="treeViewSpF_Drop"
-                    IsDoubleTapEnabled="True"
-                    ItemsSource="{Binding ExplorerItems}"
-                    Loaded="TreeViewSpF_OnLoaded">
+					x:Name="treeViewSpF"
+					Margin="1"
+					Padding="0,0,2,2"
+					HorizontalAlignment="Stretch"
+					VerticalAlignment="Stretch"
+					Collapsed="TreeViewSpF_OnCollapsed"
+					DoubleTapped="TreeViewSpF_OnDoubleTapped"
+					Expanding="TreeViewSpF_OnExpanding"
+					SelectionChanged="TreeViewSpF_SelectionChanged"
+					AllowDrop="True"
+					CanDragItems="True"
+					SelectionMode="Single"
+					DragEnter="TreeViewSpF_DragEnter"
+					DragLeave="TreeViewSpF_DragLeave"
+					DragItemsStarting="TreeViewSpF_DragItemsStarting"
+					DragOver="TreeViewSpF_DragOver"
+					Drop="TreeViewSpF_Drop"
+					IsDoubleTapEnabled="True"
+					ItemsSource="{Binding ExplorerItems}"
+					Loaded="TreeViewSpF_OnLoaded">
 					<TreeView.ItemContainerStyle>
 						<Style TargetType="TreeViewItem">
 							<Setter Property="HasUnrealizedChildren" Value="True" />
@@ -317,22 +322,27 @@
 				</TreeView>
 
 				<!--  Основной TreeView для файловой системы  -->
-				<TreeView
-                    x:Name="treeView"
-                    Margin="1"
-                    Padding="0,0,2,2"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Collapsed="TreeView_OnCollapsed"
-                    DoubleTapped="TreeView_OnDoubleTapped"
-                    Expanding="TreeView_OnExpanding"
-                    SelectionChanged="TreeView_SelectionChanged"
-					DragItemsStarting="treeView_DragItemsStarting"
-					DragOver="treeView_DragOver"
-					Drop="treeView_Drop"
-                    IsDoubleTapEnabled="True"
-                    ItemsSource="{Binding ExplorerItems}"
-                    Loaded="TreeView_OnLoaded">
+				<TreeView											     
+					x:Name="treeView"
+					Margin="1"
+					Padding="0,0,2,2"
+					HorizontalAlignment="Stretch"
+					VerticalAlignment="Stretch"
+					Collapsed="TreeView_OnCollapsed"
+					DoubleTapped="TreeView_OnDoubleTapped"
+					Expanding="TreeView_OnExpanding"
+					SelectionChanged="TreeView_SelectionChanged"
+					AllowDrop="True"
+					CanDragItems="True"
+					SelectionMode="Single"
+					DragEnter="TreeView_DragEnter"
+					DragLeave="TreeView_DragLeave"
+					DragItemsStarting="TreeView_DragItemsStarting"
+					DragOver="TreeView_DragOver"
+					Drop="TreeView_Drop"
+					IsDoubleTapEnabled="True"
+					ItemsSource="{Binding ExplorerItems}"
+					Loaded="TreeView_OnLoaded">
 					<TreeView.ItemContainerStyle>
 						<Style TargetType="TreeViewItem">
 							<Setter Property="HasUnrealizedChildren" Value="True" />
