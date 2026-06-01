@@ -45,6 +45,9 @@ namespace ufm
         private IntPtr _parentHwnd = IntPtr.Zero;
         private DispatcherQueue _dispatcherQueue;
 
+        // Защита от одновременного выполнения PasteAsync
+        private volatile bool _isPasting;
+
         public bool CanPaste => _sourcePaths.Count > 0;
         public event EventHandler ClipboardChanged;
 
@@ -96,24 +99,38 @@ namespace ufm
         // ===================== PASTE =====================
         public async Task PasteAsync(string destinationFolder)
         {
+            // Предотвращаем повторный вход
+            if (_isPasting)
+                return;
+
             if (_sourcePaths.Count == 0 || string.IsNullOrEmpty(destinationFolder) || !Directory.Exists(destinationFolder))
                 return;
 
-            var sources = _sourcePaths.ToList();
-            bool isCut = _isCut;
-
-            _sourcePaths.Clear();
-            _isCut = false;
-            ClipboardChanged?.Invoke(this, EventArgs.Empty);
-
-            string title = isCut ? "Перемещение..." : "Копирование...";
-            uint operation = isCut ? FO_MOVE : FO_COPY;
-
-            bool ok = await RunOperationWithProgressAsync(operation, sources, destinationFolder, title);
-
-            if (!ok)
+            _isPasting = true;
+            try
             {
-                ManualPasteFallback(sources, destinationFolder, isCut);
+                // Фиксируем текущее состояние и сразу очищаем, чтобы избежать гонки
+                var sources = _sourcePaths.ToList();
+                bool isCut = _isCut;
+
+                _sourcePaths.Clear();
+                _isCut = false;
+                ClipboardChanged?.Invoke(this, EventArgs.Empty);
+
+                string title = isCut ? "Перемещение..." : "Копирование...";
+                uint operation = isCut ? FO_MOVE : FO_COPY;
+
+                bool ok = await RunOperationWithProgressAsync(operation, sources, destinationFolder, title);
+
+                if (!ok)
+                {
+                    // Ручной fallback тоже выполняем асинхронно, чтобы не блокировать UI
+                    await Task.Run(() => ManualPasteFallback(sources, destinationFolder, isCut));
+                }
+            }
+            finally
+            {
+                _isPasting = false;
             }
         }
 
@@ -137,114 +154,50 @@ namespace ufm
 
             if (!ok)
             {
-                foreach (var path in paths)
+                // Ручной fallback также в фоновом потоке
+                await Task.Run(() =>
                 {
-                    try
+                    foreach (var path in paths)
                     {
-                        if (File.Exists(path))
+                        try
                         {
-                            File.Delete(path);
+                            if (File.Exists(path))
+                            {
+                                File.Delete(path);
+                            }
+                            else if (Directory.Exists(path))
+                            {
+                                Directory.Delete(path, true);
+                            }
                         }
-                        else if (Directory.Exists(path))
+                        catch
                         {
-                            Directory.Delete(path, true);
                         }
                     }
-                    catch
-                    {
-                    }
-                }
+                });
             }
         }
 
         // ===================== ЕДИНЫЙ МЕТОД ПРОГРЕССА =====================
         /// <summary>
-        /// Запускает SHFileOperation с системным окном прогресса (и подтверждением для удаления, если не указан FOF_NOCONFIRMATION).
+        /// Запускает SHFileOperation с системным окном прогресса.
+        /// Всегда выполняется в фоновом потоке, чтобы не блокировать UI.
         /// </summary>
-        /// <param name="wFunc">FO_COPY, FO_MOVE, FO_DELETE</param>
-        /// <param name="sourcePaths">Список исходных путей</param>
-        /// <param name="destinationFolder">Папка назначения (null для удаления)</param>
-        /// <param name="progressTitle">Заголовок окна прогресса</param>
-        /// <param name="additionalFlags">Дополнительные флаги (например, FOF_ALLOWUNDO для корзины)</param>
-        //private async Task<bool> RunOperationWithProgressAsync(
-        //    uint wFunc,
-        //    List<string> sourcePaths,
-        //    string destinationFolder,
-        //    string progressTitle,
-        //    ushort additionalFlags = 0)
-        //{
-        //    string fromList = string.Join("\0", sourcePaths) + "\0\0";
-        //    string toPath = (destinationFolder != null) ? destinationFolder + "\0\0" : null;
-
-        //    ushort flags = FOF_SIMPLEPROGRESS;
-        //    if (wFunc != FO_DELETE)
-        //    {
-        //        flags |= FOF_MULTIDESTFILES;
-        //    }
-        //    flags |= additionalFlags;
-
-        //    var op = new SHFILEOPSTRUCT
-        //    {
-        //        hwnd = _parentHwnd,
-        //        wFunc = wFunc,
-        //        pFrom = fromList,
-        //        pTo = toPath,
-        //        fFlags = flags,
-        //        fAnyOperationsAborted = false,
-        //        hNameMappings = IntPtr.Zero,
-        //        lpszProgressTitle = progressTitle
-        //    };
-
-        //    bool success;
-        //    if (_dispatcherQueue != null)
-        //    {
-        //        var tcs = new TaskCompletionSource<bool>();
-        //        _dispatcherQueue.TryEnqueue(() =>
-        //        {
-        //            try
-        //            {
-        //                int result = SHFileOperation(ref op);
-        //                success = (result == 0 && !op.fAnyOperationsAborted);
-        //            }
-        //            catch
-        //            {
-        //                success = false;
-        //            }
-        //            tcs.SetResult(success);
-        //        });
-        //        success = await tcs.Task;
-        //    }
-        //    else
-        //    {
-        //        success = await Task.Run(() =>
-        //        {
-        //            try
-        //            {
-        //                int result = SHFileOperation(ref op);
-        //                return (result == 0 && !op.fAnyOperationsAborted);
-        //            }
-        //            catch
-        //            {
-        //                return false;
-        //            }
-        //        });
-        //    }
-
-        //    return success;
-        //}
         private async Task<bool> RunOperationWithProgressAsync(
-uint wFunc,
-List<string> sourcePaths,
-string destinationFolder,
-string progressTitle,
-ushort additionalFlags = 0)
+            uint wFunc,
+            List<string> sourcePaths,
+            string destinationFolder,
+            string progressTitle,
+            ushort additionalFlags = 0)
         {
             string fromList = string.Join("\0", sourcePaths) + "\0\0";
-            string toPath = destinationFolder != null ? destinationFolder + "\0\0" : null;
+            string toPath = (destinationFolder != null) ? destinationFolder + "\0\0" : null;
 
             ushort flags = FOF_SIMPLEPROGRESS;
             if (wFunc != FO_DELETE)
+            {
                 flags |= FOF_MULTIDESTFILES;
+            }
             flags |= additionalFlags;
 
             var op = new SHFILEOPSTRUCT
@@ -273,7 +226,8 @@ ushort additionalFlags = 0)
                 }
             });
         }
-        // ===================== Ручной fallback (без интерфейса) =====================
+
+        // ===================== Ручной fallback =====================
         private static void ManualPasteFallback(List<string> sources, string dest, bool isCut)
         {
             foreach (var src in sources)

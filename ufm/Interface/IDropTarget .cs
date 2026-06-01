@@ -11,8 +11,5 @@ namespace ufm
     {
         /// <summary>Целевая директория, в которую будет выполнена вставка, или null.</summary>
         string GetTargetFolder();
-
-        /// <summary>Подсветка целевого элемента при наведении (true – показать, false – скрыть).</summary>
-        void ShowDropTarget(bool show);
     }
 }
