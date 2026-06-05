@@ -54,6 +54,23 @@ namespace ufm
             scaleAnimation.InsertKeyFrame(1.0f, new Vector3(scale));
             _visual.StartAnimation("Scale", scaleAnimation);
         }
+        public static void AnimateScale(FrameworkElement element, float scale)
+        {
+            if (element == null) return;
+
+            var visual = ElementCompositionPreview.GetElementVisual(element);
+            if (visual == null) return;
+
+            var compositor = visual.Compositor;
+            var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
+            scaleAnimation.Duration = TimeSpan.FromMilliseconds(200);
+            scaleAnimation.InsertKeyFrame(1.0f, new Vector3(scale));
+
+            // Центр масштабирования — середина элемента
+            visual.CenterPoint = new Vector3((float)element.ActualWidth / 2, (float)element.ActualHeight / 2, 0);
+
+            visual.StartAnimation("Scale", scaleAnimation);
+        }
         //ПРУЖИНИСТОЕ РАБОТАЕТ
         //private void StartScaleAnimation(float scale)
         //{
