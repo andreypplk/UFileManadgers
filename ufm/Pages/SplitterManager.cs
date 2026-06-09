@@ -227,6 +227,27 @@ namespace ufm
             }
         }
 
+        public void ClearAllSavedSizes()
+        {
+            var keys = new[]
+            {
+                "Vertical_Left", "Vertical_Right",
+                "Horizontal_Top", "Horizontal_Bottom",
+                "TripleVertical_Left", "TripleVertical_Center", "TripleVertical_Right",
+                "TripleHorizontal_Top", "TripleHorizontal_Center", "TripleHorizontal_Bottom",
+                "TripleTopBottom_Left", "TripleTopBottom_Right", "TripleTopBottom_Top", "TripleTopBottom_Bottom",
+                "TripleBottomTop_Left", "TripleBottomTop_Right", "TripleBottomTop_Top", "TripleBottomTop_Bottom",
+                "TripleLeftRight_Left", "TripleLeftRight_Top", "TripleLeftRight_Bottom",
+                "TripleRightLeft_Right", "TripleRightLeft_Top", "TripleRightLeft_Bottom",
+                "Quad_Left", "Quad_Right", "Quad_Top", "Quad_Bottom"
+            };
+
+            foreach (var key in keys)
+            {
+                _settingsManager.SaveSetting($"Splitter_{key}", 0.0);
+            }
+        }
+
         private void ApplyVerticalSplitterSizes(ViewPage viewPage, Dictionary<string, double> sizes)
         {
             if (viewPage.VerticalViewGrid.ColumnDefinitions.Count >= 3)

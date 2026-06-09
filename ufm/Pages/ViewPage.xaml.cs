@@ -1,4 +1,4 @@
-using Core_FileManagement;
+﻿using Core_FileManagement;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -560,9 +560,31 @@ namespace ufm
             }
         }
 
-        private void PreviewLeft_Click(object sender, RoutedEventArgs e) { SavePreviewPanelSizes(); _previewPanelMode = PreviewPanelMode.Left; UpdatePreviewPanelVisibility(); SaveAllPanelStates(); }
-        private void PreviewRight_Click(object sender, RoutedEventArgs e) { SavePreviewPanelSizes(); _previewPanelMode = PreviewPanelMode.Right; UpdatePreviewPanelVisibility(); SaveAllPanelStates(); }
-        private void PreviewNone_Click(object sender, RoutedEventArgs e) { SavePreviewPanelSizes(); _previewPanelMode = PreviewPanelMode.None; UpdatePreviewPanelVisibility(); SaveAllPanelStates(); }
+        private void PreviewLeft_Click(object sender, RoutedEventArgs e)
+        {
+            SavePreviewPanelSizes();
+            _previewPanelMode = PreviewPanelMode.Left;
+            UpdatePreviewPanelVisibility();
+            ResetPanelLayout();                     // ← добавлено
+            SaveAllPanelStates();
+        }
+
+        private void PreviewRight_Click(object sender, RoutedEventArgs e)
+        {
+            SavePreviewPanelSizes();
+            _previewPanelMode = PreviewPanelMode.Right;
+            UpdatePreviewPanelVisibility();
+            ResetPanelLayout();                     // ← добавлено
+            SaveAllPanelStates();
+        }
+        private void PreviewNone_Click(object sender, RoutedEventArgs e)
+        {
+            SavePreviewPanelSizes();
+            _previewPanelMode = PreviewPanelMode.None;
+            UpdatePreviewPanelVisibility();
+            ResetPanelLayout();                     // ← добавлено
+            SaveAllPanelStates();
+        }
         #endregion
 
         #region Radio Button Management
@@ -761,7 +783,7 @@ namespace ufm
         #region Event Handlers
         private async void ViewPage_Loaded(object sender, RoutedEventArgs e)
         {
-            //�������� ��������
+            //Файловые операции
             _fileOperationService = App.FileOperationService;
 
             LoadAllPanelStates();
@@ -964,7 +986,7 @@ namespace ufm
 
         private void MoveButton_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("Move clicked � not implemented");
+            Debug.WriteLine("Move clicked – not implemented");
         }
         #endregion
 
@@ -1019,6 +1041,14 @@ namespace ufm
             SaveAllPanelStates();
 
             RefreshActiveTileViewer();
+        }
+
+        public void ResetPanelLayout()
+        {
+            // Очищаем все сохранённые размеры сплиттеров
+            _splitterManager.ClearAllSavedSizes();
+            // Перезапускаем текущий режим, чтобы панели перераспределились равномерно
+            SetDisplayMode(_currentDisplayMode);
         }
 
         private void TileView_NavigationChanged(object sender, EventArgs e)
@@ -1198,7 +1228,7 @@ namespace ufm
                     }
                     else if (targetPath == "Drives")
                     {
-                        var history = new DirectoryHistory("Drives", "��� ���������");
+                        var history = new DirectoryHistory("Drives", "Мой компьютер");
                         children = await _fileSystemService.LoadDrivesAsync(history);
                     }
                     else if (Directory.Exists(targetPath))
@@ -1283,10 +1313,10 @@ namespace ufm
                 else
                     _deleteConfirmationDialog = new ContentDialog
                     {
-                        Title = "������������� ��������",
-                        Content = "�� �������, ��� ������ ������� ��������� ��������?",
-                        PrimaryButtonText = "�������",
-                        SecondaryButtonText = "������",
+                        Title = "Подтверждение удаления",
+                        Content = "Вы уверены, что хотите удалить выбранные элементы?",
+                        PrimaryButtonText = "Удалить",
+                        SecondaryButtonText = "Отмена",
                         DefaultButton = ContentDialogButton.Secondary
                     };
             }

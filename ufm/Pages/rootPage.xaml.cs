@@ -90,6 +90,9 @@ namespace ufm
                 return;
             }
 
+            if (isCollapsedrootPageTreePanelandViewDataPanel)
+                return;
+
             if (Math.Abs(e.NewSize.Width - e.PreviousSize.Width) < 2)
                 return;
 
@@ -146,6 +149,13 @@ namespace ufm
             else
             {
                 RestoreSizes();
+            }
+
+            // Принудительный пересчёт макета и сброс кэша сплиттеров во ViewPage
+            FrameViewDataPanel.UpdateLayout();
+            if (FrameViewDataPanel.Content is ViewPage viewPage)
+            {
+                viewPage.ResetPanelLayout();
             }
         }
 
