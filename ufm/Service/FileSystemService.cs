@@ -1,6 +1,8 @@
 ﻿using Core_FileManagement;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,20 +19,22 @@ namespace ufm
         private readonly Dictionary<string, List<ExplorerItemViewModel>> _panelCaches = new();
         private Task _breadcrumbCacheTask;
 
+        private static readonly SemaphoreSlim _iconLoadSemaphore = new(8, 8);
+        private readonly DispatcherQueue _dispatcher;
+
+        // Фоновые задачи иконок для ожидания при завершении
+        private readonly ConcurrentBag<Task> _activeIconTasks = new();
+        // Общий токен отмены для всех фоновых операций (отменяется при Dispose)
+        private readonly CancellationTokenSource _disposeCts = new();
+
         public bool IsDisposed { get; private set; }
 
         public bool ShowNavigationBackItem
         {
             get
             {
-                try
-                {
-                    return App.SettingsManager?.GetSetting<bool>("ShowNavigationBackItem", true) ?? true;
-                }
-                catch
-                {
-                    return true;
-                }
+                try { return App.SettingsManager?.GetSetting<bool>("ShowNavigationBackItem", true) ?? true; }
+                catch { return true; }
             }
         }
 
@@ -38,6 +42,8 @@ namespace ufm
         {
             _currentOperationCts = new CancellationTokenSource();
             FileCacheService.Initialize(_iconService);
+            _dispatcher = DispatcherQueue.GetForCurrentThread()
+                          ?? throw new InvalidOperationException("FileSystemService must be created on UI thread");
 
             _breadcrumbCacheTask = Task.Run(async () =>
             {
@@ -50,17 +56,16 @@ namespace ufm
             });
         }
 
+        // ========================= ПУБЛИЧНЫЕ МЕТОДЫ =========================
+
         public async Task<List<ExplorerItemViewModel>> LoadPathContentsAsync(string path, string panelId, IDirectoryHistory history = null)
         {
             if (IsDisposed) throw new ObjectDisposedException(nameof(FileSystemService));
-
             CancelCurrentOperation();
-            var token = _currentOperationCts.Token;
-
+            var token = CancellationTokenSource.CreateLinkedTokenSource(_currentOperationCts.Token, _disposeCts.Token).Token;
             try
             {
                 var localHistory = history ?? new DirectoryHistory("MyComputer", "Мой Компьютер");
-
                 switch (path)
                 {
                     case "MyComputer":
@@ -82,9 +87,8 @@ namespace ufm
 
         public async Task<List<ExplorerItemViewModel>> LoadMyComputerAsync(string panelId, IDirectoryHistory history, CancellationToken token = default)
         {
-            if (_panelCaches.TryGetValue(panelId, out var cachedItems) && !token.IsCancellationRequested)
-                return new List<ExplorerItemViewModel>(cachedItems);
-
+            if (_panelCaches.TryGetValue(panelId, out var cached) && !token.IsCancellationRequested)
+                return new List<ExplorerItemViewModel>(cached);
             var items = await InitializeMyComputerCacheAsync(panelId, history, token);
             return new List<ExplorerItemViewModel>(items);
         }
@@ -92,33 +96,29 @@ namespace ufm
         public async Task<List<ExplorerItemViewModel>> LoadDrivesAsync(IDirectoryHistory history, CancellationToken token = default)
         {
             var items = new List<ExplorerItemViewModel>();
-
-            if (ShowNavigationBackItem)
-                items.Add(CreateBackItem(history));
-
-            foreach (var logicalDrive in Directory.GetLogicalDrives())
+            if (ShowNavigationBackItem) items.Add(CreateBackItem(history));
+            foreach (var drive in Directory.GetLogicalDrives())
             {
                 if (token.IsCancellationRequested) break;
                 try
                 {
-                    var driveItem = await CreateDriveItemAsync(logicalDrive, history);
-                    if (driveItem != null)
-                        items.Add(driveItem);
+                    var driveItem = await CreateDriveItemAsync(drive, history);
+                    if (driveItem != null) items.Add(driveItem);
                 }
                 catch
                 {
                     items.Add(new ExplorerItemViewModel(history)
                     {
-                        Name = logicalDrive,
-                        FilePath = logicalDrive,
+                        Name = drive,
+                        FilePath = drive,
                         ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/harddisk.png"))
                     });
                 }
             }
-
             return items;
         }
 
+        // ===================== ОПТИМИЗИРОВАННАЯ ЗАГРУЗКА ПАПОК =====================
         public async Task<List<ExplorerItemViewModel>> LoadFolderContentsAsync(string folderPath, IDirectoryHistory history, CancellationToken token = default)
         {
             if (!Directory.Exists(folderPath))
@@ -129,16 +129,126 @@ namespace ufm
             if (ShowNavigationBackItem)
                 items.Add(CreateBackItem(history));
 
-            await LoadSubfoldersAsync(items, folderPath, history, token);
-            await LoadFilesAsync(items, folderPath, history, token);
+            // 1. Собираем пути папок и файлов в фоне (без UI-объектов)
+            List<string> folderPaths = new();
+            List<string> filePaths = new();
+            await CollectFolderAndFilePathsAsync(folderPath, folderPaths, filePaths, token);
+
+            // 2. Создаём ViewModel в UI-потоке: сначала папки, потом файлы, по алфавиту
+            var comparer = StringComparer.OrdinalIgnoreCase;
+            foreach (var folderPathItem in folderPaths.OrderBy(p => Path.GetFileName(p), comparer))
+            {
+                items.Add(new ExplorerItemViewModel(history)
+                {
+                    Name = Path.GetFileName(folderPathItem),
+                    FilePath = folderPathItem,
+                    IsTreeViewNode = true,
+                    ImageSource = null
+                });
+            }
+            foreach (var filePathItem in filePaths.OrderBy(p => Path.GetFileName(p), comparer))
+            {
+                items.Add(new ExplorerItemViewModel(history)
+                {
+                    Name = Path.GetFileName(filePathItem),
+                    FilePath = filePathItem,
+                    IsTreeViewNode = true,
+                    ImageSource = null
+                });
+            }
+
+            // 3. Запускаем фоновую загрузку иконок (не ждём)
+            var iconTask = LoadIconsInBackgroundAsync(items, token);
+            _activeIconTasks.Add(iconTask);
+            // Удаляем задачу из коллекции по завершении
+            _ = iconTask.ContinueWith(_ => _activeIconTasks.TryTake(out _), TaskScheduler.Default);
 
             return items;
         }
 
+        private Task CollectFolderAndFilePathsAsync(string folderPath, List<string> folderPaths, List<string> filePaths, CancellationToken token)
+        {
+            return Task.Run(() =>
+            {
+                var dirInfo = new DirectoryInfo(folderPath);
+                if (!dirInfo.Exists) return;
+
+                foreach (var fsi in dirInfo.EnumerateFileSystemInfos())
+                {
+                    token.ThrowIfCancellationRequested();
+                    try
+                    {
+                        if (fsi is DirectoryInfo)
+                            folderPaths.Add(fsi.FullName);
+                        else
+                            filePaths.Add(fsi.FullName);
+                    }
+                    catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                    {
+                        // Пропускаем недоступные элементы
+                    }
+                }
+            }, token);
+        }
+
+        private async Task LoadIconsInBackgroundAsync(List<ExplorerItemViewModel> items, CancellationToken token)
+        {
+            var tasks = items
+                .Where(it => it.FilePath != "..")
+                .Select(it => LoadIconForItemAsync(it, token))
+                .ToArray();
+            if (tasks.Length == 0) return;
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch (OperationCanceledException) { }
+            catch { }
+        }
+
+        private async Task LoadIconForItemAsync(ExplorerItemViewModel item, CancellationToken token)
+        {
+            if (IsDisposed || token.IsCancellationRequested)
+                return;
+
+            await _iconLoadSemaphore.WaitAsync(token);
+            try
+            {
+                if (IsDisposed || token.IsCancellationRequested)
+                    return;
+
+                BitmapImage icon = null;
+                string path = item.FilePath;
+
+                if (path.Length == 3 && path.EndsWith(":\\") && char.IsLetter(path[0]))
+                    icon = await _iconService.GetIconAsync(path, true);
+                else if (Directory.Exists(path))
+                    icon = await _iconService.GetIconAsync(path, true);
+                else if (File.Exists(path))
+                    icon = await FileCacheService.GetFileIconAsync(path);
+
+                if (icon != null && !IsDisposed && !token.IsCancellationRequested)
+                {
+                    _dispatcher.TryEnqueue(() =>
+                    {
+                        if (!IsDisposed)
+                            item.ImageSource = icon;
+                    });
+                }
+            }
+            catch (OperationCanceledException) { }
+            catch { }
+            finally
+            {
+                _iconLoadSemaphore.Release();
+            }
+        }
+
+        // ===================== ОСТАЛЬНЫЕ МЕТОДЫ БЕЗ ИЗМЕНЕНИЙ =====================
+
         public async Task<List<ExplorerItemViewModel>> LoadDrivesTree(IDirectoryHistory history, CancellationToken token = default)
         {
             var items = new List<ExplorerItemViewModel>();
-
             foreach (var logicalDrive in Directory.GetLogicalDrives())
             {
                 if (token.IsCancellationRequested) break;
@@ -147,8 +257,7 @@ namespace ufm
                     var driveInfo = new DriveInfo(logicalDrive);
                     var icon = await _iconService.GetIconAsync(logicalDrive, true).ConfigureAwait(false);
                     var driveViewModel = new DriveViewModel(driveInfo, EntityFlags.IsDrive);
-
-                    var fileSystemItem = new ExplorerItemViewModel(history)
+                    items.Add(new ExplorerItemViewModel(history)
                     {
                         IsProgressBarVisible = true,
                         Name = GetDriveDisplayName(driveInfo, logicalDrive),
@@ -159,8 +268,7 @@ namespace ufm
                         TotalSizeString = driveViewModel.TotalSizeString,
                         UsedProcentValue = driveViewModel.UsedProcentValue,
                         IsTreeViewNode = true
-                    };
-                    items.Add(fileSystemItem);
+                    });
                 }
                 catch
                 {
@@ -173,20 +281,17 @@ namespace ufm
                     });
                 }
             }
-
             return items;
         }
 
         public async Task<List<ExplorerItemViewModel>> LoadSubfoldersForTreeViewAsync(string folderPath, IDirectoryHistory history, CancellationToken token = default)
         {
             var items = new List<ExplorerItemViewModel>();
-
             try
             {
                 var subfolders = Directory.GetDirectories(folderPath);
                 var defaultIcon = new BitmapImage(new Uri("ms-appx:///Assets/folder1.png"));
-                var throttler = new SemaphoreSlim(initialCount: 10);
-
+                var throttler = new SemaphoreSlim(10);
                 var tasks = subfolders.Select(async subfolder =>
                 {
                     await throttler.WaitAsync();
@@ -202,29 +307,22 @@ namespace ufm
                             IsTreeViewNode = true
                         };
                     }
-                    finally
-                    {
-                        throttler.Release();
-                    }
+                    finally { throttler.Release(); }
                 });
-
                 var results = await Task.WhenAll(tasks);
                 items.AddRange(results);
             }
             catch { }
-
             return items;
         }
 
         public async Task<List<ExplorerItemViewModel>> LoadFoldersOnlyAsync(string folderPath, IDirectoryHistory history, CancellationToken token = default)
         {
             var items = new List<ExplorerItemViewModel>();
-
             try
             {
                 var folders = Directory.GetDirectories(folderPath);
                 var defaultIcon = new BitmapImage(new Uri("ms-appx:///Assets/folder1.png"));
-
                 foreach (var folder in folders)
                 {
                     if (token.IsCancellationRequested) break;
@@ -232,7 +330,6 @@ namespace ufm
                     {
                         var dirInfo = new DirectoryInfo(folder);
                         var icon = await _iconService.GetIconAsync(folder, true) ?? defaultIcon;
-
                         items.Add(new ExplorerItemViewModel(history)
                         {
                             IsProgressBarVisible = false,
@@ -246,7 +343,6 @@ namespace ufm
                 }
             }
             catch { }
-
             return items;
         }
 
@@ -256,24 +352,20 @@ namespace ufm
             {
                 new ExplorerItemViewModel(history)
                 {
-                    Name = "Мой Компьютер",
-                    FilePath = "Drives",
+                    Name = "Мой Компьютер", FilePath = "Drives",
                     ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/computer.png")),
                     IsTreeViewNode = true
                 }
             };
-
             await LoadSystemFoldersAsync(items, history, token);
             _panelCaches[panelId] = items;
-
             return items;
         }
 
         public async Task<List<ExplorerItemViewModel>> LoadHomeAsync(string panelId, IDirectoryHistory history, CancellationToken token = default)
         {
-            if (_panelCaches.TryGetValue(panelId, out var cachedItems) && !token.IsCancellationRequested)
-                return new List<ExplorerItemViewModel>(cachedItems);
-
+            if (_panelCaches.TryGetValue(panelId, out var cached) && !token.IsCancellationRequested)
+                return new List<ExplorerItemViewModel>(cached);
             var items = await InitializeHomeCacheAsync(panelId, history, token);
             return new List<ExplorerItemViewModel>(items);
         }
@@ -297,7 +389,6 @@ namespace ufm
                 new { Name = "Видео", Path = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos) },
                 new { Name = "Загрузки", Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads") }
             };
-
             foreach (var folder in systemFolders)
             {
                 if (token.IsCancellationRequested) break;
@@ -325,7 +416,6 @@ namespace ufm
                         IsSpecialFolderNode = true
                     });
                 }
-
                 await Task.Delay(1, token);
             }
         }
@@ -342,7 +432,6 @@ namespace ufm
             };
         }
 
-        // ========== Новый метод для домашней страницы ==========
         public async Task<List<ExplorerItemViewModel>> LoadHomePageAsync(CancellationToken token = default)
         {
             var history = new DirectoryHistory("MyComputer", "Домашняя страница");
@@ -350,8 +439,7 @@ namespace ufm
             {
                 new ExplorerItemViewModel(history)
                 {
-                    Name = "Мой Компьютер",
-                    FilePath = "Drives",
+                    Name = "Мой Компьютер", FilePath = "Drives",
                     ImageSource = new BitmapImage(new Uri("ms-appx:///Assets/computer.png")),
                     IsTreeViewNode = true
                 }
@@ -360,69 +448,13 @@ namespace ufm
             return items;
         }
 
-        private async Task LoadSubfoldersAsync(List<ExplorerItemViewModel> items, string folderPath, IDirectoryHistory history, CancellationToken token)
-        {
-            var folders = Directory.GetDirectories(folderPath);
-            var defaultFolderIcon = new BitmapImage(new Uri("ms-appx:///Assets/folder1.png"));
-
-            foreach (var folder in folders)
-            {
-                if (token.IsCancellationRequested) break;
-                try
-                {
-                    var dirInfo = new DirectoryInfo(folder);
-                    var icon = await _iconService.GetIconAsync(folder, true) ?? defaultFolderIcon;
-                    items.Add(new ExplorerItemViewModel(history)
-                    {
-                        Name = dirInfo.Name,
-                        FilePath = folder,
-                        ImageSource = icon,
-                        IsTreeViewNode = true
-                    });
-                }
-                catch { }
-            }
-        }
-
-        private async Task LoadFilesAsync(List<ExplorerItemViewModel> items, string folderPath, IDirectoryHistory history, CancellationToken token)
-        {
-            var files = Directory.GetFiles(folderPath);
-            var defaultFileIcon = new BitmapImage(new Uri("ms-appx:///Assets/file.png"));
-
-            foreach (var file in files)
-            {
-                if (token.IsCancellationRequested) break;
-                try
-                {
-                    var fileInfo = new FileInfo(file);
-                    var icon = await FileCacheService.GetFileIconAsync(file) ?? defaultFileIcon;
-                    items.Add(new ExplorerItemViewModel(history)
-                    {
-                        Name = fileInfo.Name,
-                        FilePath = file,
-                        ImageSource = icon,
-                        IsTreeViewNode = true
-                    });
-                }
-                catch { }
-            }
-        }
-
         private async Task<ExplorerItemViewModel> CreateDriveItemAsync(string drivePath, IDirectoryHistory history)
         {
             var driveInfo = new DriveInfo(drivePath);
             var driveViewModel = new DriveViewModel(driveInfo, EntityFlags.IsDrive);
-
             BitmapImage icon;
-            try
-            {
-                icon = await _iconService.GetIconAsync(drivePath, true);
-            }
-            catch
-            {
-                icon = new BitmapImage(new Uri("ms-appx:///Assets/harddisk.png"));
-            }
-
+            try { icon = await _iconService.GetIconAsync(drivePath, true); }
+            catch { icon = new BitmapImage(new Uri("ms-appx:///Assets/harddisk.png")); }
             return new ExplorerItemViewModel(history)
             {
                 IsProgressBarVisible = true,
@@ -450,11 +482,8 @@ namespace ufm
 
         private string GetDriveDisplayName(DriveInfo driveInfo, string drivePath)
         {
-            string driveLetter = drivePath.TrimEnd('\\');
-            if (string.IsNullOrWhiteSpace(driveInfo.VolumeLabel))
-                return driveLetter;
-            else
-                return $"{driveInfo.VolumeLabel} ({driveLetter})";
+            string letter = drivePath.TrimEnd('\\');
+            return string.IsNullOrWhiteSpace(driveInfo.VolumeLabel) ? letter : $"{driveInfo.VolumeLabel} ({letter})";
         }
 
         private void CancelCurrentOperation()
@@ -470,23 +499,15 @@ namespace ufm
         {
             if (_panelCaches.TryGetValue(panelId, out var cache))
             {
-                foreach (var item in cache)
-                {
-                    item?.Dispose();
-                }
+                foreach (var item in cache) item?.Dispose();
                 _panelCaches.Remove(panelId);
             }
         }
 
         public void ClearAllCaches()
         {
-            foreach (var (panelId, cache) in _panelCaches)
-            {
-                foreach (var item in cache)
-                {
-                    item?.Dispose();
-                }
-            }
+            foreach (var (_, cache) in _panelCaches)
+                foreach (var item in cache) item?.Dispose();
             _panelCaches.Clear();
         }
 
@@ -494,83 +515,50 @@ namespace ufm
         {
             try
             {
-                bool showBackNavigation = ShowNavigationBackItem;
+                bool show = ShowNavigationBackItem;
                 ClearAllCaches();
-                NavigationSettingsMediator.NotifySettingsChanged(showBackNavigation);
+                NavigationSettingsMediator.NotifySettingsChanged(show);
             }
             catch { }
         }
 
         public bool IsNavigationPath(string path)
         {
-            return path == ".." ||
-                   path == "MyComputer" ||
-                   path == "Drives" ||
-                   Directory.Exists(path);
+            return path == ".." || path == "MyComputer" || path == "Drives" || Directory.Exists(path);
         }
 
         public string GetDisplayName(string path)
         {
-            if (string.IsNullOrEmpty(path))
-                return "Неизвестный путь";
-
-            // Начальная страница — "Домашняя страница"
-            if (path == "MyComputer")
-                return "Домашняя страница";
-
-            if (path == "SpecialFolders")
-                return "Специальные папки";
-
-            // Список дисков — "Мой компьютер"
-            if (path == "Drives")
-                return "Мой компьютер";
-
+            if (string.IsNullOrEmpty(path)) return "Неизвестный путь";
+            if (path == "MyComputer") return "Домашняя страница";
+            if (path == "SpecialFolders") return "Специальные папки";
+            if (path == "Drives") return "Мой компьютер";
             if (path.Length == 3 && path.EndsWith(":\\") && char.IsLetter(path[0]))
             {
-                try
-                {
-                    var driveInfo = new DriveInfo(path);
-                    return GetDriveDisplayName(driveInfo, path);
-                }
-                catch
-                {
-                    return path;
-                }
+                try { return GetDriveDisplayName(new DriveInfo(path), path); }
+                catch { return path; }
             }
 
             if (_breadcrumbCacheTask?.IsCompletedSuccessfully == true &&
-                _panelCaches.TryGetValue("Breadcrumb", out var cachedItems))
+                _panelCaches.TryGetValue("Breadcrumb", out var cached))
             {
-                var found = cachedItems.FirstOrDefault(item =>
-                    string.Equals(item.FilePath, path, StringComparison.OrdinalIgnoreCase));
-                if (found != null)
-                    return found.Name;
+                var found = cached.FirstOrDefault(it => string.Equals(it.FilePath, path, StringComparison.OrdinalIgnoreCase));
+                if (found != null) return found.Name;
             }
 
-            string specialName = GetSpecialFolderDisplayNameSync(path);
-            if (!string.IsNullOrEmpty(specialName))
-                return specialName;
+            string special = GetSpecialFolderDisplayNameSync(path);
+            if (!string.IsNullOrEmpty(special)) return special;
 
-            if (Directory.Exists(path) || File.Exists(path))
-                return Path.GetFileName(path);
-
-            try
-            {
-                return Path.GetFileName(path);
-            }
-            catch
-            {
-                return path;
-            }
+            if (Directory.Exists(path) || File.Exists(path)) return Path.GetFileName(path);
+            try { return Path.GetFileName(path); } catch { return path; }
         }
 
         private string GetSpecialFolderDisplayNameSync(string path)
         {
             try
             {
-                string normalizedPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-
-                var specialFolders = new Dictionary<string, string>
+                string normalized = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                var dict = new Dictionary<string, string>
                 {
                     { Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.Desktop)).TrimEnd(Path.DirectorySeparatorChar), "Рабочий стол" },
                     { Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)).TrimEnd(Path.DirectorySeparatorChar), "Документы" },
@@ -579,38 +567,38 @@ namespace ufm
                     { Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos)).TrimEnd(Path.DirectorySeparatorChar), "Видео" },
                     { Path.GetFullPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads")).TrimEnd(Path.DirectorySeparatorChar), "Загрузки" }
                 };
-
-                if (specialFolders.TryGetValue(normalizedPath, out string displayName))
-                    return displayName;
+                return dict.TryGetValue(normalized, out var name) ? name : null;
             }
-            catch { }
-            return null;
+            catch { return null; }
         }
 
-        public async Task<BitmapImage> GetDriveIconAsync(string drivePath)
-        {
-            return await _iconService.GetIconAsync(drivePath, true);
-        }
-
-        public async Task<BitmapImage> GetFolderIconAsync(string folderPath)
-        {
-            return await _iconService.GetIconAsync(folderPath, true);
-        }
-
-        public async Task<BitmapImage> GetFileIconAsync(string filePath)
-        {
-            return await FileCacheService.GetFileIconAsync(filePath);
-        }
+        public async Task<BitmapImage> GetDriveIconAsync(string drivePath) => await _iconService.GetIconAsync(drivePath, true);
+        public async Task<BitmapImage> GetFolderIconAsync(string folderPath) => await _iconService.GetIconAsync(folderPath, true);
+        public async Task<BitmapImage> GetFileIconAsync(string filePath) => await FileCacheService.GetFileIconAsync(filePath);
 
         public void Dispose()
         {
             if (IsDisposed) return;
+            IsDisposed = true;
 
-            CancelCurrentOperation();
+            // Отменяем все фоновые операции
+            _disposeCts.Cancel();
+            _currentOperationCts?.Cancel();
+
+            // Ожидаем завершения всех фоновых задач иконок (с таймаутом)
+            var tasks = _activeIconTasks.ToArray();
+            if (tasks.Length > 0)
+            {
+                try
+                {
+                    Task.WaitAll(tasks, TimeSpan.FromSeconds(3));
+                }
+                catch (AggregateException) { }
+            }
+
             ClearAllCaches();
             _currentOperationCts?.Dispose();
-
-            IsDisposed = true;
+            _disposeCts?.Dispose();
         }
     }
-}
+} 
