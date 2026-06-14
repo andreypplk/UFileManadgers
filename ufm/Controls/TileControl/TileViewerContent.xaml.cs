@@ -1181,13 +1181,35 @@ namespace ufm
                 await OpenFileAsync(path);
         }
 
+        //private async Task OpenFileAsync(string filePath)
+        //{
+        //    try
+        //    {
+        //        await Task.Run(() =>
+        //        {
+        //            using var process = new Process { StartInfo = new ProcessStartInfo(filePath) { UseShellExecute = true, Verb = "open" } };
+        //            process.Start();
+        //        });
+        //    }
+        //    catch { }
+        //}
+
         private async Task OpenFileAsync(string filePath)
         {
             try
             {
                 await Task.Run(() =>
                 {
-                    using var process = new Process { StartInfo = new ProcessStartInfo(filePath) { UseShellExecute = true, Verb = "open" } };
+                    using var process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo(filePath)
+                        {
+                            UseShellExecute = true,
+                            Verb = "open",
+                            // Контекст папки позволяет проигрывателю переключаться между медиафайлами
+                            WorkingDirectory = System.IO.Path.GetDirectoryName(filePath) ?? ""
+                        }
+                    };
                     process.Start();
                 });
             }
