@@ -54,6 +54,7 @@ namespace ufm
                 }
                 catch { }
             });
+            DriveService.DrivesUpdated += OnDrivesChanged;
         }
 
         // ========================= ПУБЛИЧНЫЕ МЕТОДЫ =========================
@@ -469,6 +470,39 @@ namespace ufm
             };
         }
 
+        public async Task<ExplorerItemViewModel> GetFileSystemItemAsync(string fullPath, IDirectoryHistory history = null)
+        {
+            if (string.IsNullOrEmpty(fullPath)) return null;
+            var localHistory = history ?? new DirectoryHistory(fullPath, System.IO.Path.GetFileName(fullPath));
+
+            ExplorerItemViewModel item = null;
+            if (Directory.Exists(fullPath))
+            {
+                // Без атрибутов – только базовый флаг папки
+                var icon = await _iconService.GetIconAsync(fullPath, true);
+                item = new ExplorerItemViewModel(localHistory)
+                {
+                    Name = System.IO.Path.GetFileName(fullPath),
+                    FilePath = fullPath,
+                    ImageSource = icon ?? new BitmapImage(new Uri("ms-appx:///Assets/folder1.png")),
+                    Flags = EntityFlags.IsDirectory
+                };
+            }
+            else if (File.Exists(fullPath))
+            {
+                var fileVm = FileCacheService.GetFileMetadata(new FileInfo(fullPath));
+                var icon = await FileCacheService.GetFileIconAsync(fullPath);
+                item = new ExplorerItemViewModel(localHistory)
+                {
+                    Name = fileVm.Name,
+                    FilePath = fullPath,
+                    ImageSource = icon ?? new BitmapImage(new Uri("ms-appx:///Assets/file.png")),
+                    Flags = fileVm.Flags,   // флаги уже содержит нужное (например, IsFile)
+                    LastModified = fileVm.LastModified.ToString("g")
+                };
+            }
+            return item;
+        }
         private ExplorerItemViewModel CreateBackItem(IDirectoryHistory history)
         {
             return new ExplorerItemViewModel(history)
@@ -510,7 +544,10 @@ namespace ufm
                 foreach (var item in cache) item?.Dispose();
             _panelCaches.Clear();
         }
-
+        public void InvalidateIconCache(string path, bool isDirectory)
+        {
+            _iconService.InvalidateCache(path, isDirectory);
+        }
         public void RefreshNavigationSettings()
         {
             try
@@ -576,6 +613,13 @@ namespace ufm
         public async Task<BitmapImage> GetFolderIconAsync(string folderPath) => await _iconService.GetIconAsync(folderPath, true);
         public async Task<BitmapImage> GetFileIconAsync(string filePath) => await FileCacheService.GetFileIconAsync(filePath);
 
+        private void OnDrivesChanged(object sender, EventArgs e)
+        {
+            lock (_panelCaches)
+            {
+                _panelCaches.Clear();
+            }
+        }
         public void Dispose()
         {
             if (IsDisposed) return;
@@ -595,7 +639,7 @@ namespace ufm
                 }
                 catch (AggregateException) { }
             }
-
+            DriveService.DrivesUpdated -= OnDrivesChanged;
             ClearAllCaches();
             _currentOperationCts?.Dispose();
             _disposeCts?.Dispose();

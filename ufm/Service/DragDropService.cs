@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Core_FileManagement;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -16,14 +17,14 @@ namespace ufm
     {
         private readonly IFileOperationService _fileOperationService;
         private readonly IModifierKeyService _modifierKeyService;
+        private readonly DispatcherQueue _dispatcherQueue;
 
         public DragDropService(IFileOperationService fileOperationService,
                                IModifierKeyService modifierKeyService)
         {
-            // Разрешаем null только для TileViewerContent до вызова SetFileOperationService,
-            // но тогда Drag&Drop не должен вызываться. Лучше всегда требовать не null.
             _fileOperationService = fileOperationService ?? throw new ArgumentNullException(nameof(fileOperationService));
             _modifierKeyService = modifierKeyService;
+            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             Debug.WriteLine("[DragDropService] Initialized");
         }
 
@@ -108,77 +109,30 @@ namespace ufm
             Debug.WriteLine($"  -> AcceptedOperation = {proposed}");
         }
 
-        // ----------------------------------------------------------------
-        // Drop – выполнение через FileOperationService
-        // ----------------------------------------------------------------
         public async Task OnDropAsync(DragEventArgs e, string targetFolder)
         {
             _modifierKeyService.UpdateKeyStateFromCore();
 
-            Debug.WriteLine($"[DragDropService] OnDropAsync. target='{targetFolder}'");
-
             if (!e.DataView.Contains(StandardDataFormats.StorageItems) || string.IsNullOrEmpty(targetFolder))
-            {
-                Debug.WriteLine("  No StorageItems or empty target. Aborting.");
                 return;
-            }
 
             var operation = e.AcceptedOperation;
             var (ctrl, shift, _) = _modifierKeyService.GetCurrentState();
-
             if (ctrl) operation = DataPackageOperation.Copy;
             else if (shift) operation = DataPackageOperation.Move;
-            Debug.WriteLine($"  Final operation: {operation}");
 
             var items = await e.DataView.GetStorageItemsAsync();
             var paths = items.Select(i => i.Path).ToList();
-            Debug.WriteLine($"  Items: {paths.Count}");
-            foreach (var p in paths) Debug.WriteLine($"    {p}");
 
-            // Создаём временные ExplorerItemViewModel с корректным DirectoryHistory
-            var tempHistory = new DirectoryHistory("DragDrop", "DragDrop");
-            var viewModels = new List<ExplorerItemViewModel>();
-            foreach (var p in paths)
+            bool isMove = operation == DataPackageOperation.Move;
+            var fop = _fileOperationService as FileOperationService;
+            if (fop != null)
             {
-                try
-                {
-                    viewModels.Add(new ExplorerItemViewModel(tempHistory)
-                    {
-                        Name = Path.GetFileName(p),
-                        FilePath = p
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"  ERROR creating view model for {p}: {ex.Message}");
-                }
-            }
-
-            if (viewModels.Count == 0)
-            {
-                Debug.WriteLine("  No valid items to process.");
-                return;
-            }
-
-            try
-            {
-                if (operation == DataPackageOperation.Move)
-                {
-                    Debug.WriteLine("  -> Cut + PasteAsync (Move)");
-                    _fileOperationService.Cut(viewModels);
-                    await _fileOperationService.PasteAsync(targetFolder);
-                }
-                else
-                {
-                    Debug.WriteLine("  -> Copy + PasteAsync (Copy)");
-                    _fileOperationService.Copy(viewModels);
-                    await _fileOperationService.PasteAsync(targetFolder);
-                }
-                Debug.WriteLine("  Operation completed successfully.");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"  ERROR during file operation: {ex.Message}\n{ex.StackTrace}");
+                uint wFunc = isMove ? 0x0001u /* FO_MOVE */ : 0x0002u /* FO_COPY */;
+                string title = isMove ? "Перемещение..." : "Копирование...";
+                bool ok = await fop.RunOperationWithProgressAsync(wFunc, paths, targetFolder, title);
+                if (!ok)
+                    await Task.Run(() => FileOperationService.ManualPasteFallback(paths, targetFolder, isMove));
             }
         }
     }
