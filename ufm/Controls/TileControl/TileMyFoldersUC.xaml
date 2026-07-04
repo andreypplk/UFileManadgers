@@ -366,8 +366,12 @@
             Padding="0"
             Background="{ThemeResource TileBackgroundBrush}"
             BorderBrush="{ThemeResource TileBorderBrush}"
+			Translation="0,0,64"
             BorderThickness="1"
             CornerRadius="5">
+			<Border.Shadow>
+				<ThemeShadow x:Name="shadow"/>
+			</Border.Shadow>
 
 			<!-- Основной контейнер со всеми макетами -->
 			<Grid>
@@ -385,15 +389,16 @@
 					<!-- Иконка -->
 					<Image
                         Grid.Row="0"
+						Grid.RowSpan="2"
                         Grid.Column="0"
                         Width="{x:Bind IconWidth, Mode=OneWay}"
                         Height="{x:Bind IconHeight, Mode=OneWay}"
                         Margin="5,0,0,0"
-                        VerticalAlignment="Center"
+                        VerticalAlignment="Stretch"
                         Source="{Binding ImageSource}" />
-
+	
 					<!-- Текст/редактирование (горизонтальный) -->
-					<Grid Grid.Row="0" Grid.Column="1" Margin="10,0,2,0">
+					<Grid Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Margin="10,0,2,0">
 						<TextBlock
                             x:Name="HorizontalTextBlock"
                             VerticalAlignment="Center"

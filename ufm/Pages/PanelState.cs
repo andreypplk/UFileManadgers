@@ -6,7 +6,7 @@ namespace ufm
     {
         // Основные настройки отображения
         public ViewPage.ViewMode ViewMode { get; set; } = ViewPage.ViewMode.Icons;
-        public string IconSize { get; set; } = "Icons Medium";
+        public string IconSize { get; set; } = "Medium";
 
         // Состояние представления
         public SortDescription CurrentSort { get; set; }

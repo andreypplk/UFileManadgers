@@ -409,7 +409,11 @@ namespace ufm
 
         private void ApplyIconSizeToPanel(ContentControl panel, string iconSize)
         {
-            if (panel.Content is ISupportsIconSize sizeSupport) sizeSupport.SetIconSize(iconSize);
+            if (panel.Content is ISupportsIconSize sizeSupport)
+            {
+                // Если размер иконок по какой-то причине null, используем значение по умолчанию
+                sizeSupport.SetIconSize(iconSize ?? "Medium");
+            }
         }
 
         private void ApplyIconSizeToActivePanelOnly()
@@ -791,8 +795,8 @@ namespace ufm
             string savedIconSize = App.SettingsManager?.GetSetting<string>("SelectedSizeIconViewPage");
             if (!string.IsNullOrEmpty(savedIconSize) && _activePanelManager != null)
             {
-                _activePanelManager.UpdateState(state => state.IconSize = savedIconSize);
                 _prefsize = GetViewModePrefix(_activePanelManager.State.ViewMode);
+                _activePanelManager.UpdateState(state => state.IconSize = savedIconSize);
             }
 
             switch (_currentDisplayMode)

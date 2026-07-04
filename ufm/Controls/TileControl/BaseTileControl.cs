@@ -376,6 +376,8 @@ namespace ufm
 
         public void UpdateSize(string selectedSize)
         {
+            if (string.IsNullOrEmpty(selectedSize))
+                selectedSize = "Medium";
             Size = selectedSize;
             InvalidateArrange();
             InvalidateMeasure();

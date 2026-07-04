@@ -80,6 +80,9 @@ namespace ufm
 
         public void CalculateItemDimensions(string selectedSize)
         {
+            if (string.IsNullOrEmpty(selectedSize))
+                selectedSize = "Icons Medium";
+
             var sizeParams = SizeManagerTile.GetSize(selectedSize);
             string viewType = selectedSize.Split(' ').FirstOrDefault()?.ToLower() ?? "";
 
