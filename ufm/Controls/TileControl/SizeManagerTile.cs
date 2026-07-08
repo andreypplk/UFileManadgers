@@ -8,11 +8,22 @@ namespace ufm
         private static readonly Dictionary<string, (int Width, int Height, int IconWidth, int IconHeight, int FontSize, string FontFamily)> _sizes = new()
         {
             // Основные размеры
-            ["Extra Small"] = (240, 30, 24, 24, 12, "Segoe UI"),
-            ["Small"] = (280, 45, 32, 32, 14, "Segoe UI"),
-            ["Medium"] = (320, 60, 42, 42, 16, "Segoe UI"),
-            ["Large"] = (380, 75, 64, 64, 18, "Segoe UI"),
-            ["Extra Large"] = (440, 90, 96, 96, 20, "Segoe UI"),
+            //["Extra Small"] = (240, 30, 24, 24, 12, "Segoe UI"),
+            //["Small"] = (280, 45, 32, 32, 14, "Segoe UI"),
+            //["Medium"] = (320, 60, 42, 42, 16, "Segoe UI"),
+            //["Large"] = (380, 75, 64, 64, 18, "Segoe UI"),
+            //["Extra Large"] = (440, 90, 96, 96, 20, "Segoe UI"),
+
+            // Списки (двухстрочный вариант)
+            ["Tiny"] = (280, 48, 24, 24, 11, "Segoe UI"),
+            ["Extra Small"] = (300, 52, 26, 26, 12, "Segoe UI"),
+            ["Small"] = (320, 56, 28, 28, 13, "Segoe UI"),
+            ["Below Medium"] = (340, 60, 30, 30, 14, "Segoe UI"),
+            ["Medium"] = (360, 64, 32, 32, 15, "Segoe UI"),
+            ["Above Medium"] = (380, 68, 34, 34, 16, "Segoe UI"),
+            ["Large"] = (400, 72, 36, 36, 17, "Segoe UI"),
+            ["Extra Large"] = (420, 76, 38, 38, 18, "Segoe UI"),
+            ["Huge"] = (440, 80, 40, 40, 19, "Segoe UI"),
 
             // Дерево
             ["Tree Tiny"] = (200, 28, 20, 20, 10, "Segoe UI"),

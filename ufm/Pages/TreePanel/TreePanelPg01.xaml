@@ -178,45 +178,85 @@
 						<Flyout Placement="Bottom">
 							<StackPanel Background="{ThemeResource CardBackgroundBrush}">
 								<RadioButton
-                                    x:Name="ExtraSmallSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbExtraSmallSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Extra Small" />
+                    x:Name="TinySizeRadioButton"
+                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbTinySizeIcon"
+                    Checked="SizeRadioButton_Checked"
+                    Foreground="{ThemeResource TextPrimaryColor}"
+                    GroupName="SizeGroup"
+                    Style="{StaticResource SmallRadioButtonStyle}"
+                    Tag="Tiny" />
+
 								<RadioButton
-                                    x:Name="SmallSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbSmallSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Small" />
+                    x:Name="ExtraSmallSizeRadioButton"
+                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbExtraSmallSizeIcon"
+                    Checked="SizeRadioButton_Checked"
+                    Foreground="{ThemeResource TextPrimaryColor}"
+                    GroupName="SizeGroup"
+                    Style="{StaticResource SmallRadioButtonStyle}"
+                    Tag="Extra Small" />
+
 								<RadioButton
-                                    x:Name="MediumSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbMediumSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Medium" />
+                    x:Name="SmallSizeRadioButton"
+                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbSmallSizeIcon"
+                    Checked="SizeRadioButton_Checked"
+                    Foreground="{ThemeResource TextPrimaryColor}"
+                    GroupName="SizeGroup"
+                    Style="{StaticResource SmallRadioButtonStyle}"
+                    Tag="Small" />
+
 								<RadioButton
-                                    x:Name="LargeSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbLargeSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Large" />
+                    x:Name="BelowMediumSizeRadioButton"
+                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbBelowMediumSizeIcon"
+                    Checked="SizeRadioButton_Checked"
+                    Foreground="{ThemeResource TextPrimaryColor}"
+                    GroupName="SizeGroup"
+                    Style="{StaticResource SmallRadioButtonStyle}"
+                    Tag="Below Medium" />
+
 								<RadioButton
-                                    x:Name="ExtraLargeSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbExtraLargeSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Extra Large" />
+                    x:Name="MediumSizeRadioButton"
+                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbMediumSizeIcon"
+                    Checked="SizeRadioButton_Checked"
+                    Foreground="{ThemeResource TextPrimaryColor}"
+                    GroupName="SizeGroup"
+                    Style="{StaticResource SmallRadioButtonStyle}"
+                    Tag="Medium" />
+
+								<RadioButton
+                    x:Name="AboveMediumSizeRadioButton"
+                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbAboveMediumSizeIcon"
+                    Checked="SizeRadioButton_Checked"
+                    Foreground="{ThemeResource TextPrimaryColor}"
+                    GroupName="SizeGroup"
+                    Style="{StaticResource SmallRadioButtonStyle}"
+                    Tag="Above Medium" />
+
+								<RadioButton
+                    x:Name="LargeSizeRadioButton"
+                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbLargeSizeIcon"
+                    Checked="SizeRadioButton_Checked"
+                    Foreground="{ThemeResource TextPrimaryColor}"
+                    GroupName="SizeGroup"
+                    Style="{StaticResource SmallRadioButtonStyle}"
+                    Tag="Large" />
+
+								<RadioButton
+                    x:Name="ExtraLargeSizeRadioButton"
+                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbExtraLargeSizeIcon"
+                    Checked="SizeRadioButton_Checked"
+                    Foreground="{ThemeResource TextPrimaryColor}"
+                    GroupName="SizeGroup"
+                    Style="{StaticResource SmallRadioButtonStyle}"
+                    Tag="Extra Large" />
+
+								<RadioButton
+                    x:Name="HugeSizeRadioButton"
+                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbHugeSizeIcon"
+                    Checked="SizeRadioButton_Checked"
+                    Foreground="{ThemeResource TextPrimaryColor}"
+                    GroupName="SizeGroup"
+                    Style="{StaticResource SmallRadioButtonStyle}"
+                    Tag="Huge" />
 							</StackPanel>
 						</Flyout>
 					</DropDownButton.Flyout>
@@ -386,415 +426,3 @@
 	</Grid>
 </Page>
 
-<!--<Page
-    x:Class="ufm.TreePanelPg01"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:Lngmng="using:Core_Language"
-    xmlns:controls="using:ufm"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:ufm.Pages"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewModel="using:Core_FileManagement"
-    Background="{ThemeResource AppBackgroundBrush}"
-    Loaded="TreePanelPg01_Loaded"
-    NavigationCacheMode="Enabled"
-    mc:Ignorable="d">
-
-	<Page.DataContext>
-		<viewModel:MainViewModel />
-	</Page.DataContext>
-
-	<Page.Resources>
-		<Style x:Key="SmallRadioButtonStyle" TargetType="RadioButton">
-			<Setter Property="FontSize" Value="14" />
-			<Setter Property="Padding" Value="1" />
-			<Setter Property="Margin" Value="1" />
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate TargetType="RadioButton">
-						<Grid
-                            x:Name="RootGrid"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto" />
-								<ColumnDefinition Width="*" />
-							</Grid.ColumnDefinitions>
-							<Grid
-                                x:Name="OuterEllipseGrid"
-                                Width="16"
-                                Height="16"
-                                VerticalAlignment="Center">
-								<Ellipse
-                                    x:Name="OuterEllipse"
-                                    Width="12"
-                                    Height="12"
-                                    Fill="{ThemeResource ButtonBackgroundColor}"
-                                    Stroke="{ThemeResource ButtonBorderColor}"
-                                    StrokeThickness="1" />
-								<Ellipse
-                                    x:Name="CheckGlyph"
-                                    Width="6"
-                                    Height="6"
-                                    Fill="{ThemeResource SystemAccentColor}"
-                                    Opacity="0" />
-							</Grid>
-							<ContentPresenter
-                                x:Name="ContentPresenter"
-                                Grid.Column="1"
-                                Margin="8,0,0,0"
-                                VerticalAlignment="Center"
-                                Content="{TemplateBinding Content}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Foreground="{ThemeResource TextPrimaryColor}"
-                                TextWrapping="Wrap" />
-							<VisualStateManager.VisualStateGroups>
-								<VisualStateGroup x:Name="CommonStates">
-									<VisualState x:Name="Normal" />
-									<VisualState x:Name="PointerOver">
-										<Storyboard>
-											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
-												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemAccentColor}" />
-											</ObjectAnimationUsingKeyFrames>
-										</Storyboard>
-									</VisualState>
-									<VisualState x:Name="Pressed">
-										<Storyboard>
-											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
-												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemAccentColorDark1}" />
-											</ObjectAnimationUsingKeyFrames>
-										</Storyboard>
-									</VisualState>
-									<VisualState x:Name="Disabled">
-										<Storyboard>
-											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterEllipse" Storyboard.TargetProperty="Stroke">
-												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextSecondaryColor}" />
-											</ObjectAnimationUsingKeyFrames>
-											<ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-												<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextSecondaryColor}" />
-											</ObjectAnimationUsingKeyFrames>
-										</Storyboard>
-									</VisualState>
-								</VisualStateGroup>
-								<VisualStateGroup x:Name="CheckStates">
-									<VisualState x:Name="Checked">
-										<Storyboard>
-											<DoubleAnimation
-                                                Storyboard.TargetName="CheckGlyph"
-                                                Storyboard.TargetProperty="Opacity"
-                                                To="1"
-                                                Duration="0" />
-										</Storyboard>
-									</VisualState>
-									<VisualState x:Name="Unchecked" />
-									<VisualState x:Name="Indeterminate" />
-								</VisualStateGroup>
-							</VisualStateManager.VisualStateGroups>
-						</Grid>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
-		<controls:StringToBoolConverter x:Key="StringToBoolConverter" />
-	</Page.Resources>
-
-	<Grid Background="Transparent">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto" />
-			<RowDefinition Height="*" />
-		</Grid.RowDefinitions>
-
-		<Border
-            Grid.Row="0"
-            Padding="5"
-            Background="{ThemeResource HeaderBackgroundBrush}"
-            BorderBrush="{ThemeResource HeaderBorderBrush}"
-            BorderThickness="1">
-			<RelativePanel>
-				<Button
-                    x:Name="BackButton"
-                    Margin="5,0"
-                    Padding="10,5"
-                    Lngmng:Uids.ToolTipUid="VPfirstmemustBut_ttsttBtBackButton"
-                    Background="{ThemeResource NavigationButtonBrush}"
-                    Click="BackButton_Click"
-                    Foreground="{ThemeResource NavigationIconBrush}"
-                    RelativePanel.AlignLeftWithPanel="True"
-                    RelativePanel.AlignVerticalCenterWithPanel="True">
-					<FontIcon Glyph="&#xE72B;" />
-				</Button>
-
-				<Button
-                    x:Name="ForwardButton"
-                    Margin="5,0"
-                    Padding="10,5"
-                    Lngmng:Uids.ToolTipUid="VPfirstmemustBut_ttsttBtForwardButton"
-                    Background="{ThemeResource NavigationButtonBrush}"
-                    Click="ForwardButton_Click"
-                    Foreground="{ThemeResource NavigationIconBrush}"
-                    RelativePanel.AlignVerticalCenterWithPanel="True"
-                    RelativePanel.RightOf="BackButton">
-					<FontIcon Glyph="&#xE72A;" />
-				</Button>
-
-				<Button
-                    x:Name="UpButton"
-                    Margin="5,0"
-                    Padding="10,5"
-                    Lngmng:Uids.ToolTipUid="VPfirstmemustBut_ttsttBtUpButton"
-                    Background="{ThemeResource NavigationButtonBrush}"
-                    Click="UpButton_Click"
-                    Foreground="{ThemeResource NavigationIconBrush}"
-                    RelativePanel.AlignVerticalCenterWithPanel="True"
-                    RelativePanel.RightOf="ForwardButton">
-					<FontIcon Glyph="&#xE74A;" />
-				</Button>
-
-				<DropDownButton
-                    x:Name="SizeDropDownButton"
-                    Margin="10,0"
-                    Background="{ThemeResource NavigationButtonBrush}"
-                    Foreground="{ThemeResource NavigationIconBrush}"
-                    RelativePanel.AlignRightWithPanel="True"
-                    RelativePanel.AlignVerticalCenterWithPanel="True">
-					<FontIcon Glyph="&#xE762;" />
-					<DropDownButton.Flyout>
-						<Flyout Placement="Bottom">
-							<StackPanel Background="{ThemeResource CardBackgroundBrush}">
-								<RadioButton
-                                    x:Name="TinySizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbTinySizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Tiny" />
-								<RadioButton
-                                    x:Name="ExtraSmallSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbExtraSmallSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Extra Small" />
-								<RadioButton
-                                    x:Name="SmallSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbSmallSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Small" />
-								<RadioButton
-                                    x:Name="BelowMediumSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbBelowMediumSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Below Medium" />
-								<RadioButton
-                                    x:Name="MediumSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbMediumSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Medium" />
-								<RadioButton
-                                    x:Name="AboveMediumSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbAboveMediumSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Above Medium" />
-								<RadioButton
-                                    x:Name="LargeSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbLargeSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Large" />
-								<RadioButton
-                                    x:Name="ExtraLargeSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbExtraLargeSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Extra Large" />
-								<RadioButton
-                                    x:Name="HugeSizeRadioButton"
-                                    Lngmng:Uids.RadioButtonContentUid="VPsecondrmFI_ddbrbHugeSizeIcon"
-                                    Checked="SizeRadioButton_Checked"
-                                    Foreground="{ThemeResource TextPrimaryColor}"
-                                    GroupName="SizeGroup"
-                                    Style="{StaticResource SmallRadioButtonStyle}"
-                                    Tag="Huge" />
-							</StackPanel>
-						</Flyout>
-					</DropDownButton.Flyout>
-				</DropDownButton>
-			</RelativePanel>
-		</Border>
-
-		<ScrollViewer
-            x:Name="ScrollViewerTreeView"
-            Grid.Row="1"
-            HorizontalScrollBarVisibility="Auto"
-            HorizontalScrollMode="Enabled"
-            VerticalScrollBarVisibility="Auto"
-            VerticalScrollMode="Enabled">
-			<ScrollViewer.Resources>
-				<Style TargetType="ScrollBar">
-					<Setter Property="Background" Value="{ThemeResource BorderPrimaryColor}" />
-					<Setter Property="Foreground" Value="{ThemeResource SystemAccentColor}" />
-				</Style>
-			</ScrollViewer.Resources>
-
-			<StackPanel>
-				<TreeView
-                    x:Name="treeViewSpF"
-                    Margin="1"
-                    Padding="0,0,2,2"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    SelectionChanged="TreeViewSpF_SelectionChanged"
-                    AllowDrop="True"
-                    CanDragItems="True"
-                    SelectionMode="Single"
-                    IsDoubleTapEnabled="True"
-                    ItemsSource="{Binding ExplorerItems}"
-                    Loaded="TreeViewSpF_OnLoaded">
-					<TreeView.ItemContainerStyle>
-						<Style TargetType="TreeViewItem">
-							<Setter Property="HasUnrealizedChildren" Value="True" />
-							<Setter Property="Margin" Value="1,1,0,0" />
-							<Setter Property="Padding" Value="0,0,0,0" />
-							<Setter Property="Background" Value="Transparent" />
-							<Setter Property="HorizontalContentAlignment" Value="Left" />
-						</Style>
-					</TreeView.ItemContainerStyle>
-
-					<TreeView.ItemTemplateSelector>
-						<controls:TreeViewItemTemplateSelector>
-							<controls:TreeViewItemTemplateSelector.MyComputerTemplate>
-								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-									<controls:TileMyPcUC
-                                        Margin="5"
-                                        Padding="0"
-                                        HorizontalAlignment="Stretch"
-                                        DisplayMode="Horizontal">
-										<controls:TileMyPcUC.RenderTransform>
-											<ScaleTransform x:Name="ScaleTransformMyCompSpF" ScaleX="1" ScaleY="1" />
-										</controls:TileMyPcUC.RenderTransform>
-									</controls:TileMyPcUC>
-								</DataTemplate>
-							</controls:TreeViewItemTemplateSelector.MyComputerTemplate>
-
-							<controls:TreeViewItemTemplateSelector.DriveTemplate>
-								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-									<controls:TileMyDriveUc
-                                        Margin="0"
-                                        Padding="0"
-                                        HorizontalAlignment="Stretch">
-										<controls:TileMyDriveUc.RenderTransform>
-											<ScaleTransform x:Name="ScaleTransformDriveUcSpF" ScaleX="1" ScaleY="1" />
-										</controls:TileMyDriveUc.RenderTransform>
-									</controls:TileMyDriveUc>
-								</DataTemplate>
-							</controls:TreeViewItemTemplateSelector.DriveTemplate>
-
-							<controls:TreeViewItemTemplateSelector.FolderTemplate>
-								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-									<controls:TileMyFoldersUc
-                                        Margin="0"
-                                        Padding="0"
-                                        HorizontalAlignment="Stretch">
-										<controls:TileMyFoldersUc.RenderTransform>
-											<ScaleTransform x:Name="ScaleTransformFolderUcSpF" ScaleX="1" ScaleY="1" />
-										</controls:TileMyFoldersUc.RenderTransform>
-									</controls:TileMyFoldersUc>
-								</DataTemplate>
-							</controls:TreeViewItemTemplateSelector.FolderTemplate>
-						</controls:TreeViewItemTemplateSelector>
-					</TreeView.ItemTemplateSelector>
-				</TreeView>
-
-				<TreeView
-                    x:Name="treeView"
-                    Margin="1"
-                    Padding="0,0,2,2"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    SelectionChanged="TreeView_SelectionChanged"
-                    AllowDrop="True"
-                    CanDragItems="True"
-                    SelectionMode="Single"
-                    IsDoubleTapEnabled="True"
-                    ItemsSource="{Binding ExplorerItems}"
-                    Loaded="TreeView_OnLoaded">
-					<TreeView.ItemContainerStyle>
-						<Style TargetType="TreeViewItem">
-							<Setter Property="HasUnrealizedChildren" Value="True" />
-							<Setter Property="Margin" Value="1,1,0,0" />
-							<Setter Property="Padding" Value="0,0,0,0" />
-							<Setter Property="Background" Value="Transparent" />
-							<Setter Property="HorizontalContentAlignment" Value="Left" />
-						</Style>
-					</TreeView.ItemContainerStyle>
-
-					<TreeView.ItemTemplateSelector>
-						<controls:TreeViewItemTemplateSelector>
-							<controls:TreeViewItemTemplateSelector.MyComputerTemplate>
-								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-									<controls:TileMyPcUC
-                                        Margin="5"
-                                        Padding="0"
-                                        HorizontalAlignment="Stretch"
-                                        DisplayMode="Horizontal">
-										<controls:TileMyPcUC.RenderTransform>
-											<ScaleTransform x:Name="ScaleTransformMyComp" ScaleX="1" ScaleY="1" />
-										</controls:TileMyPcUC.RenderTransform>
-									</controls:TileMyPcUC>
-								</DataTemplate>
-							</controls:TreeViewItemTemplateSelector.MyComputerTemplate>
-
-							<controls:TreeViewItemTemplateSelector.DriveTemplate>
-								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-									<controls:TileMyDriveUc
-                                        Margin="0"
-                                        Padding="0"
-                                        HorizontalAlignment="Stretch"
-                                        DisplayMode="Horizontal">
-										<controls:TileMyDriveUc.RenderTransform>
-											<ScaleTransform x:Name="ScaleTransformDriveUc" ScaleX="1" ScaleY="1" />
-										</controls:TileMyDriveUc.RenderTransform>
-									</controls:TileMyDriveUc>
-								</DataTemplate>
-							</controls:TreeViewItemTemplateSelector.DriveTemplate>
-
-							<controls:TreeViewItemTemplateSelector.FolderTemplate>
-								<DataTemplate x:DataType="viewModel:ExplorerItemViewModel">
-									<controls:TileMyFoldersUc
-                                        Margin="0"
-                                        Padding="0"
-                                        HorizontalAlignment="Stretch"
-                                        DisplayMode="Horizontal">
-										<controls:TileMyFoldersUc.RenderTransform>
-											<ScaleTransform x:Name="ScaleTransformFolderUc" ScaleX="1" ScaleY="1" />
-										</controls:TileMyFoldersUc.RenderTransform>
-									</controls:TileMyFoldersUc>
-								</DataTemplate>
-							</controls:TreeViewItemTemplateSelector.FolderTemplate>
-						</controls:TreeViewItemTemplateSelector>
-					</TreeView.ItemTemplateSelector>
-				</TreeView>
-			</StackPanel>
-		</ScrollViewer>
-	</Grid>
-</Page>-->

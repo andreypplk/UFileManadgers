@@ -23,9 +23,9 @@
                 <ColumnDefinition Width="2" />
                 <ColumnDefinition
                     x:Name="ColumnTreeView"
-                    Width="360"
+                    Width="auto"
                     MinWidth="150"
-                    MaxWidth="800" />
+                    MaxWidth="3840" />
                 <ColumnDefinition Width="5" />
                 <ColumnDefinition
                     x:Name="ColumViewDataPanel"

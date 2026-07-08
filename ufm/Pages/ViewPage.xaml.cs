@@ -660,7 +660,7 @@ namespace ufm
         private void SetSelectedRadioButton(string fullSizeKey)
         {
             if (string.IsNullOrEmpty(fullSizeKey)) { MediumSizeRadioButton.IsChecked = true; return; }
-            string sizePart = ExtractSizePartFromFullKey(fullSizeKey);
+            string sizePart = SizeHelper.ExtractSizePartFromFullKey(fullSizeKey).ToLower();
             TinySizeRadioButton.IsChecked = false; ExtraSmallSizeRadioButton.IsChecked = false;
             SmallSizeRadioButton.IsChecked = false; BelowMediumSizeRadioButton.IsChecked = false;
             MediumSizeRadioButton.IsChecked = false; AboveMediumSizeRadioButton.IsChecked = false;
@@ -679,23 +679,6 @@ namespace ufm
                 case "Huge": HugeSizeRadioButton.IsChecked = true; break;
                 default: MediumSizeRadioButton.IsChecked = true; break;
             }
-        }
-
-        private string ExtractSizePartFromFullKey(string fullSizeKey)
-        {
-            if (string.IsNullOrEmpty(fullSizeKey)) return "Medium";
-            var parts = fullSizeKey.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 3)
-            {
-                string potential = $"{parts[parts.Length - 3]} {parts[parts.Length - 2]} {parts[parts.Length - 1]}";
-                if (potential == "Below Medium" || potential == "Above Medium") return potential;
-            }
-            if (parts.Length >= 2)
-            {
-                string potential = $"{parts[parts.Length - 2]} {parts[parts.Length - 1]}";
-                if (potential == "Extra Small" || potential == "Extra Large") return potential;
-            }
-            return parts[^1];
         }
 
         private void SizeRadioButton_Checked(object sender, RoutedEventArgs e)
@@ -724,7 +707,7 @@ namespace ufm
                     {
                         state.ViewMode = mode;
                         _prefsize = GetViewModePrefix(mode);
-                        state.IconSize = $"{_prefsize} {ExtractSizePartFromFullKey(state.IconSize)}";
+                        state.IconSize = $"{_prefsize} {SizeHelper.ExtractSizePartFromFullKey((state.IconSize))}";
                     });
                     SetViewMode(mode);
                     ApplyIconSizeToActivePanelOnly();
